@@ -1,0 +1,6 @@
+weight_trackjet_bTagSF_77_eigenvars_B_up 5
+weight_trackjet_bTagSF_77_eigenvars_B_down 5
+weight_trackjet_bTagSF_77_eigenvars_C_up 4
+weight_trackjet_bTagSF_77_eigenvars_C_down 4
+weight_trackjet_bTagSF_77_eigenvars_Light_up 14
+weight_trackjet_bTagSF_77_eigenvars_Light_down 14
