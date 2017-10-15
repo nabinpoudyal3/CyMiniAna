@@ -1,6 +1,5 @@
 30 August 2017  
 Dan Marley  
-daniel.edison.marley@cernSPAMNOT.ch
 
 
 # CyMiniAna
@@ -261,9 +260,7 @@ looping over events with python & histogramming with numpy/matplotlib.*
 
 # Contact
 
-If there are questions, concerns, or bugs found in this package, please contact the author.
-
+If there are questions, concerns, or bugs found in this package, please contact the author.  
 If you would like contribute to the project, it is recommended to follow the 
-[feature branch workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow).
-
+[feature branch workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow).  
 See `CONTRIBUTING.md` for more information.
