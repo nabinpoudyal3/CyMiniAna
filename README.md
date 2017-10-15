@@ -1,4 +1,4 @@
-30 August 2017  
+14 October 2017  
 Dan Marley  
 
 
@@ -15,8 +15,7 @@ Dependencies (available in CMSSW):
 
 ## Overview
 
-CyMiniAna is built for (and designed around) two main tasks in the
-di-Higgs (hh &rarr; bbW*W) analysis:
+CyMiniAna is built for (and designed around) two main tasks in the ttbar charge asymmetry analyses:
 
   1. Event Loop (c++-based framework for speed)
      - Make smaller root files based on a selection criteria ("skimming" or "slimming")
@@ -31,7 +30,7 @@ The CyMiniAna Analysis Framework is structured as follows:
 
 Directory  | About
 ---------  | ---------
-python/    | python plotting scripts
+python/    | plotting, neural network, and running scripts
 src/       | `*.cxx` files
 interface/ | `*.h` files
 examples/  | Example scripts demonstrating how to use framework or general coding
@@ -41,7 +40,7 @@ BuildFile.xml | File used by `scram` to compile software in CMSSW
 Makefile   | compiles c++ code -- not needed in CMSSW framework!
 README.md  | This file
 setup.sh   | Setup script for cmssw environment
----------------------
+
 
 
 ## Getting Started
@@ -71,11 +70,11 @@ cd cms-jet
 git clone https://github.com/cms-jet/JRDatabase.git  # values for Jet resolution smearing
 cd ../
 
-## add our code - the diHiggs packages!
-mkdir diHiggs
-cd diHiggs
-git clone https://gitlab.cern.ch/diHiggs/CyMiniAna.git
-git clone https://gitlab.cern.ch/diHiggs/lwtnn.git     # Neural Networks in c++
+## add our code - the cms-ttbarAC packages!
+mkdir cms-ttbarAC
+cd cms-ttbarAC
+git clone https://gitlab.cern.ch/cms-ttbarAC/CyMiniAna.git
+git clone https://gitlab.cern.ch/cms-ttbarAC/lwtnn.git     # Keras Neural Networks in c++
 ```
 
 Once everything is checked out, compile it all!
@@ -136,7 +135,7 @@ getDNN           | Calculate the DNN value (default `false`; if `false`, grab va
 getHME           | Calculate the HME value (default `false`; if `false`, grab value from TTree)
 doRecoEventLoop  | Loop over reconstructed events (default `true`)
 doTruthEventLoop | Loop over truth-level events (default `false`)
-NJetSmear      | Number of smearings to perform for jet resolution (default 2)
+NJetSmear        | Number of smearings to perform for jet resolution (default 2)
 NMassPoints      | Number of mass points to use in ttbar reconstruction (default `1`; more needed in jet mass measurement)
 massMin          | Minimum top mass to use in ttbar reconstruction (default 172.5)
 
@@ -147,8 +146,12 @@ default values will be chosen from `interface/configuration.h`.
 
 ### Event Loop
 
-The c++-based framework within CyMiniAna...  
-Setup `config/cmaConfig.txt` (or your configuration file) and make sure any and 
+The c++-based framework within CyMiniAna builds the event for each entry in the ROOT file.
+Physics objects (leptons, jets, etc.) are represented as structs within the framework (`interface/physicsObjects.h`).
+The `Event` object is passed between classes (`histogrammer`, `efficiency`, etc.) to share the event information.
+Other classes, such as those that build the dilepton ttbar system, are initialized from the `Event` class, provided with structs of physics objects, and return information back to the `Event` class.
+
+Setup `config/cmaConfig.txt` (or your custom configuration file) and ensure any and 
 all text files are also setup correctly, e.g., text file that points to the list of
 root files you would like to process.  
 To run the event selection code:
@@ -212,7 +215,7 @@ To run the hepPlotter code (substitute `runHistogram.py` for your own script:
 
 #### General Histograms/Efficiencies
 
-The `hepPlotter` class makes simple 1D and 2D plots with ATLAS formatting.  
+The `hepPlotter` class makes simple 1D and 2D plots with CMS formatting.  
 
 Interfaces demonstrating how to make histograms or efficiency curves are shown in 
 `runHistogram.py` and `runEfficiency.py`.  These two scripts differ in the way
@@ -247,14 +250,13 @@ hist.savefig()
 #### Data/MC
 
 To specifically make data/mc plots, use the class `hepPlotterDataMC`, which inherits from 
-`hepPlotter` and removes all of the modularity parts to specificallyy draw data/mc plots.
-
+`hepPlotter` and removes all of the modularity parts to specifically draw data/mc plots.  
 The example script for setting making data/mc plots is `examples/hepPlotter/runDataMC.py`.
 The two frames (normal distributions of data and monte carlo and sub-frame that shows the ratio) are
 drawn in the same plot.
 
 *NOTE: HepPlotter can use numpy arrays (or python lists) or ROOT histograms. 
-Histograms are __preferred__ because you can make them more quickly with CyMiniAnaAC than 
+Histograms are __preferred__ because you can make them more quickly with CyMiniAna than 
 looping over events with python & histogramming with numpy/matplotlib.*
 
 
