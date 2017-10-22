@@ -1,5 +1,5 @@
-#ifndef MINITREE_H_
-#define MINITREE_H_
+#ifndef MINITREE_H
+#define MINITREE_H
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -18,9 +18,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "diHiggs/CyMiniAna/interface/Event.h"
-#include "diHiggs/CyMiniAna/interface/eventSelection.h"
-#include "diHiggs/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
+#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
 
 class miniTree {
   public:

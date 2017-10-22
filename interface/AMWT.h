@@ -20,10 +20,10 @@
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
-#include "diHiggs/CyMiniAna/interface/physicsObjects.h"
-#include "diHiggs/CyMiniAna/interface/tools.h"
-#include "diHiggs/CyMiniAna/interface/configuration.h"
-#include "diHiggs/CyMiniAna/interface/MassSolver.h"
+#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/MassSolver.h"
 
 class AMWT{
 

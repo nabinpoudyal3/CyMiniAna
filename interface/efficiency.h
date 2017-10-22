@@ -1,5 +1,5 @@
-#ifndef EFFICIENCY_H_
-#define EFFICIENCY_H_
+#ifndef EFFICIENCY_H
+#define EFFICIENCY_H
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -15,9 +15,9 @@
 #include <map>
 #include <vector>
 
-#include "diHiggs/CyMiniAna/interface/tools.h"
-#include "diHiggs/CyMiniAna/interface/Event.h"
-#include "diHiggs/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
 
 class efficiency {
   public:

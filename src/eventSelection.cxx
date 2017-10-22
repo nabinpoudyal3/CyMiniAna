@@ -27,7 +27,7 @@ Recommended Use:
   Contact Dan with any questions about using this
   or suggestions for your specific use case
 */
-#include "diHiggs/CyMiniAna/interface/eventSelection.h"
+#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
 
 
 

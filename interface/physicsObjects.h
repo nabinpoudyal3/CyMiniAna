@@ -2,14 +2,15 @@
 #define PHYSICSOBJECTS_H_
 
 /* 
-   Physics objects to be used in analyses
+   Physics objects to be used in analyses.
    This structure allows the Event class
    and other classes to access these objects
-   without circular inclusion (which breaks!)
+   without circular inclusion.
+   Use structs instead of classes to keep it simple
 */
-#include "TLorentzVector.h"
 #include <map>
 #include <string>
+#include "TLorentzVector.h"
 
 // base object (consistent reference to TLorentzVector)
 struct cmaBase {
@@ -63,7 +64,7 @@ struct Neutrino : cmaBase{
 };
 
 
-struct Top {
+struct LepTop {
     // Define a leptonically-decaying top quark
     TLorentzVector p4;
 
@@ -79,12 +80,76 @@ struct Top {
 };
 
 
+struct HadTop {
+    // Define a (resolved) hadronically-decaying top quark
+    TLorentzVector p4;
+
+    std::vector<Jet> jets;  // contains all associated jets
+    Jet bjet;               // if b-jet is identified
+    Jet q1;                 // if quark from W is identified
+    Jet q2;                 // if quark from W is identified
+
+    void set_p4(){
+        p4 = 0;
+        for (const auto& jet : jets)
+            p4 += jet.p4;
+    }
+};
+
+
+// ttbar system
 struct DileptonReco {
     // struct of information needed for neutrino reconstruction (AMWT)
     Lepton lepton_pos;      // positively charged lepton
     Lepton lepton_neg;      // negatively charged lepton
     TVector2 met;           // MET (stored as TVector2 for convenience)
     std::vector<Jet> jets;  // two 'b'-jets in ttbar decay
+};
+
+struct ttbarDilepton{
+    // dilepton ttbar system for dileptonTtbarReco setup
+    // formerly: Struct_KinematicReconstruction
+    // incorporated some attributes of the "TopSolution" struct
+    Lepton lepton_pos;
+    Lepton lepton_neg;
+
+    std::vector<Jet> jets;
+    std::vector<Jet> bjets;
+    Jet bJet;
+    Jet bbarJet;
+    size_t bJet_index, bbarJet_index;
+
+    TVector2 met;
+    Neutrino neutrino;
+    Neutrino neutrinoBar;
+
+    TLorentzVector Wplus;
+    TLorentzVector Wminus;
+
+    Top top;
+    Top topBar;
+    TLorentzVector ttbar;
+
+    double recMtop;
+    double weight;
+    int ntags;
+
+    double x1;
+    double x2;
+    double mtt;
+    bool isNoSmearSol;
+
+    /// Enumeration for all defined weights of a kinematic reconstruction solution
+    enum WeightType{defaultForMethod, neutrinoEnergy, averagedSumSmearings_mlb, undefinedWeight};
+    std::map<WeightType,double> mapOfWeights;
+
+    void set_ttbar(){
+        ttbar = top.p4 + topBar.p4;
+    }
+    void set_W(){
+        Wplus  = lepton_pos + neutrino;
+        Wminus = lepton_neg + neutrinoBar;
+    }
 };
 
 #endif

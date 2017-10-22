@@ -18,9 +18,7 @@ The code is based on the following two publications:
     - Irreducible Singularities circumvented exploiting Ansatz
 
 */
-#define ttdilepsolve_class_cxx
-
-#include "diHiggs/CyMiniAna/interface/MassSolver.h"
+#include "cms-ttbarAC/CyMiniAna/interface/MassSolver.h"
 
 
 MassSolver::MassSolver(configuration* config) : 
@@ -532,4 +530,4 @@ double MassSolver::evalterm2(std::vector<double> *a2, double pnux, double pnuy) 
 }
 
 
-
+// THE END

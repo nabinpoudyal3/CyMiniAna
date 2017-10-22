@@ -18,7 +18,7 @@ Included from github (https://github.com/tahuang1991/delphes/blob/master/diHiggs
 on 7 September 2017
   SHA = bb42b6158bf70678637e9b555d8f5e771783c37b
 */
-#include "diHiggs/CyMiniAna/interface/MMC.h"
+#include "cms-ttbarAC/CyMiniAna/interface/MMC.h"
 
 
 

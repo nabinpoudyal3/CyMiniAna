@@ -10,7 +10,7 @@ Texas A&M University
 
 Create and fill TTree.
 */
-#include "diHiggs/CyMiniAna/interface/miniTree.h"
+#include "cms-ttbarAC/CyMiniAna/interface/miniTree.h"
 
 
 miniTree::miniTree(configuration &cmaConfig) : 
@@ -30,15 +30,12 @@ void miniTree::initialize(TTree* t, TFile& outputFile) {
 
     m_ttree = m_oldTTree->CloneTree(0);  // clone the tree (branches) but copy no data
 
-    // setup new branches here
-//    m_dnn = 0;
-//    m_hme = 0;
-
+    /*** setup new branches here ***/
     m_ttree->Branch( "DNN", &m_dnn );
     m_ttree->Branch( "HME", &m_hme );
 
-    // or turn off branches:
-    // m_ttree->SetBranchStatus("branch_name", 0);
+    /*** disable branches here ***/
+    // m_ttree->SetBranchStatus("", 0);
 
     return;
 } // end initialize
@@ -50,7 +47,6 @@ void miniTree::saveEvent(Event& event) {
     cma::DEBUG("MINITREE : Load the entry to be saved");
     m_oldTTree->GetEntry( event.entry() );  // make sure the original values are loaded for this event
                                             // otherwise only the branches accessed in Event are copied (!?)
-
 
     // set the new values
     m_dnn = event.DNN();

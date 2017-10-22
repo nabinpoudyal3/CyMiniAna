@@ -1,5 +1,5 @@
-#ifndef TOOLS_H_
-#define TOOLS_H_
+#ifndef TOOLS_H
+#define TOOLS_H
 
 #include <memory>
 #include <vector>
@@ -17,11 +17,14 @@
 #include "TTree.h"
 #include "TKey.h"
 #include "TList.h"
+#include "TRandom.h"
 #include "TSystem.h"
 #include "TLorentzVector.h"
 #include "TTreeReader.h"
 #include "TTreeReaderValue.h"
 #include "TTreeReaderArray.h"
+
+#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
 
 namespace cma{
 
@@ -50,19 +53,9 @@ namespace cma{
     /* Convert vector of strings into a string of comma-separated elements */
     std::string vectorToStr( const std::vector<std::string> &vec );
 
-    /* Calculate the median of a vector */
-//    double median( std::vector<double> scores );
-
-    template<typename T>
-    T median( std::vector<T> scores ) {
-        /* Calculate the median for a vector of values */
-        T med;
-        std::size_t size = scores.size();
-        std::sort(scores.begin(), scores.end());
-        if (size%2 == 0){ med = (scores[size / 2 - 1] + scores[size / 2]) / 2; }
-        else{ med = scores[size / 2]; }
-        return med;
-    };
+    /* Random seed for dilepton ttbar reconstruction */
+    unsigned int setRandomNumberSeeds(const Lepton& lepton, const Lepton& antiLepton, 
+                                      const Jet& jet1, const Jet& jet2) const;
 
     /* DeltaR matching of TLorentzVectors (default deltaR=0.75) */
     bool deltaRMatch( TLorentzVector &particle1, TLorentzVector &particle2, double deltaR=0.75 );
@@ -77,6 +70,18 @@ namespace cma{
     void HELP(const std::string& runExecutable="run");
     std::map<std::string,unsigned int> verboseMap();
     void verbose(const std::string level, const std::string& message);
+
+    /* Calculate the median of a vector */
+    template<typename T>
+    T median( std::vector<T> scores ) {
+        /* Calculate the median for a vector of values */
+        T med;
+        std::size_t size = scores.size();
+        std::sort(scores.begin(), scores.end());
+        if (size%2 == 0){ med = (scores[size / 2 - 1] + scores[size / 2]) / 2; }
+        else{ med = scores[size / 2]; }
+        return med;
+    };
 }
 
 #endif

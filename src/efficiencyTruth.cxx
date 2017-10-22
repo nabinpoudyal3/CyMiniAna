@@ -1,4 +1,17 @@
-#include "diHiggs/CyMiniAna/interface/efficiencyTruth.h"
+/*
+Created:         --
+Last Updated:    16 October 2017
+
+Dan Marley
+daniel.edison.marley@cernSPAMNOT.ch
+Texas A&M University
+
+-----
+
+Make TEfficiencies for measuring efficiencies in truth information
+
+*/
+#include "cms-ttbarAC/CyMiniAna/interface/efficiencyTruth.h"
 
 efficiencyTruth::efficiencyTruth(configuration &cmaConfig) : 
   efficiency::efficiency(cmaConfig){

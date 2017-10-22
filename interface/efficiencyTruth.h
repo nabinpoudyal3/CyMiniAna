@@ -1,7 +1,7 @@
-#ifndef EFFICIENCY_TRUTH_H_
-#define EFFICIENCY_TRUTH_H_
+#ifndef EFFICIENCY_TRUTH_H
+#define EFFICIENCY_TRUTH_H
 
-#include "diHiggs/CyMiniAna/interface/efficiency.h"
+#include "cms-ttbarAC/CyMiniAna/interface/efficiency.h"
 
 class efficiencyTruth : efficiency {
   public:

@@ -27,12 +27,12 @@
 #include <unordered_set>
 #include <vector>
 
-#include "diHiggs/CyMiniAna/interface/physicsObjects.h"
-#include "diHiggs/CyMiniAna/interface/configuration.h"
-#include "diHiggs/CyMiniAna/interface/AMWT.h"
-#include "diHiggs/CyMiniAna/interface/MMC.h"
-#include "diHiggs/lwtnn/interface/LightweightNeuralNetwork.hh"
-#include "diHiggs/lwtnn/interface/parse_json.hh"
+#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/AMWT.h"
+#include "cms-ttbarAC/CyMiniAna/interface/MMC.h"
+#include "cms-ttbarAC/lwtnn/interface/LightweightNeuralNetwork.hh"
+#include "cms-ttbarAC/lwtnn/interface/parse_json.hh"
 
 
 // Event Class

@@ -12,7 +12,7 @@ Make TEfficiencies for measuring efficiencies
 https://root.cern.ch/doc/master/classTEfficiency.html
 
 */
-#include "diHiggs/CyMiniAna/interface/efficiency.h"
+#include "cms-ttbarAC/CyMiniAna/interface/efficiency.h"
 
 
 efficiency::efficiency(configuration &cmaConfig) : 

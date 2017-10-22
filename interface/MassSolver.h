@@ -19,9 +19,9 @@ Source: https://github.com/cms-ljmet/topDileptonMassAnalysis
 #include <iostream>
 #include <vector>
 
-#include "diHiggs/CyMiniAna/interface/physicsObjects.h"
-#include "diHiggs/CyMiniAna/interface/tools.h"
-#include "diHiggs/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
 
 
 

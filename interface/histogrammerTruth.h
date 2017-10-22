@@ -1,7 +1,7 @@
 #ifndef HISTOGRAMMERTRUTH_H_
 #define HISTOGRAMMERTRUTH_H_
 
-#include "diHiggs/CyMiniAna/interface/histogrammer.h"
+#include "cms-ttbarAC/CyMiniAna/interface/histogrammer.h"
 
 class histogrammerTruth : histogrammer {
 

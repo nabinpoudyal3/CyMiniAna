@@ -1,5 +1,5 @@
-#ifndef EVENTSELECTION_H_
-#define EVENTSELECTION_H_
+#ifndef EVENTSELECTION_H
+#define EVENTSELECTION_H
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -20,8 +20,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "diHiggs/CyMiniAna/interface/Event.h"
-#include "diHiggs/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
 
 class eventSelection{
 

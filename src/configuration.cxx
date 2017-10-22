@@ -1,10 +1,10 @@
 /*
 Created:        20 August    2016
-Last Updated:   20 August    2016
+Last Updated:   16 October   2017
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
+Texas A&M University
 
 -----
 
@@ -13,8 +13,7 @@ Configuration class
      to return configurations later
 
 */
-#include "diHiggs/CyMiniAna/interface/configuration.h"
-#include <stdlib.h>
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
 
 
 configuration::configuration(const std::string &configFile) : 
@@ -151,6 +150,7 @@ void configuration::initialize() {
     m_NJetSmear        = std::stoi( getConfigOption("NJetSmear") );
     m_NMassPoints      = std::stoi( getConfigOption("NMassPoints") );
     m_massMin          = std::stoi( getConfigOption("massMin") );
+    m_massMax          = std::stoi( getConfigOption("massMax") );
     m_calcWeightSystematics             = cma::str2bool( getConfigOption("calcWeightSystematics") );
     m_listOfWeightSystematicsFile       = getConfigOption("weightSystematicsFile");
     m_listOfWeightVectorSystematicsFile = getConfigOption("weightVectorSystematicsFile");
@@ -481,7 +481,7 @@ bool configuration::doTruthEventLoop(){
 }
 
 bool configuration::matchTruthToReco(){
-    /* true -- match truth events to reco events (loop over reco events)
+    /* true  -- match truth events to reco events (loop over reco events)
      * false -- match reco events to truth events (loop over truth events)
      */
     return m_matchTruthToReco;
@@ -489,6 +489,7 @@ bool configuration::matchTruthToReco(){
 
 void configuration::setMatchTruthToReco(bool truthToReco){
     m_matchTruthToReco = truthToReco;
+    return;
 }
 
 bool configuration::buildNeutrinos(){
@@ -503,6 +504,9 @@ unsigned int configuration::NMassPoints(){
 unsigned int configuration::massMin(){
     return m_massMin;
 }
+unsigned int configuration::massMax(){
+    return m_massMax;
+}
 
 double configuration::minDNN(){
     return m_minDNN;
@@ -511,4 +515,4 @@ double configuration::maxDNN(){
     return m_maxDNN;
 }
 
-// the end
+// THE END

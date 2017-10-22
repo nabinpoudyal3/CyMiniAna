@@ -12,7 +12,7 @@ Event class
 Contains all the objects (& structs) with event information
 
 */
-#include "diHiggs/CyMiniAna/interface/Event.h"
+#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
 
 // constructor
 Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
@@ -223,6 +223,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     // AMWT
     m_amwt = new AMWT(cmaConfig);
     m_amwt->initialize();
+
+    m_dileptonTtbar = new dileptonTtbarReco(cmaConfig, /*Era::Era era*/, /*int minNumberOfBtags*/, 
+                                            /*bool preferBtags*/);
 } // end constructor
 
 
@@ -546,6 +549,8 @@ void Event::initialize_neutrinos(){
     m_neutrinos.clear();
 
     if (m_buildNeutrinos){
+        buildTtbar();
+
         Neutrino nu1 = m_ttbar["top"].neutrino;
         Neutrino nu2 = m_ttbar["antitop"].neutrino;
 

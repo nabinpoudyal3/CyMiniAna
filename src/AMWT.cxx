@@ -14,7 +14,7 @@ AMWT class
     - Reconstruct the dilepton ttbar system using analytical matrix weighting technique
 
 */
-#include "diHiggs/CyMiniAna/interface/AMWT.h"
+#include "cms-ttbarAC/CyMiniAna/interface/AMWT.h"
 
 
 // Constructor
@@ -28,7 +28,7 @@ AMWT::AMWT(configuration &cmaConfig) :
     m_topQuarkMass = m_config->topQuarkMass();
     m_bQuarkMass   = m_config->bQuarkMass();
     m_WMass        = m_config->WMass();
-    m_NJetSmear    = m_config->NJetSmear();           // 500
+    m_NJetSmear    = m_config->NJetSmear();   // 500
     m_doGaussian   = false; // not used: m_config->doGaussianResolution();  // false
 
     m_top     = {};

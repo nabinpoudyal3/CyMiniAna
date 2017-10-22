@@ -1,5 +1,5 @@
-#ifndef CONFIGURATION_H_
-#define CONFIGURATION_H_
+#ifndef CONFIGURATION_H
+#define CONFIGURATION_H
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -10,7 +10,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "diHiggs/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
 
 
 class configuration {
@@ -106,6 +106,7 @@ class configuration {
     unsigned int NJetSmear();
     unsigned int NMassPoints();
     unsigned int massMin();
+    unsigned int massMax();
 
     float beamEnergy() {return m_beamEnergy;}           // 13000.;
     double topQuarkMass() {return m_topQuarkMass;}      // 172.5
@@ -203,6 +204,7 @@ class configuration {
     unsigned int m_NJetSmear;    // 500
     unsigned int m_NMassPoints;  // 500
     unsigned int m_massMin;      // 100
+    unsigned int m_massMax;      // 300
 
     std::map<std::string,std::string> m_defaultConfigs = {
              {"useJets",               "true"},
@@ -237,7 +239,8 @@ class configuration {
              {"buildNeutrinos",        "true"},
              {"NJetSmear",             "500"},
              {"NMassPoints",           "1"},
-             {"massMin",               "172.5"} };
+             {"massMin",               "172"},
+             {"massMax",               "301"} };
 };
 
 #endif

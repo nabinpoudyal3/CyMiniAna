@@ -11,7 +11,7 @@ University of Michigan, Ann Arbor, MI 48109
 Common tools needed
 
 */
-#include "diHiggs/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
 
 namespace cma{
 
@@ -220,24 +220,19 @@ std::string vectorToStr( const std::vector<std::string> &vec ){
 }
 
 
-//template typename median<int>;
-//template typename median<float>;
-//template typename median<double>;
-/*
-double median(std::vector<double> scores) {
-    // Calculate the median for a vector of values //
-    double med;
-    std::size_t size = scores.size();
-    std::sort(scores.begin(), scores.end());
+unsigned int setRandomNumberSeeds(const Lepton& lepton, const Lepton& antiLepton, 
+                                  const Jet& jet1, const Jet& jet2) const {
+    /* 
+       Asymmetric treatment of both jets, and also both leptons, 
+       to ensure different seed for each combination in dileptonTtbarReco
+    */
+    unsigned int seed = static_cast<int>( 1.e6 * (jet1.p4.Pt()/jet2.p4.Pt()) * 
+                                          std::sin((lepton.p4.Pt() + 2.*antiLepton.p4.Pt()) * 1.e6) );
+    gRandom->SetSeed(seed);
 
-    if (size%2 == 0)
-        med = (scores[size / 2 - 1] + scores[size / 2]) / 2;
-    else 
-        med = scores[size / 2];
-
-    return med;
+    return seed;
 }
-*/
+
 
 bool deltaRMatch( TLorentzVector &particle1, TLorentzVector &particle2, double deltaR ){
     /* Do the deltaR calculation (in one place) */
@@ -319,11 +314,32 @@ void HELP(const std::string& runExecutable){
     std::cout << "   a few histograms or efficiencies, and make plots.\n" << std::endl;
 
     std::cout << "   To run:" << std::endl;
-    std::cout << "      ./" << runExecutable << " share/cmaConfig.txt \n" << std::endl;
-    std::cout << "    where 'share/cmaConfig.txt' is the configuration file \n" << std::endl;
+    std::cout << "      ./" << runExecutable << " <config> \n" << std::endl;
+    std::cout << "    where <config> is the configuration text file \n" << std::endl;
 
     return;
 }
+
+
+//template typename median<int>;
+//template typename median<float>;
+//template typename median<double>;
+/*
+double median(std::vector<double> scores) {
+    // Calculate the median for a vector of values //
+    double med;
+    std::size_t size = scores.size();
+    std::sort(scores.begin(), scores.end());
+
+    if (size%2 == 0)
+        med = (scores[size / 2 - 1] + scores[size / 2]) / 2;
+    else 
+        med = scores[size / 2];
+
+    return med;
+}
+*/
+
 
 } // end namespace
 
