@@ -21,13 +21,11 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
   m_treeName("SetMe"),
   m_lwnn(nullptr),
   m_DNN(0.0),
-  m_HME(0.0),
   m_amwt(nullptr){
     m_isMC     = m_config->isMC();
     m_grid     = m_config->isGridFile();             // file directly from original analysis team
     m_treeName = m_ttree.GetTree()->GetName();       // for systematics
     m_getDNN   = m_config->getDNN();                 // build DNN
-    m_getHME   = m_config->getHME();                 // build HME
     m_buildNeutrinos = m_config->buildNeutrinos();   // build the neutrinos using AMWT
 
     m_cMVAv2L = m_config->cMVAv2L();
@@ -67,21 +65,21 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     }
 
     if (m_config->useJets()){
-        m_jet1_pt      = new TTreeReaderValue<float>(m_ttree,"jet1_pt");
-        m_jet1_eta     = new TTreeReaderValue<float>(m_ttree,"jet1_eta");
-        m_jet1_phi     = new TTreeReaderValue<float>(m_ttree,"jet1_phi");
-        m_jet1_cMVAv2  = new TTreeReaderValue<float>(m_ttree,"jet1_cMVAv2");
-        m_jet2_pt      = new TTreeReaderValue<float>(m_ttree,"jet2_pt");
-        m_jet2_eta     = new TTreeReaderValue<float>(m_ttree,"jet2_eta");
-        m_jet2_phi     = new TTreeReaderValue<float>(m_ttree,"jet2_phi");
-        m_jet2_cMVAv2  = new TTreeReaderValue<float>(m_ttree,"jet2_cMVAv2");
+      m_jet1_pt      = new TTreeReaderValue<float>(m_ttree,"jet1_pt");
+      m_jet1_eta     = new TTreeReaderValue<float>(m_ttree,"jet1_eta");
+      m_jet1_phi     = new TTreeReaderValue<float>(m_ttree,"jet1_phi");
+      m_jet1_cMVAv2  = new TTreeReaderValue<float>(m_ttree,"jet1_cMVAv2");
+      m_jet2_pt      = new TTreeReaderValue<float>(m_ttree,"jet2_pt");
+      m_jet2_eta     = new TTreeReaderValue<float>(m_ttree,"jet2_eta");
+      m_jet2_phi     = new TTreeReaderValue<float>(m_ttree,"jet2_phi");
+      m_jet2_cMVAv2  = new TTreeReaderValue<float>(m_ttree,"jet2_cMVAv2");
 
-        m_nJetsL       = new TTreeReaderValue<float>(m_ttree,"nJetsL");
-        m_jjbtag_heavy = new TTreeReaderValue<float>(m_ttree,"jjbtag_heavy");
-        m_jjbtag_light = new TTreeReaderValue<float>(m_ttree,"jjbtag_light");
-        m_jj_DR_j_j    = new TTreeReaderValue<float>(m_ttree,"jj_DR_j_j");
-        m_jj_pt        = new TTreeReaderValue<float>(m_ttree,"jj_pt");
-        m_jj_M         = new TTreeReaderValue<float>(m_ttree,"jj_M");
+      m_nJetsL       = new TTreeReaderValue<float>(m_ttree,"nJetsL");
+      m_jjbtag_heavy = new TTreeReaderValue<float>(m_ttree,"jjbtag_heavy");
+      m_jjbtag_light = new TTreeReaderValue<float>(m_ttree,"jjbtag_light");
+      m_jj_DR_j_j    = new TTreeReaderValue<float>(m_ttree,"jj_DR_j_j");
+      m_jj_pt        = new TTreeReaderValue<float>(m_ttree,"jj_pt");
+      m_jj_M         = new TTreeReaderValue<float>(m_ttree,"jj_M");
 /*
       m_jet_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree,"jet_pt" );
       m_jet_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"jet_eta" );
@@ -198,17 +196,6 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 */
     } // end isMC
     m_truth_entry = 0;
-
-
-    // HME material (TBD)
-    if (m_getHME){
-        m_mmc_hme = new MMC(cmaConfig);
-        m_mmc_hme->initialize();
-    }
-    else if (!m_getHME && !m_grid)
-        m_hme_h2mass_reco = new TTreeReaderValue<float>(m_ttree,"hme_h2mass_reco");
-    else
-        m_HME = 0.0;
 
     // DNN material
     bool useDNN(false);
@@ -358,23 +345,13 @@ void Event::execute(Long64_t entry){
     cma::DEBUG("EVENT : Setup kinematic variables ");
 
     getDilepton();
-    cma::DEBUG("EVENT : Setup the dilepton struct ");
+    cma::DEBUG("EVENT : Setup the dilepton struct. ");
 
     // Neutrinos
     if (m_config->useNeutrinos()){
         // Need ALL other information from the event to do this
         initialize_neutrinos();
         cma::DEBUG("EVENT : Setup neutrinos ");
-    }
-
-    // HME && DNN
-    if (m_getHME){
-        cma::DEBUG("EVENT : Calculate HME ");
-        getHME();
-    }
-    else{
-        // load from ntuple
-        m_HME = *(*m_hme_h2mass_reco);
     }
 
     if (m_getDNN){
@@ -401,8 +378,8 @@ void Event::initialize_truth(){
 void Event::initialize_jets(){
     /* Setup struct of jets (small-r) and relevant information 
      * b-tagging: https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco
-        cMVAv2L -0.5884	
-        cMVAv2M 0.4432	 	 
+        cMVAv2L -0.5884    
+        cMVAv2M 0.4432          
         cMVAv2T 0.9432
      */
     m_jets.resize( **m_nJetsL );   // (*m_jet_pt)->size());
@@ -609,7 +586,7 @@ void Event::getDilepton(){
     // set dilepton struct
     m_dilepton = {};             // struct of information needed to build neutrinos
 
-    // leptons
+    // Leptons
     Lepton lepton_p;
     Lepton lepton_n;
     if (m_leptons.at(0).charge > 0){
@@ -630,11 +607,12 @@ void Event::getDilepton(){
     dilep_met.SetY( m_metmet*sin(m_metphi) );
     m_dilepton.met = dilep_met;
 
-    // Jets (only two 'b'-jets at this time)
+    // Jets (only two 'b'-jets available at this time)
     std::vector<Jet> dilep_jets;
     dilep_jets.push_back(m_jets.at(0));
     dilep_jets.push_back(m_jets.at(1));
-    m_dilepton.jets = dilep_jets;
+    m_dilepton.jets  = m_jets;
+    m_dilepton.bjets = dilep_jets;
 
     cma::DEBUG("EVENT : Dilepton");
     cma::DEBUG("EVENT : met    = "+std::to_string(m_metmet));
@@ -647,7 +625,8 @@ void Event::getDilepton(){
 
 void Event::buildTtbar(){
     /* Build ttbar dilepton system */
-    m_ttbar = m_amwt->findMass(m_dilepton);
+    //m_ttbar = m_amwt->findMass(m_dilepton);
+    m_ttbar = m_dileptonTtbar->execute(m_dilepton);
 
     return;
 }
@@ -677,22 +656,6 @@ void Event::getDNN(){
 double Event::DNN(){
     /* Return the DNN value */
     return m_DNN;
-}
-
-
-void Event::getHME(){
-    /* Algorithm for Heavy Mass Estimator from Luca & Tao (their paper) */
-    m_mmc_hme->execute( m_entry,m_dilepton );
-    TH1F h_hme   = (TH1F)m_mmc_hme->getMMCh2();
-    m_HME = (h_hme.GetXaxis())->GetBinCenter(h_hme.GetMaximumBin());
-
-    return;
-}
-
-
-double Event::HME(){
-    /* Return the HME value */
-    return m_HME;
 }
 
 
@@ -1025,7 +988,7 @@ void Event::finalize(){
     cma::DEBUG("EVENT : Finalize() ");
     delete m_lwnn;
     delete m_amwt;
-    delete m_mmc_hme;
+    delete m_dileptonTtbar;
     delete m_eventNumber;
     delete m_runNumber;
 //    delete m_mcChannelNumber;
@@ -1104,8 +1067,6 @@ void Event::finalize(){
     delete m_met_met;
     delete m_met_phi;
     delete m_ht;
-    if (!m_getHME && !m_grid)
-        delete m_hme_h2mass_reco;
 
 /*
     delete m_treeXSection;

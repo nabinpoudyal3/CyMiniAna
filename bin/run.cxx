@@ -1,6 +1,6 @@
 /*
 Created:        --
-Last Updated:   20 August    2017
+Last Updated:   22 October    2017
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -32,13 +32,13 @@ Basic steering macro for running CyMiniAna
 #include <string>
 #include <math.h>
 
-#include "diHiggs/CyMiniAna/interface/configuration.h"
-#include "diHiggs/CyMiniAna/interface/Event.h"
-#include "diHiggs/CyMiniAna/interface/eventSelection.h"
-#include "diHiggs/CyMiniAna/interface/miniTree.h"
-#include "diHiggs/CyMiniAna/interface/tools.h"
-#include "diHiggs/CyMiniAna/interface/histogrammer.h"
-#include "diHiggs/CyMiniAna/interface/efficiency.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
+#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
+#include "cms-ttbarAC/CyMiniAna/interface/miniTree.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/histogrammer.h"
+#include "cms-ttbarAC/CyMiniAna/interface/efficiency.h"
 
 
 int main(int argc, char** argv) {
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    unsigned int maxEntriesToRun(0);     // maximum number of entries in TTree
+    unsigned long long maxEntriesToRun(0);     // maximum number of entries in TTree
     unsigned int numberOfEventsToRun(0); // number of events to run
     bool passEvent(false);   // event passed selection
     bool isMC(false);      // Running over MC file
@@ -57,8 +57,9 @@ int main(int argc, char** argv) {
     configuration config(argv[1]);                         // configuration file
     config.initialize();
 
-    int p_nEvents       = config.nEventsToProcess(); // requested number of events to run
+    int nEvents         = config.nEventsToProcess(); // requested number of events to run
     std::string outpath = config.outputFilePath();   // directory for output files
+    unsigned long long firstEvent      = config.firstEvent();       // first event to begin running over
     std::vector<std::string> filenames = config.filesToProcess();
     std::vector<std::string> treenames = config.treeNames();
     std::string selection(config.selection());
@@ -177,25 +178,29 @@ int main(int argc, char** argv) {
             if (makeNewFile)
                 miniTTree.initialize( myReader.GetTree(), *outputFile );
 
-            // -- Number of Entries -- //
+            // -- Number of Entries to Process -- //
             maxEntriesToRun = myReader.GetEntries(true);
             if (maxEntriesToRun<1) // skip files with no entries
                 continue;
 
-            if (p_nEvents < 0 || (unsigned int)p_nEvents > maxEntriesToRun)
-                numberOfEventsToRun = maxEntriesToRun;
+            if (nEvents < 0 || ((unsigned int)nEvents+firstEvent) > maxEntriesToRun)
+                numberOfEventsToRun = maxEntriesToRun - firstEvent;
             else
-                numberOfEventsToRun = p_nEvents;
+                numberOfEventsToRun = nEvents;
 
             // -- Event Loop -- //
             Long64_t imod = 1;                     // print to the terminal
             Event event = Event(myReader, config);
 
-            Long64_t entry = 0;
+            Long64_t eventCounter = 0;    // counting the events processed
+            Long64_t entry = firstEvent;  // start at a different event!
             while (myReader.Next()) {
 
-                if (entry+1 > numberOfEventsToRun)
+                if (eventCounter+1 > numberOfEventsToRun){
+                    cma::INFO("RUN : Processed the desired number of events: "+std::to_string(eventCounter)+"/"+std::to_string(numberOfEventsToRun));
                     break;
+                }
+
                 if (entry%imod==0){
                     cma::INFO("RUN :       Processing event "+std::to_string(entry) );
                     if(imod<2e4) imod *=10;
@@ -221,7 +226,9 @@ int main(int argc, char** argv) {
                     if (makeEfficiencies)  effMaker.fill( event );
                 }
 
+                // iterate the entry and number of events processed
                 ++entry;
+                ++eventCounter;
             } // end event loop
 
             event.finalize();

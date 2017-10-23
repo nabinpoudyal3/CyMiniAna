@@ -192,6 +192,7 @@ class Event {
 
     AMWT* m_amwt;
     MMC* m_mmc_hme;
+    dileptonTtbarReco* m_dileptonTtbar;
     std::map<std::string,Top> m_ttbar;
     DileptonReco m_dilepton;
 

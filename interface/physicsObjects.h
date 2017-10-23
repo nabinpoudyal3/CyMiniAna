@@ -103,23 +103,18 @@ struct DileptonReco {
     Lepton lepton_pos;      // positively charged lepton
     Lepton lepton_neg;      // negatively charged lepton
     TVector2 met;           // MET (stored as TVector2 for convenience)
-    std::vector<Jet> jets;  // two 'b'-jets in ttbar decay
-};
-
-struct ttbarDilepton{
-    // dilepton ttbar system for dileptonTtbarReco setup
-    // formerly: Struct_KinematicReconstruction
-    // incorporated some attributes of the "TopSolution" struct
-    Lepton lepton_pos;
-    Lepton lepton_neg;
-
-    std::vector<Jet> jets;
-    std::vector<Jet> bjets;
+    std::vector<Jet> jets;  // jets in event
+    std::vector<Jet> bjets; // two 'b'-jets in ttbar decay
     Jet bJet;
     Jet bbarJet;
     size_t bJet_index, bbarJet_index;
+};
 
-    TVector2 met;
+struct ttbarDilepton : DileptonReco {
+    /* dilepton ttbar system for dileptonTtbarReco setup
+       formerly: Struct_KinematicReconstruction
+       incorporated some attributes of the "TopSolution" struct
+    */
     Neutrino neutrino;
     Neutrino neutrinoBar;
 

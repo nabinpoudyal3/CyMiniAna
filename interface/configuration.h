@@ -70,6 +70,7 @@ class configuration {
     std::string configFileName();
     std::string getAbsolutePath();
     int nEventsToProcess();
+    unsigned long long firstEvent();
     bool makeNewFile();
     bool makeHistograms();
     bool makeEfficiencies();
@@ -113,6 +114,13 @@ class configuration {
     double bQuarkMass() {return m_bQuarkMass;}          // 4.18
     double WMass() {return m_WMass;}                    // 80.2
 
+    /// All analysis eras as needed
+    enum Era{run2_13tev_25ns,     run2_13tev_2015_25ns, run2_13tev_2016_25ns, 
+             run2_13tev_25ns_74X, undefined};
+    Era convert(const TString& era);       /// Convert an era from string to enum
+    std::string convert(const Era& era);   /// Convert an era from enum to string
+    double energyInTev(const Era era) {return 13.;}     /// Return energy for given era in TeV
+
   protected:
 
     void check_btag_WP(const std::string &wkpt);
@@ -144,6 +152,7 @@ class configuration {
     std::string m_filename;
     std::string m_verboseLevel;
     int m_nEventsToProcess;
+    unsigned long long m_firstEvent;
     std::string m_outputFilePath;
     std::string m_customFileEnding;
     bool m_makeNewFile;
@@ -183,9 +192,6 @@ class configuration {
     std::map<unsigned int, float> m_KFactor;  // map DSID to KFactor
     std::map<unsigned int, float> m_AMI;      // map DSID to sum of weights
 
-    std::vector<std::string> m_qcdSelections = {"0b0t","0b1t","0b2t","1b0t",
-                                                "1b1t","1b2t","2b0t","2b1t", "2b2t"};
-
     double m_minDNN  = 0.0;   // min. value in the DNN discriminant
     double m_maxDNN  = 1.0;   // max. value in the DNN discriminant
 
@@ -218,6 +224,7 @@ class configuration {
              {"makeHistograms",        "true"},
              {"makeEfficiencies",      "true"},
              {"NEvents",               "-1"},
+             {"firstEvent",            "0"},
              {"input_selection",       "grid"},
              {"selection",             "example"},
              {"output_path",           "./"},

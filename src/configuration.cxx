@@ -33,6 +33,7 @@ configuration::configuration(const std::string &configFile) :
   m_filename("SetMe"),
   m_verboseLevel("SetMe"),
   m_nEventsToProcess(0),
+  m_firstEvent(0),
   m_outputFilePath("SetMe"),
   m_customFileEnding("SetMe"),
   m_makeNewFile(false),
@@ -119,6 +120,7 @@ void configuration::initialize() {
 
     // Assign values
     m_nEventsToProcess = std::stoi(getConfigOption("NEvents"));
+    m_firstEvent       = std::stoi(getConfigOption("firstEvent"));
     m_input_selection  = getConfigOption("input_selection"); // "grid", "pre", etc.
     m_selection        = getConfigOption("selection");
 
@@ -374,6 +376,31 @@ void configuration::check_btag_WP(const std::string &wkpt){
     return;
 }
 
+Era::Era configuration::convert(const std::string& era) {
+    /* Convert string to era enum */
+    if(era == "run2_13tev_25ns") return run2_13tev_25ns;
+    else if(era == "run2_13tev_2015_25ns") return run2_13tev_2015_25ns;
+    else if(era == "run2_13tev_2016_25ns") return run2_13tev_2016_25ns;
+    else if(era == "run2_13tev_25ns_74X") return run2_13tev_25ns_74X;
+    else {
+        cma::ERROR("CONFIGURATION : ERA convert conversion is not implemented: "+era);
+        exit(97);
+    }
+}
+
+
+std::string configuration::convert(const Era& era) {
+    /* Convert era to string */
+    if(era == run2_13tev_25ns) return "run2_13tev_25ns";
+    else if(era == run2_13tev_2015_25ns) return "run2_13tev_2015_25ns";
+    else if(era == run2_13tev_2016_25ns) return "run2_13tev_2016_25ns";
+    else if(era == run2_13tev_25ns_74X) return "run2_13tev_25ns_74X";
+    else{
+        cma::ERROR("CONFIGURATION : ERA convert conversion is not implemented: "+std::to_string(era));
+        exit(97);
+    }
+}
+
 bool configuration::useJets(){
     return m_useJets;
 }
@@ -412,6 +439,10 @@ std::string configuration::jet_btagWkpt(){
 
 int configuration::nEventsToProcess(){
     return m_nEventsToProcess;
+}
+
+unsigned long long configuration::firstEvent(){
+    return m_firstEvent;
 }
 
 std::string configuration::outputFilePath(){
