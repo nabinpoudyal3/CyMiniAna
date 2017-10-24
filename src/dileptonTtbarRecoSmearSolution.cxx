@@ -43,13 +43,12 @@ void dileptonTtbarRecoMeanSolution::clear() {
 
 
 
-void dileptonTtbarRecoMeanSolution::add(const Top& top, const Top& topbar, 
-                                        const Neutrino& n, const Neutrino& nbar,
+void dileptonTtbarRecoMeanSolution::Add(const std::vector<ttbarDilepton> ttSolution, 
                                         const double& weight, const double& mbl_weight){
-    m_tops.push_back(top);
-    m_topbars.push_back(topbar);
-    m_ns.push_back(n);
-    m_nbars.push_back(nbar);
+    m_tops.push_back(ttSolution.top);
+    m_topbars.push_back(ttSolution.topBar);
+    m_ns.push_back(ttSolution.neutrino);
+    m_nbars.push_back(ttSolution.neutrinoBar);
     m_weight.push_back(weight);
 
     m_sum_weight     += weight;
@@ -59,13 +58,12 @@ void dileptonTtbarRecoMeanSolution::add(const Top& top, const Top& topbar,
 }
 
 
-void dileptonTtbarRecoMeanSolution::add(const Top& top, const Top& topbar, 
-                                        const Neutrino& n, const Neutrino& nbar,
+void dileptonTtbarRecoMeanSolution::Add(const std::vector<ttbarDilepton> ttSolution, 
                                         const double& weight){
-    m_tops.push_back(top);
-    m_topbars.push_back(topbar);
-    m_ns.push_back(n);
-    m_nbars.push_back(nbar);
+    m_tops.push_back(ttSolution.top);
+    m_topbars.push_back(ttSolution.topBar);
+    m_ns.push_back(ttSolution.neutrino);
+    m_nbars.push_back(ttSolution.neutrinoBar);
     m_weight.push_back(weight);
 
     m_sum_weight     += weight;
@@ -106,10 +104,10 @@ void dileptonTtbarRecoMeanSolution::getMeanSol(Top& top, Top& topbar, Neutrino& 
     /* Get the average four-vector for tops/neutrinos
        Return the top, tobar, n, nbar back to the user that called this function
     */
-    this->getMeanVect(top,   m_tops,   m_mass_top);
-    this->getMeanVect(topbar,m_topbars,m_mass_top);
-    this->getMeanVect(n,   m_ns,   0);
-    this->getMeanVect(nbar,m_nbars,0);
+    getMeanVect(top,   m_tops,   m_mass_top);
+    getMeanVect(topbar,m_topbars,m_mass_top);
+    getMeanVect(n,   m_ns,   0);
+    getMeanVect(nbar,m_nbars,0);
 
     return;
 }

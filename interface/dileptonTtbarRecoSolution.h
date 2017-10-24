@@ -7,15 +7,15 @@
 
 
 
-class dileptonTtbarRecoSolutions{
+class dileptonTtbarRecoSolution{
 
   public:
 
     /// Empty constructor
-    dileptonTtbarRecoSolutions();
+    dileptonTtbarRecoSolution();
 
     /// Destructor
-    ~dileptonTtbarRecoSolutions(){}
+    ~dileptonTtbarRecoSolution(){}
 
 
     /// Add a vector of solutions
@@ -51,7 +51,7 @@ class dileptonTtbarRecoSolutions{
 
 
     /// Vector containing all solutions
-    std::vector<dileptonTtbarRecoSolution> v_solution_;
+    std::vector<ttbarDilepton> v_solution_;
 
     /// Vector containing indices of the solutions with 2 b-tags stored in v_solution_
     std::vector<size_t> v_solutionTwoBtags_;
@@ -64,16 +64,16 @@ class dileptonTtbarRecoSolutions{
 
 
     /// Map associating specific weight type to vector containing indices of all solutions, ordered for this weight
-    std::map<dileptonTtbarRecoSolution::WeightType, std::vector<size_t>> m_weightIndex_;
+    std::map<ttbarDilepton::WeightType, std::vector<size_t>> m_weightIndex_;
 
     /// Map associating specific weight type to vector containing indices of 2 b-tag solutions, ordered for this weight
-    std::map<dileptonTtbarRecoSolution::WeightType, std::vector<size_t>> m_weightIndexTwoBtags_;
+    std::map<ttbarDilepton::WeightType, std::vector<size_t>> m_weightIndexTwoBtags_;
 
     /// Map associating specific weight type to vector containing indices of 1 b-tag solutions, ordered for this weight
-    std::map<dileptonTtbarRecoSolution::WeightType, std::vector<size_t>> m_weightIndexOneBtag_;
+    std::map<ttbarDilepton::WeightType, std::vector<size_t>> m_weightIndexOneBtag_;
 
     /// Map associating specific weight type to vector containing indices of 0 b-tag solutions, ordered for this weight
-    std::map<dileptonTtbarRecoSolution::WeightType, std::vector<size_t>> m_weightIndexNoBtags_;
+    std::map<ttbarDilepton::WeightType, std::vector<size_t>> m_weightIndexNoBtags_;
 };
 
 #endif

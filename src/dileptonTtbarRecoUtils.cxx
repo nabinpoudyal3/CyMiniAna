@@ -48,12 +48,12 @@ void dileptonTtbarRecoUtils::fDelete() const {
 }
 
 
-void dileptonTtbarRecoUtils::setTrueInfo(const Top& Top, const Top& AntiTop, 
-                                         const Neutrino& Neutrino, const Neutrino& AntiNeutrino) {
-    m_true_top         = Top;  
-    m_true_topbar      = AntiTop;  
-    m_true_neutrino    = Neutrino;  
-    m_true_neutrinobar = AntiNeutrino);  
+void dileptonTtbarRecoUtils::setTruthInfo(const Top& top, const Top& antiTop, 
+                                          const Neutrino& neutrino, const Neutrino& antiNeutrino) {
+    m_true_top         = top;
+    m_true_topbar      = antiTop;
+    m_true_neutrino    = neutrino;
+    m_true_neutrinobar = antiNeutrino);
 
     filldR();
     filldN();
@@ -162,7 +162,7 @@ void dileptonTtbarRecoUtils::execute(const Lepton& LV_al,
     m_px_miss = missPx;
     m_py_miss = missPy;
 
-    this->execute();
+    execute();
 
     return;
 }
@@ -170,13 +170,13 @@ void dileptonTtbarRecoUtils::execute(const Lepton& LV_al,
 
 void dileptonTtbarRecoUtils::execute() {
     /* Run the algorithm */
-    this->findCoeff(coeffs_);
-    this->quartic_equation(coeffs_[0],coeffs_[1],coeffs_[2],coeffs_[3],coeffs_[4],vect_pxv_);
+    findCoeff(coeffs_);
+    quartic_equation(coeffs_[0],coeffs_[1],coeffs_[2],coeffs_[3],coeffs_[4],vect_pxv_);
 
     // loop over solutions
     for(int i=1;i<=vect_pxv_[0];++i) {
 
-        this->topRec(vect_pxv_[i]);     // assign values for objects
+        topRec(vect_pxv_[i]);     // assign values for objects
 
         ttbarDilepton TS_temp;
 
@@ -199,7 +199,7 @@ void dileptonTtbarRecoUtils::execute() {
     m_NSol = m_ttSol.size();  // should be the same as vect_pxv_[0]?
 
     if(m_NSol>0)
-        this->sortTopSol(m_ttSol);
+        sortTopSol(m_ttSol);
 
     return;
 }
@@ -237,12 +237,12 @@ void dileptonTtbarRecoUtils::topRec(const double& px_neutrino) {
     m_top.lepton   = m_al;
     m_top.neutrino = m_neutrino;
     m_top.jet      = m_b;
-    m_top.set_p4();
+    m_top.set_p4_lep();
 
     m_topbar.lepton   = m_l;
     m_topbar.neutrino = m_neutrinobar;
     m_topbar.jet      = m_bbar;
-    m_topbar.set_p4();
+    m_topbar.set_p4_lep();
 
     m_tt = m_top.p4 + m_topbar.p4;
 

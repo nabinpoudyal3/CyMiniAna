@@ -64,32 +64,28 @@ struct Neutrino : cmaBase{
 };
 
 
-struct LepTop {
-    // Define a leptonically-decaying top quark
+struct Top {
+    // Define a top quark
     TLorentzVector p4;
 
+    // leptonically-decaying top quark aspects
     Lepton lepton;
     Jet jet;
     Neutrino neutrino;
     float weight;       // reconstruction weight
     float weight_ES;    // reconstruction weight (EventShape)
 
-    void set_p4(){
+    void set_p4_lep(){
         p4 = lepton.p4 + jet.p4 + neutrino.p4;
     }
-};
 
-
-struct HadTop {
-    // Define a (resolved) hadronically-decaying top quark
-    TLorentzVector p4;
-
+    // Resolved hadronically-decaying top quark
     std::vector<Jet> jets;  // contains all associated jets
     Jet bjet;               // if b-jet is identified
     Jet q1;                 // if quark from W is identified
     Jet q2;                 // if quark from W is identified
 
-    void set_p4(){
+    void set_p4_had(){
         p4 = 0;
         for (const auto& jet : jets)
             p4 += jet.p4;

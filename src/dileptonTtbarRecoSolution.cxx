@@ -19,10 +19,10 @@ Texas A&M University
 #include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
 
 
-dileptonTtbarRecoSolutions::dileptonTtbarRecoSolutions() {}
+dileptonTtbarRecoSolution::dileptonTtbarRecoSolution() {}
 
 
-void dileptonTtbarRecoSolutions::Add(const std::vector<ttbarDilepton>& solutions) {
+void dileptonTtbarRecoSolution::Add(const std::vector<ttbarDilepton>& solutions) {
     /* Add solution to vector of solutions */
     for(const auto& solution : solutions) 
         this->Add(solution);
@@ -31,10 +31,10 @@ void dileptonTtbarRecoSolutions::Add(const std::vector<ttbarDilepton>& solutions
 }
 
 
-void dileptonTtbarRecoSolutions::Add(const ttbarDilepton& solution) {
+void dileptonTtbarRecoSolution::Add(const ttbarDilepton& solution) {
     // Initialise all maps of weight-ordered solution indices, in first solution only
     if(!m_weightIndex_.size()){
-        for(const auto weightTypeWeight : solution.weightMap()){
+        for(const auto weightTypeWeight : solution.mapOfWeights){
             const auto weightType = weightTypeWeight.first;
             m_weightIndex_[weightType] = std::vector<size_t>();
             m_weightIndexTwoBtags_[weightType] = std::vector<size_t>();
@@ -71,17 +71,17 @@ void dileptonTtbarRecoSolutions::Add(const ttbarDilepton& solution) {
 
     // Fill for each weight type the indices of solutions, ordered for the weight
     for(const auto weightTypeWeight : solution.weightMap()){
-        const dileptonTtbarRecoSolution::WeightType weightType = weightTypeWeight.first;
+        const ttbarDilepton::WeightType weightType = weightTypeWeight.first;
         const double weight = weightTypeWeight.second;
-        this->insertIndex(solutionIndex, weight, m_weightIndex_.at(weightType));
-        this->insertIndexByCategory(*v_solutionByCategory, weight, m_weightIndexByCategory->at(weightType));
+        insertIndex(solutionIndex, weight, m_weightIndex_.at(weightType));
+        insertIndexByCategory(*v_solutionByCategory, weight, m_weightIndexByCategory->at(weightType));
     }
 
     return;
 }
 
 
-void dileptonTtbarRecoSolutions::insertIndex(const size_t solutionIndex,
+void dileptonTtbarRecoSolution::insertIndex(const size_t solutionIndex,
                                              const double weight, 
                                              std::vector<size_t>& v_index) const {
     if(!v_index.size()){
@@ -104,7 +104,7 @@ void dileptonTtbarRecoSolutions::insertIndex(const size_t solutionIndex,
 }
 
 
-void dileptonTtbarRecoSolutions::insertIndexByCategory(const std::vector<size_t>& v_solutionIndex,
+void dileptonTtbarRecoSolution::insertIndexByCategory(const std::vector<size_t>& v_solutionIndex,
                                                        const double weight, 
                                                        std::vector<size_t>& v_solutionIndexByCategory) const {
     const size_t solutionIndexByCategory = std::distance(v_solutionIndex.begin(), v_solutionIndex.end()) - 1;
@@ -129,7 +129,7 @@ void dileptonTtbarRecoSolutions::insertIndexByCategory(const std::vector<size_t>
 }
 
 
-size_t dileptonTtbarRecoSolutions::numberOfSolutions(const int nBtags) const {
+size_t dileptonTtbarRecoSolution::numberOfSolutions(const int nBtags) const {
     /* Return the number of solutions for particular number of b-tags */
     size_t n_btag_soln = 0;
     if (nBtags==0){
@@ -150,7 +150,7 @@ size_t dileptonTtbarRecoSolutions::numberOfSolutions(const int nBtags) const {
 }
 
 
-const ttbarDilepton& dileptonTtbarRecoSolutions::solution(const ttbarDilepton::WeightType weightType,
+const ttbarDilepton& dileptonTtbarRecoSolution::solution(const ttbarDilepton::WeightType weightType,
                                                           const size_t solutionNumber) const {
      /* Return particular solution */
     const size_t index = m_weightIndex_.at(weightType).at(solutionNumber);
@@ -158,7 +158,7 @@ const ttbarDilepton& dileptonTtbarRecoSolutions::solution(const ttbarDilepton::W
 }
 
 
-const ttbarDilepton& dileptonTtbarRecoSolutions::solution(const ttbarDilepton::WeightType weightType,
+const ttbarDilepton& dileptonTtbarRecoSolution::solution(const ttbarDilepton::WeightType weightType,
                                                           const size_t solutionNumber,
                                                           const int nBtags) const {
      /* Return particular solution for specific number of b-tags */

@@ -40,10 +40,11 @@ class dileptonTtbarRecoUtils{
     int getNsol() const;
     const std::vector<ttbarDilepton>* getTtSol() const;
 
-    void setTrueInfo(const Top& Top, const Top& AntiTop,
-                     const Neutrino& Neutrino, const Neutrino& AntiNeutrino);
+    /* Assign truth information */
+    void setTruthInfo(const Top& top, const Top& antiTop,
+                      const Neutrino& neutrino, const Neutrino& antiNeutrino);
 
-    void sortBy(std::string ch);
+    void sortBy(std::string ch);  // re-arrange the vector based on a different metric
     
     void angle_rot(const double& alpha, const double& e, const Jet& inJet, Jet& jet_sm) const;
 
