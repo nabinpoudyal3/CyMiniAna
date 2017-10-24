@@ -148,19 +148,14 @@ const std::vector<ttbarDilepton> dileptonTtbarRecoUtils::getTtSol() const {
 }
 
 
-void dileptonTtbarRecoUtils::execute(const Lepton& LV_al, 
-                                     const Lepton& LV_l, 
-                                     const Jet& LV_b, 
-                                     const Jet& LV_bbar, 
-                                     const double& missPx, 
-                                     const double& missPy) {
+void dileptonTtbarRecoUtils::execute(const DileptonReco& ttSystem) {
     /* Set the objects and then solve! */
-    m_l    = LV_l;
-    m_al   = LV_al;
-    m_b    = LV_b;
-    m_bbar = LV_bbar;
-    m_px_miss = missPx;
-    m_py_miss = missPy;
+    m_l    = ttSystem.lepton_neg;
+    m_al   = ttSystem.lepton_pos;
+    m_b    = ttSystem.bJet;
+    m_bbar = ttSystem.bbarJet;
+    m_px_miss = ttSystem.met.Px();
+    m_py_miss = ttSystem.met.Py();
 
     execute();
 
@@ -176,7 +171,7 @@ void dileptonTtbarRecoUtils::execute() {
     // loop over solutions
     for(int i=1;i<=vect_pxv_[0];++i) {
 
-        topRec(vect_pxv_[i]);     // assign values for objects
+        topRec(vect_pxv_[i]);     // assign values for physics objects
 
         ttbarDilepton TS_temp;
 

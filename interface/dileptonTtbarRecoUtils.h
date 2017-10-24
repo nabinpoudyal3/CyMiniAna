@@ -27,25 +27,17 @@ class dileptonTtbarRecoUtils{
     ~dileptonTtbarRecoUtils();
     void fDelete() const;
 
-    void setConstraints(const Lepton& LV_al, 
-                        const Lepton& LV_l, 
-                        const Jet& LV_b, 
-                        const Jet& LV_bbar,
-                        const double& missPx,
-                        const double& missPy);
-
-    unsigned int setRandomNumberSeeds(const Lepton& lepton, const Lepton& antiLepton, 
-                                      const Jet& jet1, const Jet& jet2) const;
-
+    void execute(const DileptonReco& ttSystem);
+    void execute();
     int getNsol() const;
-    const std::vector<ttbarDilepton>* getTtSol() const;
+    const std::vector<ttbarDilepton> getTtSol() const;
 
     /* Assign truth information */
     void setTruthInfo(const Top& top, const Top& antiTop,
                       const Neutrino& neutrino, const Neutrino& antiNeutrino);
 
     void sortBy(std::string ch);  // re-arrange the vector based on a different metric
-    
+
     void angle_rot(const double& alpha, const double& e, const Jet& inJet, Jet& jet_sm) const;
 
 
@@ -69,11 +61,11 @@ class dileptonTtbarRecoUtils{
 
     double landau2D(const double& x, const double& y) const;
 
-    //Utility Methods
     int sign(const long double& ld) const;
     double sqr(const double& x) const;
     void swap(double& realone, double& realtwo) const;
 
+    // Member variables
     int m_NSol;
     double coeffs_[5];
     std::vector<double> vect_pxv_;

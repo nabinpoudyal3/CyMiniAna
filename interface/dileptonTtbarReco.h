@@ -32,11 +32,7 @@ class dileptonTtbarReco{
 
     /// Retrieve all solutions valid for setup of kinematic reconstruction
     dileptonTtbarRecoSolutions execute(const ttbarDilepton& ttSystem);
-  /*dileptonTtbarRecoSolutions solutions(const std::vector<int>& leptonIndices, const std::vector<int>& antiLeptonIndices,
-                                         const std::vector<int>& jetIndices,    const std::vector<int>& bjetIndices,
-                                         const std::vector<Lepton>& allLeptons,
-                                         const std::vector<Jet>& allJets, const std::vector<double>& btags,
-                                         const TVector2& met)const;*/
+
 
     /* NOT USED */
 //     void kinReco(const Lepton& leptonMinus,   const Lepton& leptonPlus, 
@@ -47,14 +43,19 @@ class dileptonTtbarReco{
   private:
 
     /// Calculate solution for specific lepton, antilepton and pair of jets
-    std::vector<ttbarDilepton> execute_single(const ttbarDilepton& singleTtbarSystem, const int numberOfBtags);
-    /* const int leptonIndex, const int antiLeptonIndex,
-                                                             const int jetIndex1, const int jetIndex2,
-                                                             const std::vector<Lepton>& allLeptons,
-                                                             const std::vector<Jet>& allJets, const std::vector<double>& btags,
-                                                             const TVector2& met,
-                                                             const int numberOfBtags)const;*/
+    std::vector<ttbarDilepton> getSolutions(const ttbarDilepton& singleTtbarSystem, const int numberOfBtags);
 
+    /// Calculate solution using smearing
+    bool getSmearedSolutions(std::vector<ttbarDilepton> smeared_solutions,
+                             std::vector<double> smeared_weights,
+                             DileptonReco& ttSystem) const;
+
+    // FIXME: temporary helper variables for cleanup
+    void setSolutions();
+    void setSolutions(std::vector<ttbarDilepton> sols);
+
+
+    // Member variables
     configuration *m_config;       /// CyMiniAna configuration
     TRandom3* m_r3;                /// Random number generation
     const Era::Era m_era;          /// Analysis era
@@ -63,16 +64,6 @@ class dileptonTtbarReco{
     const bool m_massLoop;         /// Whether to run mass loop for top mass, instead of smearings according to uncertainties
     double m_btag_wp;
     int m_rangeLow, m_rangeHigh;
-
-    // FIXME: temporary helper variables for cleanup
-    void setSolutions();
-    void setSolutions(std::vector<ttbarDilepton> sols);
-
-    /// Calculate solution using smearing
-    bool solutionSmearing(dileptonTtbarRecoMeanSolution& meanSolution,
-                          const LV& lepton, const LV& antiLepton,
-                          const LV& jet1, const LV& jet2,
-                          const LV& met)const;
 
     int m_NSol;
     ttbarDilepton m_sol;

@@ -19,7 +19,16 @@ Texas A&M University
 #include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
 
 
-dileptonTtbarRecoSolution::dileptonTtbarRecoSolution() {}
+dileptonTtbarRecoSolution::dileptonTtbarRecoSolution() {
+    v_solution_.clear();
+    v_solutionTwoBtags_.clear();
+    v_solutionOneBtag_.clear();
+    v_solutionNoBtags_.clear();
+    m_weightIndex_.clear();
+    m_weightIndexTwoBtags_.clear();
+    m_weightIndexOneBtag_.clear();
+    m_weightIndexNoBtags_.clear();
+  }
 
 
 void dileptonTtbarRecoSolution::Add(const std::vector<ttbarDilepton>& solutions) {
@@ -46,7 +55,7 @@ void dileptonTtbarRecoSolution::Add(const ttbarDilepton& solution) {
     // Set pointers to the specific b-tag multiplicity category
     std::vector<size_t>* v_solutionByCategory(0);
     std::map<ttbarDilepton::WeightType, std::vector<size_t>>* m_weightIndexByCategory(0);
-    const int numberOfBtags = solution.numberOfBtags();
+    const int numberOfBtags = solution.ntags;
     if(numberOfBtags == 2) {
         v_solutionByCategory    = &v_solutionTwoBtags_;
         m_weightIndexByCategory = &m_weightIndexTwoBtags_;
