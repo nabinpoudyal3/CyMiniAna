@@ -15,6 +15,9 @@ Texas A&M University
            Configuration/analysis/common/src/KinematicReconstructionSolution.cc
   on 15 October 2017
 
+ This class maintains the record of the solutions.
+ Functions retrieve information about the solutions for the user (dileptonTtbarReco)
+
 */
 #include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
 

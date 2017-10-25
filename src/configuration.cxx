@@ -376,7 +376,7 @@ void configuration::check_btag_WP(const std::string &wkpt){
     return;
 }
 
-Era::Era configuration::convert(const std::string& era) {
+Era configuration::convert(const std::string& era) {
     /* Convert string to era enum */
     if(era == "run2_13tev_25ns") return run2_13tev_25ns;
     else if(era == "run2_13tev_2015_25ns") return run2_13tev_2015_25ns;

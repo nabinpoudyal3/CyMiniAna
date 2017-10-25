@@ -16,24 +16,25 @@ Texas A&M University
   on 15 October 2017
 
   This is similar to the existing src/MassSolver.cxx class
+  Reconstructs the ttbar system, other "utility" functions
 
 */
 #include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
 
 
 dileptonTtbarRecoUtils::dileptonTtbarRecoUtils(const std::map<std::string,double>& truth_masses, const double& beamEnergy){
-    m_mt     = ( truth_masses.find("top") == truth_masses.end() )     ? truth_masses.at("top") : m_mass_top;
-    m_mtbar  = ( truth_masses.find("antitop") == truth_masses.end() ) ? truth_masses.at("antitop") : m_mass_topbar;
-    m_mb     = ( truth_masses.find("b") == truth_masses.end() )       ? truth_masses.at("b") : m_mass_b;
-    m_mbbar  = ( truth_masses.find("bar") == truth_masses.end() )     ? truth_masses.at("bbar") : m_mass_bbar;
-    m_m_w    = ( truth_masses.find("wplus") == truth_masses.end() )   ? truth_masses.at("wplus") : m_mass_Wp;
-    m_m_wbar = ( truth_masses.find("wminus") == truth_masses.end() )  ? truth_masses.at("wminus") : m_mass_Wm;
-    m_ml     = ( truth_masses.find("lepton") == truth_masses.end() )     ? truth_masses.at("lepton") : m_mass_l;
-    m_mal    = ( truth_masses.find("antilepton") == truth_masses.end() ) ? truth_masses.at("antilepton") : m_mass_al;
-    m_mv     = ( truth_masses.find("neutrino") == truth_masses.end() )     ? truth_masses.at("neutrino") : m_mass_v;
-    m_mav    = ( truth_masses.find("antineutrino") == truth_masses.end() ) ? truth_masses.at("antineutrino") : m_mass_av;
+    m_mt     = ( truth_masses.find("top") != truth_masses.end() )     ? truth_masses.at("top") : m_mass_top;
+    m_mtbar  = ( truth_masses.find("antitop") != truth_masses.end() ) ? truth_masses.at("antitop") : m_mass_topbar;
+    m_mb     = ( truth_masses.find("b") != truth_masses.end() )       ? truth_masses.at("b") : m_mass_b;
+    m_mbbar  = ( truth_masses.find("bar") != truth_masses.end() )     ? truth_masses.at("bbar") : m_mass_bbar;
+    m_m_w    = ( truth_masses.find("wplus") != truth_masses.end() )   ? truth_masses.at("wplus") : m_mass_Wp;
+    m_m_wbar = ( truth_masses.find("wminus") != truth_masses.end() )  ? truth_masses.at("wminus") : m_mass_Wm;
+    m_ml     = ( truth_masses.find("lepton") != truth_masses.end() )     ? truth_masses.at("lepton") : m_mass_l;
+    m_mal    = ( truth_masses.find("antilepton") != truth_masses.end() ) ? truth_masses.at("antilepton") : m_mass_al;
+    m_mv     = ( truth_masses.find("neutrino") != truth_masses.end() )     ? truth_masses.at("neutrino") : m_mass_v;
+    m_mav    = ( truth_masses.find("antineutrino") != truth_masses.end() ) ? truth_masses.at("antineutrino") : m_mass_av;
 
-    m_beamEnergy = beamEnergy;
+    m_beamEnergy = beamEnergy;  // default 13 TeV
   }
 
 dileptonTtbarRecoUtils::~dileptonTtbarRecoUtils() {}
