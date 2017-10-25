@@ -34,7 +34,7 @@ dileptonTtbarRecoSolution::dileptonTtbarRecoSolution() {
 void dileptonTtbarRecoSolution::Add(const std::vector<ttbarDilepton>& solutions) {
     /* Add solution to vector of solutions */
     for(const auto& solution : solutions) 
-        this->Add(solution);
+        Add(solution);
 
     return;
 }

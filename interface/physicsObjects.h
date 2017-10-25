@@ -121,14 +121,14 @@ struct ttbarDilepton : DileptonReco {
     Top topBar;
     TLorentzVector ttbar;
 
-    double recMtop;
-    double weight;
-    int ntags;
+    double recMtop;        // top mass used in the reconstruction (needed if doing massLoop)
+    double weight;         // weight of the solution
+    int ntags;             // number of b-tags
 
     double x1;
     double x2;
-    double mtt;
-    bool isNoSmearSol;
+    double mtt;            // invariant mass of the ttbar system
+    bool isNoSmearSol;     // if smearing, this bool identifies solutions found w/o smearing
 
     /// Enumeration for all defined weights of a kinematic reconstruction solution
     enum WeightType{defaultForMethod, neutrinoEnergy, averagedSumSmearings_mlb, undefinedWeight};

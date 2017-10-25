@@ -46,9 +46,9 @@ class dileptonTtbarReco{
     std::vector<ttbarDilepton> getSolutions(const ttbarDilepton& singleTtbarSystem, const int numberOfBtags);
 
     /// Calculate solution using smearing
-    bool getSmearedSolutions(std::vector<ttbarDilepton> smeared_solutions,
-                             std::vector<double> smeared_weights,
-                             DileptonReco& ttSystem) const;
+    bool getSmearedSolutions(std::vector<ttbarDilepton>& smeared_solutions,
+                             std::vector<double>& smeared_weights,
+                             const DileptonReco& ttSystem) const;
 
     // FIXME: temporary helper variables for cleanup
     void setSolutions();
@@ -68,6 +68,8 @@ class dileptonTtbarReco{
     int m_NSol;
     ttbarDilepton m_sol;
     std::vector<ttbarDilepton> m_sols;
+
+    double m_topMass;
 
     TH1* m_h_wmass;        // W mass
 

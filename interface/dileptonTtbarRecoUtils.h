@@ -17,13 +17,7 @@ class dileptonTtbarRecoUtils{
   public:
 
     // constructor with arguments for masses [GeV]
-    dileptonTtbarRecoUtils(configuration &cmaConfig,
-                           const double& mass_top=172.5, const double& mass_topbar=172.5, 
-                           const double& mass_b=4.8,     const double& mass_bbar=4.8, 
-                           const double& mass_w=80.4,    const double& mass_wbar=80.4, 
-                           const double& mass_al=0,      const double& mass_l=0,
-                           const double& mass_av=0,      const double& mass_av=0);
-
+    dileptonTtbarRecoUtils((const std::map<std::string,double>& truth_masses, const double& beamEnergy=13000.);
     ~dileptonTtbarRecoUtils();
     void fDelete() const;
 
@@ -66,6 +60,17 @@ class dileptonTtbarRecoUtils{
     void swap(double& realone, double& realtwo) const;
 
     // Member variables
+    double m_mass_top=172.5;
+    double m_mass_topbar=172.5;
+    double m_mass_b=4.8;
+    double m_mass_bbar=4.8;
+    double m_mass_w=80.4;
+    double m_mass_wbar=80.4;
+    double m_mass_al=0;
+    double m_mass_l=0;
+    double m_mass_v=0;
+    double m_mass_av=0;
+
     int m_NSol;
     double coeffs_[5];
     std::vector<double> vect_pxv_;

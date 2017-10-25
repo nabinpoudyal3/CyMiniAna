@@ -21,24 +21,19 @@ Texas A&M University
 #include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
 
 
-dileptonTtbarRecoUtils::dileptonTtbarRecoUtils(configuration &cmaConfig,
-                                               const double& mass_top, const double& mass_topbar, 
-                                               const double& mass_b,   const double& mass_bbar, 
-                                               const double& mass_Wp,  const double& mass_Wm, 
-                                               const double& mass_al,  const double& mass_l) :
-  m_config(&cmaConfig){
-    m_mt     = mass_top;
-    m_mtbar  = mass_topbar;
-    m_mb     = mass_b;
-    m_mbbar  = mass_bbar;
-    m_m_w    = mass_Wp;
-    m_m_wbar = mass_Wm;
-    m_mal    = mass_al;
-    m_ml     = mass_l;
-    m_mv     = 0;
-    m_mav    = 0;
+dileptonTtbarRecoUtils::dileptonTtbarRecoUtils(const std::map<std::string,double>& truth_masses, const double& beamEnergy){
+    m_mt     = ( truth_masses.find("top") == truth_masses.end() )     ? truth_masses.at("top") : m_mass_top;
+    m_mtbar  = ( truth_masses.find("antitop") == truth_masses.end() ) ? truth_masses.at("antitop") : m_mass_topbar;
+    m_mb     = ( truth_masses.find("b") == truth_masses.end() )       ? truth_masses.at("b") : m_mass_b;
+    m_mbbar  = ( truth_masses.find("bar") == truth_masses.end() )     ? truth_masses.at("bbar") : m_mass_bbar;
+    m_m_w    = ( truth_masses.find("wplus") == truth_masses.end() )   ? truth_masses.at("wplus") : m_mass_Wp;
+    m_m_wbar = ( truth_masses.find("wminus") == truth_masses.end() )  ? truth_masses.at("wminus") : m_mass_Wm;
+    m_ml     = ( truth_masses.find("lepton") == truth_masses.end() )     ? truth_masses.at("lepton") : m_mass_l;
+    m_mal    = ( truth_masses.find("antilepton") == truth_masses.end() ) ? truth_masses.at("antilepton") : m_mass_al;
+    m_mv     = ( truth_masses.find("neutrino") == truth_masses.end() )     ? truth_masses.at("neutrino") : m_mass_v;
+    m_mav    = ( truth_masses.find("antineutrino") == truth_masses.end() ) ? truth_masses.at("antineutrino") : m_mass_av;
 
-    m_beamEnergy = m_config->beamEnergy();  // 13000.;
+    m_beamEnergy = beamEnergy;
   }
 
 dileptonTtbarRecoUtils::~dileptonTtbarRecoUtils() {}
@@ -175,20 +170,25 @@ void dileptonTtbarRecoUtils::execute() {
 
         ttbarDilepton TS_temp;
 
-        TS_temp.top    = m_top;
-        TS_temp.topbar = m_topbar;
-        TS_temp.Wplus  = m_w;
-        TS_temp.Wminus = m_wbar;
-        TS_temp.neutrino    = m_neutrino;
-        TS_temp.neutrinobar = m_neutrinobar;
+        TS_temp.bJet       = m_b;
+        TS_temp.bbarJet    = m_bbar;
+        TS_temp.lepton_neg = m_l;
+        TS_temp.lepton_pos = m_al;
 
-        TS_temp.x1 = (m_top.p4.E()+m_topbar.p4.E()+m_top.p4.Pz()+m_topbar.p4.Pz())/(m_beamEnergy);
-        TS_temp.x2 = (m_top.p4.E()+m_topbar.p4.E()-m_top.p4.Pz()-m_topbar.p4.Pz())/(m_beamEnergy);
+        TS_temp.top     = m_top;
+        TS_temp.topBar  = m_topbar;
+        TS_temp.Wplus   = m_w;
+        TS_temp.Wminus  = m_wbar;
+        TS_temp.neutrino    = m_neutrino;
+        TS_temp.neutrinoBar = m_neutrinobar;
+
+        TS_temp.x1  = (m_top.p4.E()+m_topbar.p4.E()+m_top.p4.Pz()+m_topbar.p4.Pz())/(m_beamEnergy);
+        TS_temp.x2  = (m_top.p4.E()+m_topbar.p4.E()-m_top.p4.Pz()-m_topbar.p4.Pz())/(m_beamEnergy);
         TS_temp.mtt = m_tt.M();
 
         TS_temp.weight = 1.0/m_tt.M();  // landau2D(m_neutrino.p4.E(),m_neutrinobar.p4.E());
 
-        m_ttSol.p4.push_back(TS_temp);
+        m_ttSol.push_back(TS_temp);
     }
 
     m_NSol = m_ttSol.size();  // should be the same as vect_pxv_[0]?
