@@ -2,8 +2,8 @@
 #define DILEPTONTTBARRECOSOLUTION_H
 
 #include <map>
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
-#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
+#include "diHiggs/CyMiniAna/interface/tools.h"
+#include "diHiggs/CyMiniAna/interface/physicsObjects.h"
 
 
 
@@ -19,10 +19,10 @@ class dileptonTtbarRecoSolution{
 
 
     /// Add a vector of solutions
-    void Add(const std::vector<ttbarDilepton>& solutions);
+    void Add(const std::vector<TtbarDilepton>& solutions);
 
     ///  Add a solution
-    void Add(const ttbarDilepton& solution);
+    void Add(const TtbarDilepton& solution);
 
 
     /// Number of all solutions
@@ -30,13 +30,11 @@ class dileptonTtbarRecoSolution{
     size_t numberOfSolutions(const int nBtags) const;
 
     /// Access from all solutions the one selected with solutionNumber, ranked by decreasing specific weight
-    const ttbarDilepton& solution(const ttbarDilepton::WeightType weightType=ttbarDilepton::defaultForMethod,
-                                  const size_t solutionNumber=0) const;
+    const TtbarDilepton solution(const TtbarDilepton::WeightType weightType, const size_t solutionNumber) const;
 
     /// Access from solutions with N b-tags the one selected with solutionNumber, ranked by decreasing specific weight
-    const ttbarDilepton& solution(const ttbarDilepton::WeightType weightType=ttbarDilepton::defaultForMethod,
-                                  const size_t solutionNumber=0,
-                                  const int nBtags) const;
+    TtbarDilepton solution(const TtbarDilepton::WeightType weightType,
+                           const size_t solutionNumber, const int nBtags) const;
 
   private:
 
@@ -51,7 +49,7 @@ class dileptonTtbarRecoSolution{
 
 
     /// Vector containing all solutions
-    std::vector<ttbarDilepton> v_solution_;
+    std::vector<TtbarDilepton> v_solution_;
 
     /// Vector containing indices of the solutions with 2 b-tags stored in v_solution_
     std::vector<size_t> v_solutionTwoBtags_;
@@ -64,16 +62,17 @@ class dileptonTtbarRecoSolution{
 
 
     /// Map associating specific weight type to vector containing indices of all solutions, ordered for this weight
-    std::map<ttbarDilepton::WeightType, std::vector<size_t>> m_weightIndex_;
+    std::map<TtbarDilepton::WeightType, std::vector<size_t>> m_weightIndex_;
 
     /// Map associating specific weight type to vector containing indices of 2 b-tag solutions, ordered for this weight
-    std::map<ttbarDilepton::WeightType, std::vector<size_t>> m_weightIndexTwoBtags_;
+    std::map<TtbarDilepton::WeightType, std::vector<size_t>> m_weightIndexTwoBtags_;
 
     /// Map associating specific weight type to vector containing indices of 1 b-tag solutions, ordered for this weight
-    std::map<ttbarDilepton::WeightType, std::vector<size_t>> m_weightIndexOneBtag_;
+    std::map<TtbarDilepton::WeightType, std::vector<size_t>> m_weightIndexOneBtag_;
 
     /// Map associating specific weight type to vector containing indices of 0 b-tag solutions, ordered for this weight
-    std::map<ttbarDilepton::WeightType, std::vector<size_t>> m_weightIndexNoBtags_;
+    std::map<TtbarDilepton::WeightType, std::vector<size_t>> m_weightIndexNoBtags_;
 };
 
 #endif
+

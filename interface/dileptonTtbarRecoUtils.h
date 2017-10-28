@@ -6,10 +6,11 @@
 #include <TH1F.h>
 #include <TF1.h>
 #include <TF2.h>
+#include <TRandom3.h>
 
-#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "diHiggs/CyMiniAna/interface/physicsObjects.h"
+#include "diHiggs/CyMiniAna/interface/configuration.h"
+#include "diHiggs/CyMiniAna/interface/tools.h"
 
 
 class dileptonTtbarRecoUtils{
@@ -17,14 +18,19 @@ class dileptonTtbarRecoUtils{
   public:
 
     // constructor with arguments for masses [GeV]
-    dileptonTtbarRecoUtils((const std::map<std::string,double>& truth_masses, const double& beamEnergy=13000.);
+    dileptonTtbarRecoUtils(const std::map<std::string,double>& truth_masses={}, const double& beamEnergy=13000.);
     ~dileptonTtbarRecoUtils();
     void fDelete() const;
+
+    void setTopMass( double topmass );
+    void setAntiTopMass( double antitopmass );
+    void setWplus( double wplus );
+    void setWminus( double wminus );
 
     void execute(const DileptonReco& ttSystem);
     void execute();
     int getNsol() const;
-    const std::vector<ttbarDilepton> getTtSol() const;
+    std::vector<TtbarDilepton> getTtSol() const;
 
     /* Assign truth information */
     void setTruthInfo(const Top& top, const Top& antiTop,
@@ -32,16 +38,16 @@ class dileptonTtbarRecoUtils{
 
     void sortBy(std::string ch);  // re-arrange the vector based on a different metric
 
-    void angle_rot(const double& alpha, const double& e, const Jet& inJet, Jet& jet_sm) const;
+    void angle_rot(const double& alpha, const double& e, const cmaBase& inJet, cmaBase& jet_sm) const;
 
 
   private:
 
-    void filldR();
-    void filldN();
+    void setdR();
+    void setdN();
 
-    void swapTopSol(ttbarDilepton& sol1, ttbarDilepton& sol2) const;
-    void sortTopSol(std::vector<ttbarDilepton>& v) const;
+    void swapTopSol(TtbarDilepton& sol1, TtbarDilepton& sol2) const;
+    void sortTopSol(std::vector<TtbarDilepton>& v) const;
 
     void doAll();
     void topRec(const double& px_neutrino);
@@ -64,8 +70,8 @@ class dileptonTtbarRecoUtils{
     double m_mass_topbar=172.5;
     double m_mass_b=4.8;
     double m_mass_bbar=4.8;
-    double m_mass_w=80.4;
-    double m_mass_wbar=80.4;
+    double m_mass_Wp=80.4;
+    double m_mass_Wm=80.4;
     double m_mass_al=0;
     double m_mass_l=0;
     double m_mass_v=0;
@@ -74,7 +80,8 @@ class dileptonTtbarRecoUtils{
     int m_NSol;
     double coeffs_[5];
     std::vector<double> vect_pxv_;
-    std::vector<ttbarDilepton> m_ttSol;
+    std::vector<TtbarDilepton> m_ttSol;
+    TRandom3* m_r3;                /// Random number generation
 
     Lepton m_al;
     Lepton m_l;
@@ -89,9 +96,9 @@ class dileptonTtbarRecoUtils{
     TLorentzVector m_tt;
 
     Top m_true_top;
-    Top m_true_topbar;
+    Top m_true_topBar;
     Neutrino m_true_neutrino;
-    Neutrino m_true_neutrinobar;
+    Neutrino m_true_neutrinoBar;
 
     double m_px_miss;
     double m_py_miss;
@@ -118,3 +125,4 @@ class dileptonTtbarRecoUtils{
 };
 
 #endif
+

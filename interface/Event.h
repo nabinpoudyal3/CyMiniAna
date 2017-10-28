@@ -29,8 +29,6 @@
 
 #include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
 #include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
-#include "cms-ttbarAC/CyMiniAna/interface/AMWT.h"
-#include "cms-ttbarAC/CyMiniAna/interface/MMC.h"
 #include "cms-ttbarAC/lwtnn/interface/LightweightNeuralNetwork.hh"
 #include "cms-ttbarAC/lwtnn/interface/parse_json.hh"
 
@@ -106,7 +104,6 @@ class Event {
     void getHME();
     double DNN();
     double HME();
-    void calculateRho();   // jet energy density -- see src/AMWT.cxx
     void buildTtbar();
     void getDilepton();
     std::map<std::string,Top> ttbar();
@@ -190,8 +187,6 @@ class Event {
     double m_DNN;   // DNN score
     double m_HME;   // HME score
 
-    AMWT* m_amwt;
-    MMC* m_mmc_hme;
     dileptonTtbarReco* m_dileptonTtbar;
     std::map<std::string,Top> m_ttbar;
     DileptonReco m_dilepton;

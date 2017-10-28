@@ -21,12 +21,12 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
   m_treeName("SetMe"),
   m_lwnn(nullptr),
   m_DNN(0.0),
-  m_amwt(nullptr){
+  m_dileptonTtbar(nullptr){
     m_isMC     = m_config->isMC();
     m_grid     = m_config->isGridFile();             // file directly from original analysis team
     m_treeName = m_ttree.GetTree()->GetName();       // for systematics
     m_getDNN   = m_config->getDNN();                 // build DNN
-    m_buildNeutrinos = m_config->buildNeutrinos();   // build the neutrinos using AMWT
+    m_buildNeutrinos = m_config->buildNeutrinos();   // build the neutrinos using reconstruction algorithm
 
     m_cMVAv2L = m_config->cMVAv2L();
     m_cMVAv2M = m_config->cMVAv2M();
@@ -207,12 +207,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_lwnn   = new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs);
     m_dnnKey = m_config->dnnKey();
 
-    // AMWT
-    m_amwt = new AMWT(cmaConfig);
-    m_amwt->initialize();
-
-    m_dileptonTtbar = new dileptonTtbarReco(cmaConfig, /*Era::Era era*/, /*int minNumberOfBtags*/, 
-                                            /*bool preferBtags*/);
+    m_dileptonTtbar = new dileptonTtbarReco(cmaConfig, configuration::run2_13tev_2016_25ns, 2, true);
 } // end constructor
 
 
@@ -625,7 +620,6 @@ void Event::getDilepton(){
 
 void Event::buildTtbar(){
     /* Build ttbar dilepton system */
-    //m_ttbar = m_amwt->findMass(m_dilepton);
     m_ttbar = m_dileptonTtbar->execute(m_dilepton);
 
     return;
@@ -987,7 +981,6 @@ void Event::finalize(){
     // delete variables
     cma::DEBUG("EVENT : Finalize() ");
     delete m_lwnn;
-    delete m_amwt;
     delete m_dileptonTtbar;
     delete m_eventNumber;
     delete m_runNumber;

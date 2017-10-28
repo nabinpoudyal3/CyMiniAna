@@ -2,15 +2,14 @@
 #define PHYSICSOBJECTS_H_
 
 /* 
-   Physics objects to be used in analyses.
+   Physics objects to be used in analyses
    This structure allows the Event class
    and other classes to access these objects
-   without circular inclusion.
-   Use structs instead of classes to keep it simple
+   without circular inclusion (which breaks!)
 */
+#include "TLorentzVector.h"
 #include <map>
 #include <string>
-#include "TLorentzVector.h"
 
 // base object (consistent reference to TLorentzVector)
 struct cmaBase {
@@ -33,10 +32,11 @@ struct Jet : cmaBase{
     float cMVAv2;
     float mv2c10;
     float mv2c20;
-    std::map<std::string, char> isbtagged;
+    std::map<std::string, bool> isbtagged;
     float jvt;
     int true_flavor;
     double rho;      // jet energy density, 1 value per event (attaching to each jet for convenience)
+    int index;       // index in vector of jets
 };
 
 struct Ljet : cmaBase{
@@ -57,6 +57,7 @@ struct Lepton : cmaBase{
     bool isElectron;
     bool isMuon;
     float Iso;
+    int index;       // index in vector of leptons
 };
 
 struct Neutrino : cmaBase{
@@ -74,6 +75,7 @@ struct Top {
     Neutrino neutrino;
     float weight;       // reconstruction weight
     float weight_ES;    // reconstruction weight (EventShape)
+    float weight_tt;    // reconstruction weight (ttbar XS method)
 
     void set_p4_lep(){
         p4 = lepton.p4 + jet.p4 + neutrino.p4;
@@ -86,12 +88,11 @@ struct Top {
     Jet q2;                 // if quark from W is identified
 
     void set_p4_had(){
-        p4 = 0;
+        p4 = TLorentzVector(0,0,0,0);
         for (const auto& jet : jets)
             p4 += jet.p4;
     }
 };
-
 
 // ttbar system
 struct DileptonReco {
@@ -106,7 +107,7 @@ struct DileptonReco {
     size_t bJet_index, bbarJet_index;
 };
 
-struct ttbarDilepton : DileptonReco {
+struct TtbarDilepton : DileptonReco {
     /* dilepton ttbar system for dileptonTtbarReco setup
        formerly: Struct_KinematicReconstruction
        incorporated some attributes of the "TopSolution" struct
@@ -125,6 +126,8 @@ struct ttbarDilepton : DileptonReco {
     double weight;         // weight of the solution
     int ntags;             // number of b-tags
 
+    double dR;
+    double dN;
     double x1;
     double x2;
     double mtt;            // invariant mass of the ttbar system
@@ -138,9 +141,10 @@ struct ttbarDilepton : DileptonReco {
         ttbar = top.p4 + topBar.p4;
     }
     void set_W(){
-        Wplus  = lepton_pos + neutrino;
-        Wminus = lepton_neg + neutrinoBar;
+        Wplus  = lepton_pos.p4 + neutrino.p4;
+        Wminus = lepton_neg.p4 + neutrinoBar.p4;
     }
 };
 
 #endif
+

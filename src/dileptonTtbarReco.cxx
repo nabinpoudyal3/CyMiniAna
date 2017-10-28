@@ -17,13 +17,13 @@ Texas A&M University
  Main interface to the dilepton reconstruction
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarReco.h"
+#include "diHiggs/CyMiniAna/interface/dileptonTtbarReco.h"
 
 
 
 dileptonTtbarReco::dileptonTtbarReco(configuration& cmaConfig,
-                                     const Era::Era era,     const int minNumberOfBtags, 
-                                     const bool preferBtags, const bool massLoop):
+                                     const configuration::Era era, const int minNumberOfBtags, 
+                                     const bool preferBtags,       const bool massLoop):
   m_config(&cmaConfig),
   m_era(era),
   m_minNumberOfBtags(minNumberOfBtags),
@@ -56,8 +56,36 @@ dileptonTtbarReco::~dileptonTtbarReco() {
 }
 
 
-dileptonTtbarRecoSolution dileptonTtbarReco::execute(const ttbarDilepton& ttSystem){
-    /* Pass event information to this class and solve for the reconstructed system */
+std::map<std::string,Top> dileptonTtbarReco::execute(const DileptonReco& ttSystem){
+    /* Pass information from event to this class and return the solution */
+    TtbarDilepton ttbarSystem;
+    ttbarSystem.lepton_pos = ttSystem.lepton_pos;
+    ttbarSystem.lepton_neg = ttSystem.lepton_neg;
+    ttbarSystem.met        = ttSystem.met;
+    ttbarSystem.jets       = ttSystem.jets;
+    ttbarSystem.bjets      = ttSystem.bjets;
+
+    dileptonTtbarRecoSolution ttDileptonSolution = buildTtbar(ttbarSystem);
+    // convert this solution to a map for use in CyMiniAna
+
+    std::map<std::string,Top> ttbarDileptonSolution;  // solution for the Event class
+    if (ttDileptonSolution.numberOfSolutions()<1)
+        return ttbarDileptonSolution;
+
+    TtbarDilepton soln = ttDileptonSolution.solution(TtbarDilepton::defaultForMethod,0); // take the first solution
+    cma::DEBUG("DILEPTON : Solution obtained, now save");
+
+    ttbarDileptonSolution["top"]     = soln.top;
+    ttbarDileptonSolution["antitop"] = soln.topBar;
+
+    cma::DEBUG("DILEPTON : Solution obtained now exit");
+
+    return ttbarDileptonSolution;
+}
+
+
+dileptonTtbarRecoSolution dileptonTtbarReco::buildTtbar(const TtbarDilepton& ttSystem){
+    /* Internal function to solve for the ttbar dilepton system */
     dileptonTtbarRecoSolution result;
 
     // Check if minimum number of objects for any solution is present
@@ -73,39 +101,49 @@ dileptonTtbarRecoSolution dileptonTtbarReco::execute(const ttbarDilepton& ttSyst
 
     // -- Find solutions with 2 b-tagged jets
     if (numberOfBtags>=2){
-        for (unsigned int i_index=0; i_index<numberOfBtags-1; ++i_index) {
-            for (unsigned int j_index=i_index+1; i_index<numberOfBtags; ++j_index) {
+        for (int i_index=0; i_index<numberOfBtags-1; ++i_index) {
+            for (int j_index=i_index+1; j_index<numberOfBtags; ++j_index) {
+                cma::DEBUG("DILEPTON : Check indices "+std::to_string(i_index)+", "+std::to_string(j_index));
+
                 Jet jet1 = ttSystem.bjets.at(i_index);
                 Jet jet2 = ttSystem.bjets.at(j_index);
 
-                ttbarDilepton tt_tmp1;
+                TtbarDilepton tt_tmp1;
                 tt_tmp1.lepton_pos = antiLepton;
                 tt_tmp1.lepton_neg = lepton;
                 tt_tmp1.bJet    = jet1;
                 tt_tmp1.bbarJet = jet2;
                 tt_tmp1.met     = ttSystem.met;
 
-                ttbarDilepton tt_tmp2;           // same as tt_tmp1 with the jets switched
+                TtbarDilepton tt_tmp2;           // same as tt_tmp1 with the jets switched
                 tt_tmp2.lepton_pos = antiLepton;
                 tt_tmp2.lepton_neg = lepton;
                 tt_tmp2.bJet    = jet2;
                 tt_tmp2.bbarJet = jet1;
                 tt_tmp2.met     = ttSystem.met;
 
-                const std::vector<ttbarDilepton> solution1( getSolutions(tt_tmp1,2) );
-                const std::vector<ttbarDilepton> solution2( getSolutions(tt_tmp2,2) );
+                const std::vector<TtbarDilepton> solution1( getSolutions(tt_tmp1,2) );
+                const std::vector<TtbarDilepton> solution2( getSolutions(tt_tmp2,2) );
+                cma::DEBUG("DILEPTON : Add solutions");
                 result.Add(solution1);
                 result.Add(solution2);
+                cma::DEBUG("DILEPTON : Added solutions");
             }
         }
     }
 
-    if(m_preferBtags && result.numberOfSolutions(2)) 
+    cma::DEBUG("DILEPTON : end 2 b-tags");
+    if(m_preferBtags && result.numberOfSolutions(2)){
+        cma::DEBUG("DILEPTON : Prefer b-tags and number of solutions");
         return result;
-
-    if(m_minNumberOfBtags > 1) 
+    }
+    if(m_minNumberOfBtags > 1) {
         // require at least 2 b-tags, but not enough solutions; exit.
+        cma::DEBUG("DILEPTON : Prefer b-tags > 1");
         return result;
+    }
+
+    cma::DEBUG("DILEPTON : Continuing to 1 b-tag solutions");
 
 
     // Collect non b-tagged jets for reconstruction
@@ -117,25 +155,25 @@ dileptonTtbarRecoSolution dileptonTtbarReco::execute(const ttbarDilepton& ttSyst
         Jet bJet = ttSystem.bjets.at(0);
 
         // -- Find solutions with 1 b-tagged jet
-        for(const int jet : ttSystem.jets) {
+        for(const auto& jet : ttSystem.jets) {
             if (jet.isbtagged.at(m_btag_wp)) continue;  // skip the b-tagged jet
 
-            ttbarDilepton tt_tmp1;
+            TtbarDilepton tt_tmp1;
             tt_tmp1.lepton_pos = antiLepton;
             tt_tmp1.lepton_neg = lepton;
             tt_tmp1.bJet    = bJet;
             tt_tmp1.bbarJet = jet;
             tt_tmp1.met     = ttSystem.met;
 
-            ttbarDilepton tt_tmp2;           // same as tt_tmp1 with the jets switched
+            TtbarDilepton tt_tmp2;           // same as tt_tmp1 with the jets switched
             tt_tmp2.lepton_pos = antiLepton;
             tt_tmp2.lepton_neg = lepton;
             tt_tmp2.bJet    = jet;
             tt_tmp2.bbarJet = bJet;
             tt_tmp2.met     = ttSystem.met;
 
-            const std::vector<ttbarDilepton> solution1( getSolutions(tt_tmp1,1) );
-            const std::vector<ttbarDilepton> solution2( getSolutions(tt_tmp2,1) );
+            const std::vector<TtbarDilepton> solution1( getSolutions(tt_tmp1,1) );
+            const std::vector<TtbarDilepton> solution2( getSolutions(tt_tmp2,1) );
             result.Add(solution1);
             result.Add(solution2);
         }
@@ -150,27 +188,27 @@ dileptonTtbarRecoSolution dileptonTtbarReco::execute(const ttbarDilepton& ttSyst
 
     // -- Find solutions with 0 b-tagged jets
     if (numberOfBtags==0){
-        for (unsigned int i_index=0; i_index<numberOfJets-1; ++i_index) {
-            for (unsigned int j_index=i_index+1; i_index<numberOfJets; ++j_index) {
+        for (int i_index=0; i_index<numberOfJets-1; ++i_index) {
+            for (int j_index=i_index+1; i_index<numberOfJets; ++j_index) {
                 Jet jet1 = ttSystem.jets.at(i_index);
                 Jet jet2 = ttSystem.jets.at(j_index);
 
-                ttbarDilepton tt_tmp1;
+                TtbarDilepton tt_tmp1;
                 tt_tmp1.lepton_pos = antiLepton;
                 tt_tmp1.lepton_neg = lepton;
                 tt_tmp1.bJet    = jet1;
                 tt_tmp1.bbarJet = jet2;
                 tt_tmp1.met     = ttSystem.met;
 
-                ttbarDilepton tt_tmp2;           // same as tt_tmp1 with the jets switched
+                TtbarDilepton tt_tmp2;           // same as tt_tmp1 with the jets switched
                 tt_tmp2.lepton_pos = antiLepton;
                 tt_tmp2.lepton_neg = lepton;
                 tt_tmp2.bJet    = jet2;
                 tt_tmp2.bbarJet = jet1;
                 tt_tmp2.met     = ttSystem.met;
 
-                const std::vector<ttbarDilepton> solution1( getSolutions(tt_tmp1,0) );
-                const std::vector<ttbarDilepton> solution2( getSolutions(tt_tmp2,0) );
+                const std::vector<TtbarDilepton> solution1( getSolutions(tt_tmp1,0) );
+                const std::vector<TtbarDilepton> solution2( getSolutions(tt_tmp2,0) );
                 result.Add(solution1);
                 result.Add(solution2);
             }
@@ -182,12 +220,12 @@ dileptonTtbarRecoSolution dileptonTtbarReco::execute(const ttbarDilepton& ttSyst
 
 
 
-std::vector<ttbarDilepton> dileptonTtbarReco::getSolutions(const ttbarDilepton& singleTtbarSystem, const int numberOfBtags);
+std::vector<TtbarDilepton> dileptonTtbarReco::getSolutions(const TtbarDilepton& singleTtbarSystem, const int numberOfBtags) {
     /* Obtain the solutions from Utils*/
-    std::vector<ttbarDilepton> result;
+    std::vector<TtbarDilepton> result;
 
     // assign objects to the (simple) struct of information
-    const DileptonReco ttSystem;
+    DileptonReco ttSystem;
     ttSystem.lepton_pos = singleTtbarSystem.lepton_pos;
     ttSystem.lepton_neg = singleTtbarSystem.lepton_neg;
     ttSystem.bJet       = singleTtbarSystem.bJet;
@@ -198,18 +236,18 @@ std::vector<ttbarDilepton> dileptonTtbarReco::getSolutions(const ttbarDilepton& 
         // resolve the ttbar kinematics assuming different values for top mass
         double neutrinoWeightMax(0.);
 
+        dileptonTtbarRecoUtils tp_m;
         for(double iTopMass=m_rangeLow; iTopMass<m_rangeHigh; iTopMass+=1){
-            std::map<std::string,double> keys;
-            keys["top"]     = iTopMass;
-            keys["antitop"] = iTopMass;
-            dileptonTtbarRecoUtils tp_m(keys);
+
+            tp_m.setTopMass( iTopMass );
+            tp_m.setAntiTopMass( iTopMass );
             tp_m.execute(ttSystem);
 
             if(tp_m.getNsol() < 1)
                 continue;
 
             // Save the solution! Only take the solution with largest weight (first entry)
-            ttbarDilepton tp_m_soln = tp_m.getTtSol().at(0);
+            TtbarDilepton tp_m_soln = tp_m.getTtSol().at(0);
 
             const double& weight = tp_m_soln.weight;
             if(weight <= neutrinoWeightMax)
@@ -217,43 +255,55 @@ std::vector<ttbarDilepton> dileptonTtbarReco::getSolutions(const ttbarDilepton& 
 
             neutrinoWeightMax = weight;
 
-            std::map<ttbarDilepton::WeightType, double> tmp_weight;
-            tmp_weight[ttbarDilepton::defaultForMethod] = weight;
-            tmp_weight[ttbarDilepton::neutrinoEnergy]   = weight;
+            std::map<TtbarDilepton::WeightType, double> tmp_weight;
+            tmp_weight[TtbarDilepton::defaultForMethod] = weight;
+            tmp_weight[TtbarDilepton::neutrinoEnergy]   = weight;
+
+            tp_m_soln.top.weight_tt    = weight;
+            tp_m_soln.topBar.weight_tt = weight;
+            tp_m_soln.top.weight       = -999.;
+            tp_m_soln.topBar.weight    = -999.;
+            tp_m_soln.top.weight_ES    = -999.;
+            tp_m_soln.topBar.weight_ES = -999.;
 
             tp_m_soln.mapOfWeights = tmp_weight;
             tp_m_soln.isNoSmearSol = false;
             tp_m_soln.recMtop = iTopMass;
             tp_m_soln.ntags   = numberOfBtags;
 
-            result.push_back(tmp_m_soln);
+            result.push_back(tp_m_soln);
         }
+        tp_m.fDelete();
     }
     else{
         // solve for the ttbar kinematics after smearing inputs
-        std::vector<ttbarDilepton> smeared_solutions,
-        std::vector<double> smeared_weights,
-        const bool smearSolution = getSmearedSolutions(smeared_solutions,smeared_weights,ttSystem);
+        std::vector<TtbarDilepton> smeared_solutions;
+        std::vector<double> smeared_weights;
+        bool smearSolution = getSmearedSolutions(smeared_solutions,smeared_weights,ttSystem);
 
         // Check if there is also a solution without smearing
-        dileptonTtbarRecoUtils tp_NOsm();
+        dileptonTtbarRecoUtils tp_NOsm;
         tp_NOsm.execute(ttSystem);
-        const bool noSmearSolution = (tp_NOsm.getNsol()>0);
+        bool noSmearSolution = (tp_NOsm.getNsol()>0);
 
-        std::map<ttbarDilepton::WeightType, double> tmp_weight;
+        std::map<TtbarDilepton::WeightType, double> tmp_weight;
 
-        if(smearSolution && !noSmearSolution){
+        if (smearSolution && !noSmearSolution){
             // Solution with smearing
-            const double weight = std::accumulate(smeared_weights.begin(),smeared_weights.end(),0.0);
+            double weight = std::accumulate(smeared_weights.begin(),smeared_weights.end(),0.0);
 
-            tmp_weight[ttbarDilepton::defaultForMethod]         = weight;
-            tmp_weight[ttbarDilepton::averagedSumSmearings_mlb] = weight;
+            tmp_weight[TtbarDilepton::defaultForMethod]         = weight;
+            tmp_weight[TtbarDilepton::averagedSumSmearings_mlb] = weight;
 
             // from the collection of smeared solutions, average the four-vectors
             // for the top/anti-top/neutrino/anti-neutrino
-            ttbarDilepton tp_m_soln = averageSmearedSolutions(smeared_solutions,smeared_weights);
+            TtbarDilepton tp_m_soln;
+            averageSmearedSolutions(smeared_solutions,smeared_weights,tp_m_soln);
 
             // Add the extra attributes to this solution
+            tp_m_soln.top.weight_tt    = weight;
+            tp_m_soln.topBar.weight_tt = weight;
+
             tp_m_soln.mapOfWeights = tmp_weight;
             tp_m_soln.isNoSmearSol = false;
             tp_m_soln.recMtop = m_topMass;
@@ -271,26 +321,33 @@ std::vector<ttbarDilepton> dileptonTtbarReco::getSolutions(const ttbarDilepton& 
         }
         else if (noSmearSolution) {
             // Solution without smearing (even if smeared solution exists!)
-            ttbarDilepton tp_m_soln = tp_NOsm.getTtSol().at(0);
+            TtbarDilepton tp_m_soln = tp_NOsm.getTtSol().at(0);
 
             const double weight = tp_m_soln.weight;
-            tmp_weight[ttbarDilepton::defaultForMethod]         = weight;
-            tmp_weight[ttbarDilepton::averagedSumSmearings_mlb] = weight;
+            tmp_weight[TtbarDilepton::defaultForMethod]         = weight;
+            tmp_weight[TtbarDilepton::averagedSumSmearings_mlb] = weight;
+
+            tp_m_soln.top.weight_tt    = weight;
+            tp_m_soln.topBar.weight_tt = weight;
 
             tp_m_soln.mapOfWeights = tmp_weight;
             tp_m_soln.isNoSmearSol = true;
             tp_m_soln.recMtop = m_topMass;
             tp_m_soln.ntags   = numberOfBtags;
 
-            result.push_back(tp_NOsm);
+            result.push_back(tp_m_soln);
         }
+
+        tp_NOsm.fDelete(); // clean-up memory
     }
+
+    cma::DEBUG("DILEPTON : End getSolutions");
 
     return result;
 }
 
 
-bool dileptonTtbarReco::getSmearedSolutions(std::vector<ttbarDilepton>& smeared_solutions,
+bool dileptonTtbarReco::getSmearedSolutions(std::vector<TtbarDilepton>& smeared_solutions,
                                             std::vector<double>& smeared_weights,
                                             const DileptonReco& ttSystem) const {
     /* Determine solution to ttbar reconstruction after smearing the inputs 
@@ -300,22 +357,24 @@ bool dileptonTtbarReco::getSmearedSolutions(std::vector<ttbarDilepton>& smeared_
         // protection against large masses?
         return false;
     */
-    const unsigned int seed = cma::setRandomNumberSeeds(lepton,antiLepton,jet1,jet2);
+    const unsigned int seed = cma::setRandomNumberSeeds(ttSystem.lepton_neg,ttSystem.lepton_neg,ttSystem.bJet,ttSystem.bbarJet);
     m_r3->SetSeed(seed);  // Set random number generator seeds based on this arrangement
 
     smeared_solutions.clear();
 
-    bool isSolved(false);        // true if at least 1 smeared iteration produces a solution
+    bool isSolved(false);         // true if at least 1 smeared iteration produces a solution
     double err(0.001);            // tolerance for angle rotation
-    dileptonTtbarRecoUtils util;  // object responsible for finding the ttbar solution
+    dileptonTtbarRecoUtils tp_sm; // object responsible for finding the ttbar solution
 
     Lepton lepton     = ttSystem.lepton_neg;
     Lepton antiLepton = ttSystem.lepton_pos;
     Jet jet1     = ttSystem.bJet;
     Jet jet2     = ttSystem.bbarJet;
     TVector2 met = ttSystem.met;
+    TLorentzVector met_tv;
+    met_tv.SetPxPyPzE( met.Px(), met.Py(), 0., 0.);
 
-    TVector3 vX_reco = -jet1.p4.Vect() - jet2.p4.Vect() - lepton.p4.Vect() - antiLepton.p4.Vect() - met.Vect();
+    TVector3 vX_reco = -jet1.p4.Vect() - jet2.p4.Vect() - lepton.p4.Vect() - antiLepton.p4.Vect() - met_tv.Vect();
 
     for(int sm=0,size=m_config->NJetSmear(); sm<size; ++sm){
         Jet b_sm;
@@ -332,11 +391,11 @@ bool dileptonTtbarReco::getSmearedSolutions(std::vector<ttbarDilepton>& smeared_
 
         // b-jet smearing
         b_sm.p4.SetXYZT(jet1.p4.Px()*xB,jet1.p4.Py()*xB,jet1.p4.Pz()*xB,jet1.p4.E()*fB);
-        util.angle_rot(m_h_jetAngleRes->GetRandom(),err,b_sm,b_sm);
+        tp_sm.angle_rot(m_h_jetAngleRes->GetRandom(),err,b_sm,b_sm);
 
         // bbar-jet smearing
         bbar_sm.p4.SetXYZT(jet2.p4.Px()*xBbar,jet2.p4.Py()*xBbar,jet2.p4.Pz()*xBbar,jet2.p4.E()*fBbar);
-        util.angle_rot(m_h_jetAngleRes->GetRandom(),err,bbar_sm,bbar_sm);
+        tp_sm.angle_rot(m_h_jetAngleRes->GetRandom(),err,bbar_sm,bbar_sm);
 
 
         // leptons energy smearing values
@@ -347,23 +406,23 @@ bool dileptonTtbarReco::getSmearedSolutions(std::vector<ttbarDilepton>& smeared_
 
         // lepton smearing
         l_sm.p4.SetXYZT(lepton.p4.Px()*xL,lepton.p4.Py()*xL,lepton.p4.Pz()*xL,lepton.p4.E()*fL);
-        util.angle_rot(m_h_lepAngleRes->GetRandom(),err,l_sm,l_sm);
+        tp_sm.angle_rot(m_h_lepAngleRes->GetRandom(),err,l_sm,l_sm);
 
         // anti-lepton smearing
-        al_sm.p4.SetXYZT(antiLepton.Px()*xaL,antiLepton.Py()*xaL,antiLepton.Pz()*xaL,antiLepton.p4.E()*faL);
-        util.angle_rot(m_h_lepAngleRes->GetRandom(),err,al_sm,al_sm);
+        al_sm.p4.SetXYZT(antiLepton.p4.Px()*xaL,antiLepton.p4.Py()*xaL,antiLepton.p4.Pz()*xaL,antiLepton.p4.E()*faL);
+        tp_sm.angle_rot(m_h_lepAngleRes->GetRandom(),err,al_sm,al_sm);
 
         // Get smeared MET
         TVector3 metV3_sm = -b_sm.p4.Vect()-bbar_sm.p4.Vect()-l_sm.p4.Vect()-al_sm.p4.Vect()-vX_reco;
-        met_sm.SetPx(metV3_sm.Px());
-        met_sm.SetPy(metV3_sm.Py());
+        met_sm.SetX(metV3_sm.Px());
+        met_sm.SetY(metV3_sm.Py());
 
 
         // Get new solution! (random masses for the W)
-        std::map<std::string,double> keys;
-        keys["wplus"]  = m_h_wmass->GetRandom();
-        keys["wminus"] = m_h_wmass->GetRandom();
-        dileptonTtbarRecoUtils tp_sm(keys);
+        double wplus_sm  = m_h_wmass->GetRandom();
+        double wminus_sm = m_h_wmass->GetRandom();
+        tp_sm.setWplus( wplus_sm );
+        tp_sm.setWminus( wminus_sm );
 
         DileptonReco sm_ttSystem;
         sm_ttSystem.lepton_pos = al_sm;
@@ -379,18 +438,20 @@ bool dileptonTtbarReco::getSmearedSolutions(std::vector<ttbarDilepton>& smeared_
             double mbl_weight = m_h_mbl_w->GetBinContent(m_h_mbl_w->FindBin((al_sm.p4+b_sm.p4).M())) * 
                                                          m_h_mbl_w->GetBinContent(m_h_mbl_w->FindBin((l_sm.p4+bbar_sm.p4).M())) / 
                                                          100000000; // where does this come from?
-            smeared_solutions.push_back( tp_sm.getTtSol()->at(0) ); // only take the first solution (highest weight)
+            smeared_solutions.push_back( tp_sm.getTtSol().at(0) ); // only take the first solution (highest weight)
             smeared_weights.push_back( mbl_weight );
         }
     }
+
+//    tp_sm.fDelete(); // clean-up memory
 
     return isSolved;
 }
 
 
-void dileptonTtbarReco::averageSmearedSolutions(const std::vector<ttbarDilepton>& smeared_solutions,
+void dileptonTtbarReco::averageSmearedSolutions(const std::vector<TtbarDilepton>& smeared_solutions,
                                                 const std::vector<double>& smeared_weights,
-                                                ttbarDilepton& solution) {
+                                                TtbarDilepton& solution) {
     /* Average the four-vectors for tops & neutrinos */
     double px_sum_top(0);    double px_sum_antitop(0);
     double py_sum_top(0);    double py_sum_antitop(0);
@@ -404,7 +465,7 @@ void dileptonTtbarReco::averageSmearedSolutions(const std::vector<ttbarDilepton>
     for(int i=0,size=smeared_weights.size();i<size;++i) {
 
           double w(smeared_weights.at(i));
-          ttbarDilepton thisSolution = smeared_solutions.at(i);
+          TtbarDilepton thisSolution = smeared_solutions.at(i);
 
           px_sum_top     += w * thisSolution.top.p4.Px();
           py_sum_top     += w * thisSolution.top.p4.Py();
@@ -439,7 +500,7 @@ void dileptonTtbarReco::averageSmearedSolutions(const std::vector<ttbarDilepton>
     double pz_antinu  = pz_sum_antinu/sumOfWeights;
 
     Neutrino nu;
-    nu.p4.SetXYZM(px_nu,py_nu,pz_nu,0.0
+    nu.p4.SetXYZM(px_nu,py_nu,pz_nu,0.0);
 
     Neutrino antiNu;
     antiNu.p4.SetXYZM(px_antinu,py_antinu,pz_antinu,0.0);
@@ -474,8 +535,8 @@ void dileptonTtbarReco::averageSmearedSolutions(const std::vector<ttbarDilepton>
 
     solution.x1     = (top.p4.E()+antiTop.p4.E()+top.p4.Pz()+antiTop.p4.Pz())/(m_config->beamEnergy());
     solution.x2     = (top.p4.E()+antiTop.p4.E()-top.p4.Pz()-antiTop.p4.Pz())/(m_config->beamEnergy());
-    solution.mtt    = m_tt;
-    solution.weight = 1./m_tt;
+    solution.mtt    = m_tt.M();
+    solution.weight = 1./m_tt.M();
 
     return;
 }
@@ -486,12 +547,12 @@ void dileptonTtbarReco::setSolutions() {
 }
 
 
-void dileptonTtbarReco::setSolutions(std::vector<ttbarDilepton> sols) {
+void dileptonTtbarReco::setSolutions(std::vector<TtbarDilepton> sols) {
     m_NSol = (int)(sols.size());
 
     if(m_NSol>0){
         std::nth_element(begin(sols), begin(sols), end(sols),
-                         [](const ttbarDilepton& a, const ttbarDilepton& b){
+                         [](const TtbarDilepton& a, const TtbarDilepton& b){
                             return b.ntags < a.ntags || (b.ntags == a.ntags && b.weight < a.weight);
                          });
         m_sol = sols[0];
@@ -505,11 +566,11 @@ int dileptonTtbarReco::getNSol() const {
     return m_NSol;
 }
 
-ttbarDilepton dileptonTtbarReco::getSol() const {
+TtbarDilepton dileptonTtbarReco::getSol() const {
     return m_sol;
 }
 
-std::vector<ttbarDilepton> dileptonTtbarReco::getSols() const {
+std::vector<TtbarDilepton> dileptonTtbarReco::getSols() const {
     return m_sols;
 }
 
@@ -520,18 +581,18 @@ void dileptonTtbarReco::loadData() {
          jet & lepton resolutions
          mbl & W mass
     */
-    std::string data_path = m_config->getAbsolutePath()+"/data";
+    std::string data_path = m_config->getAbsolutePath()+"/config";
 
-    if (m_era == Era::run2_13tev_25ns || m_era == Era::run2_13tev_2015_25ns)
-        data_path.Append("/KinReco_input_2015_Run2CD_25ns_76X.root");
-    else if (m_era == Era::run2_13tev_2016_25ns)
-        data_path.Append("/KinReco_input_2016_Run2BtoH_25ns_80X_v036_dilep_sel_25July2017.root");
+    if (m_era == configuration::run2_13tev_25ns || m_era == configuration::run2_13tev_2015_25ns)
+        data_path += "/KinReco_input_2015_Run2CD_25ns_76X.root";
+    else if (m_era == configuration::run2_13tev_2016_25ns)
+        data_path += "/KinReco_input_2016_Run2BtoH_25ns_80X_v036_dilep_sel_25July2017.root";
     else{
         cma::ERROR("DILEPTON : loadData() : Era is not supported");
         std::exit(357);
     }
 
-    TFile dataFile(data_path);
+    TFile dataFile(data_path.c_str());
 
     //jet angle resolution
     m_h_jetAngleRes = (TH1F*)dataFile.Get("KinReco_d_angle_jet_step7");
@@ -656,7 +717,7 @@ void dileptonTtbarReco::loadData() {
 //                                         const std::vector<Jet> jets, const std::vector<double> btags, 
 //                                         const TVector2 met) {
 //     /* Reconstruction with optional mass loop */
-//     std::vector<ttbarDilepton> vect_sol;
+//     std::vector<TtbarDilepton> vect_sol;
 // 
 //     const TLorentzVector leptonPlus_tlv  = leptonPlus.p4;
 //     const TLorentzVector leptonMinus_tlv = leptonMinus.p4;
@@ -759,3 +820,4 @@ void dileptonTtbarReco::loadData() {
 // }
 
 // THE END
+

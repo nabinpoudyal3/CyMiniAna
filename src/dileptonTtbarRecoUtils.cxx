@@ -19,7 +19,7 @@ Texas A&M University
   Reconstructs the ttbar system, other "utility" functions
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
+#include "diHiggs/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
 
 
 dileptonTtbarRecoUtils::dileptonTtbarRecoUtils(const std::map<std::string,double>& truth_masses, const double& beamEnergy){
@@ -27,32 +27,52 @@ dileptonTtbarRecoUtils::dileptonTtbarRecoUtils(const std::map<std::string,double
     m_mtbar  = ( truth_masses.find("antitop") != truth_masses.end() ) ? truth_masses.at("antitop") : m_mass_topbar;
     m_mb     = ( truth_masses.find("b") != truth_masses.end() )       ? truth_masses.at("b") : m_mass_b;
     m_mbbar  = ( truth_masses.find("bar") != truth_masses.end() )     ? truth_masses.at("bbar") : m_mass_bbar;
-    m_m_w    = ( truth_masses.find("wplus") != truth_masses.end() )   ? truth_masses.at("wplus") : m_mass_Wp;
-    m_m_wbar = ( truth_masses.find("wminus") != truth_masses.end() )  ? truth_masses.at("wminus") : m_mass_Wm;
+    m_mw     = ( truth_masses.find("wplus") != truth_masses.end() )   ? truth_masses.at("wplus") : m_mass_Wp;
+    m_mwbar  = ( truth_masses.find("wminus") != truth_masses.end() )  ? truth_masses.at("wminus") : m_mass_Wm;
     m_ml     = ( truth_masses.find("lepton") != truth_masses.end() )     ? truth_masses.at("lepton") : m_mass_l;
     m_mal    = ( truth_masses.find("antilepton") != truth_masses.end() ) ? truth_masses.at("antilepton") : m_mass_al;
     m_mv     = ( truth_masses.find("neutrino") != truth_masses.end() )     ? truth_masses.at("neutrino") : m_mass_v;
     m_mav    = ( truth_masses.find("antineutrino") != truth_masses.end() ) ? truth_masses.at("antineutrino") : m_mass_av;
 
     m_beamEnergy = beamEnergy;  // default 13 TeV
+    m_r3 = new TRandom3();
   }
 
-dileptonTtbarRecoUtils::~dileptonTtbarRecoUtils() {}
-
-void dileptonTtbarRecoUtils::fDelete() const {
-    delete this;
+dileptonTtbarRecoUtils::~dileptonTtbarRecoUtils() {
+    delete m_r3;
 }
 
+void dileptonTtbarRecoUtils::fDelete() const {
+}
+
+
+// Couple of methods to set some variables outside the constructor
+void dileptonTtbarRecoUtils::setTopMass( double topmass ){
+    m_mt = topmass;
+    return;
+}
+void dileptonTtbarRecoUtils::setAntiTopMass( double antitopmass ){
+    m_mtbar = antitopmass;
+    return;
+}
+void dileptonTtbarRecoUtils::setWplus( double wplus ){
+    m_mw = wplus;
+    return;
+}
+void dileptonTtbarRecoUtils::setWminus( double wminus ){
+    m_mwbar = wminus;
+    return;
+}
 
 void dileptonTtbarRecoUtils::setTruthInfo(const Top& top, const Top& antiTop, 
                                           const Neutrino& neutrino, const Neutrino& antiNeutrino) {
     m_true_top         = top;
-    m_true_topbar      = antiTop;
+    m_true_topBar      = antiTop;
     m_true_neutrino    = neutrino;
-    m_true_neutrinobar = antiNeutrino);
+    m_true_neutrinoBar = antiNeutrino;
 
-    filldR();
-    filldN();
+    setdR();
+    setdN();
 
     return;
 }
@@ -94,11 +114,21 @@ void dileptonTtbarRecoUtils::sortBy(std::string ch) {
 }
 
 
-void dileptonTtbarRecoUtils::sortTopSol(std::vector<ttbarDilepton>& v) const {
-    //std::vector< dileptonTtbarRecoUtils::ttbarDilepton > result;
+void dileptonTtbarRecoUtils::swapTopSol(TtbarDilepton& sol1, TtbarDilepton& sol2) const {
+    /* swap the top solutions */
+    TtbarDilepton aux = sol1;
+    sol1 = sol2;
+    sol2 = aux;
+
+    return;
+}
+
+
+void dileptonTtbarRecoUtils::sortTopSol(std::vector<TtbarDilepton>& v) const {
+    //std::vector< dileptonTtbarRecoUtils::TtbarDilepton > result;
     for(uint i=0;i<v.size()-1;++i){
         if(v[i].weight < v[i+1].weight){
-            this->swapTopSol(v[i],v[i+1]);
+            swapTopSol(v[i],v[i+1]);
             i=-1; // force the loop to restart (to re-check everything)
         }
     }
@@ -111,8 +141,8 @@ void dileptonTtbarRecoUtils::sortTopSol(std::vector<ttbarDilepton>& v) const {
 void dileptonTtbarRecoUtils::setdR() {
     /* Set the DeltaR values for top and anti-top wrt truth partons */
     for(int i=0;i<m_NSol;++i){
-        m_ttSol[i].dR = sqrt( pow(m_ttSol[i].top.DeltaR(m_true_top),2) +
-                              pow(m_ttSol[i].topbar.DeltaR(m_true_topbar),2) );
+        m_ttSol[i].dR = sqrt( pow(m_ttSol[i].top.p4.DeltaR(m_true_top.p4),2) +
+                              pow(m_ttSol[i].topBar.p4.DeltaR(m_true_topBar.p4),2) );
     }
 
     return;
@@ -125,9 +155,9 @@ void dileptonTtbarRecoUtils::setdN() {
         m_ttSol[i].dN = sqrt(pow((m_ttSol[i].neutrino.p4.Px()    - m_true_neutrino.p4.Px()),2) + 
                              pow((m_ttSol[i].neutrino.p4.Py()    - m_true_neutrino.p4.Py()),2) + 
                              pow((m_ttSol[i].neutrino.p4.Pz()    - m_true_neutrino.p4.Pz()),2) + 
-                             pow((m_ttSol[i].neutrinobar.p4.Px() - m_true_neutrinobar.p4.Px()),2) + 
-                             pow((m_ttSol[i].neutrinobar.p4.Py() - m_true_neutrinobar.p4.Py()),2) + 
-                             pow((m_ttSol[i].neutrinobar.p4.Pz() - m_true_neutrinobar.p4.Pz()),2));
+                             pow((m_ttSol[i].neutrinoBar.p4.Px() - m_true_neutrinoBar.p4.Px()),2) + 
+                             pow((m_ttSol[i].neutrinoBar.p4.Py() - m_true_neutrinoBar.p4.Py()),2) + 
+                             pow((m_ttSol[i].neutrinoBar.p4.Pz() - m_true_neutrinoBar.p4.Pz()),2));
     }
 
     return;
@@ -139,7 +169,7 @@ int dileptonTtbarRecoUtils::getNsol() const {
 }
 
 
-const std::vector<ttbarDilepton> dileptonTtbarRecoUtils::getTtSol() const {
+std::vector<TtbarDilepton> dileptonTtbarRecoUtils::getTtSol() const {
     return m_ttSol;
 }
 
@@ -169,7 +199,7 @@ void dileptonTtbarRecoUtils::execute() {
 
         topRec(vect_pxv_[i]);     // assign values for physics objects
 
-        ttbarDilepton TS_temp;
+        TtbarDilepton TS_temp;
 
         TS_temp.bJet       = m_b;
         TS_temp.bbarJet    = m_bbar;
@@ -222,8 +252,8 @@ void dileptonTtbarRecoUtils::topRec(const double& px_neutrino) {
     pzp = (-1)*(b1_+b2_*pxp+b3_*pyp)/b4_;
 
     // Define the neutrinos
-    m_neutrinobar.SetXYZM(pxp, pyp, pzp, m_mav);
-    m_neutrino.SetXYZM(pup, pvp, pwp, m_mv);
+    m_neutrinobar.p4.SetXYZM(pxp, pyp, pzp, m_mav);
+    m_neutrino.p4.SetXYZM(pup, pvp, pwp, m_mv);
 
     // Define the W bosons
     m_w      = m_al.p4 + m_neutrino.p4;
@@ -248,30 +278,30 @@ void dileptonTtbarRecoUtils::topRec(const double& px_neutrino) {
 
 void dileptonTtbarRecoUtils::findCoeff(double* const koeficienty) {
     /* Find the coefficients */
-    a1_ = ((m_b.p4.P4.E()+m_al.p4.P4.E())*(mm_w*mm_w-m_mal*m_mal-m_mv*m_mv)-m_al.p4.P4.E()*(m_mt*m_mt-m_mb*m_mb-m_mal*m_mal-m_mv*m_mv)+2*m_b.p4.P4.E()*m_al.p4.P4.E()*m_al.p4.P4.E()-2*m_al.p4.P4.E()*(m_al.Vect().Dot(m_b.Vect())))/(2*m_al.p4.P4.E()*(m_b.p4.P4.E()+m_al.p4.P4.E()));
-    a2_ = 2*(m_b.p4.P4.E()*m_al.p4.Px()-m_al.p4.P4.E()*m_b.p4.Px())/(2*m_al.p4.P4.E()*(m_b.p4.P4.E()+m_al.p4.P4.E()));
-    a3_ = 2*(m_b.p4.P4.E()*m_al.p4.Py()-m_al.p4.P4.E()*m_b.p4.Py())/(2*m_al.p4.P4.E()*(m_b.p4.P4.E()+m_al.p4.P4.E()));
-    a4_ = 2*(m_b.p4.P4.E()*m_al.p4.Pz()-m_al.p4.P4.E()*m_b.p4.Pz())/(2*m_al.p4.P4.E()*(m_b.p4.P4.E()+m_al.p4.P4.E()));
+    a1_ = ((m_b.p4.E()+m_al.p4.E())*(m_mw*m_mw-m_mal*m_mal-m_mv*m_mv)-m_al.p4.E()*(m_mt*m_mt-m_mb*m_mb-m_mal*m_mal-m_mv*m_mv)+2*m_b.p4.E()*m_al.p4.E()*m_al.p4.E()-2*m_al.p4.E()*(m_al.p4.Vect().Dot(m_b.p4.Vect())))/(2*m_al.p4.E()*(m_b.p4.E()+m_al.p4.E()));
+    a2_ = 2*(m_b.p4.E()*m_al.p4.Px()-m_al.p4.E()*m_b.p4.Px())/(2*m_al.p4.E()*(m_b.p4.E()+m_al.p4.E()));
+    a3_ = 2*(m_b.p4.E()*m_al.p4.Py()-m_al.p4.E()*m_b.p4.Py())/(2*m_al.p4.E()*(m_b.p4.E()+m_al.p4.E()));
+    a4_ = 2*(m_b.p4.E()*m_al.p4.Pz()-m_al.p4.E()*m_b.p4.Pz())/(2*m_al.p4.E()*(m_b.p4.E()+m_al.p4.E()));
 
-    b1_ = ((m_bbar.p4.P4.E()+m_l.p4.P4.E())*(mm_wbar*mm_wbar-m_ml*m_ml-m_mav*m_mav)-m_l.p4.P4.E()*(mtbar_*mtbar_-m_mbbar*m_mbbar-m_ml*m_ml-m_mav*m_mav)+2*m_bbar.p4.P4.E()*m_l.p4.P4.E()*m_l.p4.P4.E()-2*m_l.p4.P4.E()*(m_l.Vect().Dot(m_bbar.Vect())))/(2*m_l.p4.P4.E()*(m_bbar.p4.E()+m_l.p4.p4.E()));
-    b2_ = 2*(m_bbar.p4.P4.E()*m_l.p4.Px()-m_l.p4.P4.E()*m_bbar.p4.Px())/(2*m_l.p4.P4.E()*(m_bbar.p4.P4.E()+m_l.p4.P4.E()));
-    b3_ = 2*(m_bbar.p4.P4.E()*m_l.p4.Py()-m_l.p4.P4.E()*m_bbar.p4.Py())/(2*m_l.p4.P4.E()*(m_bbar.p4.P4.E()+m_l.p4.P4.E()));
-    b4_ = 2*(m_bbar.p4.P4.E()*m_l.p4.Pz()-m_l.p4.P4.E()*m_bbar.p4.Pz())/(2*m_l.p4.P4.E()*(m_bbar.p4.P4.E()+m_l.p4.P4.E()));
+    b1_ = ((m_bbar.p4.E()+m_l.p4.E())*(m_mwbar*m_mwbar-m_ml*m_ml-m_mav*m_mav)-m_l.p4.E()*(m_mtbar*m_mtbar-m_mbbar*m_mbbar-m_ml*m_ml-m_mav*m_mav)+2*m_bbar.p4.E()*m_l.p4.E()*m_l.p4.E()-2*m_l.p4.E()*(m_l.p4.Vect().Dot(m_bbar.p4.Vect())))/(2*m_l.p4.E()*(m_bbar.p4.E()+m_l.p4.E()));
+    b2_ = 2*(m_bbar.p4.E()*m_l.p4.Px()-m_l.p4.E()*m_bbar.p4.Px())/(2*m_l.p4.E()*(m_bbar.p4.E()+m_l.p4.E()));
+    b3_ = 2*(m_bbar.p4.E()*m_l.p4.Py()-m_l.p4.E()*m_bbar.p4.Py())/(2*m_l.p4.E()*(m_bbar.p4.E()+m_l.p4.E()));
+    b4_ = 2*(m_bbar.p4.E()*m_l.p4.Pz()-m_l.p4.E()*m_bbar.p4.Pz())/(2*m_l.p4.E()*(m_bbar.p4.E()+m_l.p4.E()));
 
 
-    c22_ = (sqr((mm_w*mm_w-m_mal*m_mal-m_mv*m_mv))-4*(sqr(m_al.p4.P4.E())-sqr(m_al.p4.Pz()))*sqr(a1_/a4_)-4*(mm_w*mm_w-m_mal*m_mal-m_mv*m_mv)*m_al.p4.Pz()*(a1_/a4_))/sqr(2*(m_b.p4.P4.E()+m_al.p4.P4.E())); 
-    c21_ = (4*(mm_w*mm_w-m_mal*m_mal-m_mv*m_mv)*(m_al.p4.Px()-m_al.p4.Pz()*(a2_/a4_))-8*(sqr(m_al.p4.P4.E())-sqr(m_al.p4.Pz()))*(a1_*a2_/sqr(a4_))-8*m_al.p4.Px()*m_al.p4.Pz()*(a1_/a4_))/sqr(2*(m_b.p4.P4.E()+m_al.p4.P4.E())); 
-    c20_ = (-4*(sqr(m_al.p4.P4.E())-sqr(m_al.p4.Px()))-4*(sqr(m_al.p4.P4.E())-sqr(m_al.p4.Pz()))*sqr(a2_/a4_)-8*m_al.p4.Px()*m_al.p4.Pz()*(a2_/a4_))/sqr(2*(m_b.p4.P4.E()+m_al.p4.P4.E())); 
-    c11_ = (4*(mm_w*mm_w-m_mal*m_mal-m_mv*m_mv)*(m_al.p4.Py()-m_al.p4.Pz()*(a3_/a4_))-8*(sqr(m_al.p4.P4.E())-sqr(m_al.p4.Pz()))*(a1_*a3_/sqr(a4_))-8*m_al.p4.Py()*m_al.p4.Pz()*(a1_/a4_))/sqr(2*(m_b.p4.P4.E()+m_al.p4.P4.E())); 
-    c10_ = (-8*(sqr(m_al.p4.P4.E())-sqr(m_al.p4.Pz()))*(a2_*a3_/sqr(a4_)) + 8*m_al.p4.Px()*m_al.p4.Py() - 8*m_al.p4.Px()*m_al.p4.Pz()*(a3_/a4_) - 8*m_al.p4.Py()*m_al.p4.Pz()*(a2_/a4_))/sqr(2*(m_b.p4.P4.E()+m_al.p4.P4.E()));
-    c00_ = (-4*(sqr(m_al.p4.P4.E())-sqr(m_al.p4.Py())) -4*(sqr(m_al.p4.P4.E())-sqr(m_al.p4.Pz()))*sqr(a3_/a4_)-8*m_al.p4.Py()*m_al.p4.Pz()*(a3_/a4_))/sqr(2*(m_b.p4.P4.E()+m_al.p4.P4.E()));
+    c22_ = (sqr((m_mw*m_mw-m_mal*m_mal-m_mv*m_mv))-4*(sqr(m_al.p4.E())-sqr(m_al.p4.Pz()))*sqr(a1_/a4_)-4*(m_mw*m_mw-m_mal*m_mal-m_mv*m_mv)*m_al.p4.Pz()*(a1_/a4_))/sqr(2*(m_b.p4.E()+m_al.p4.E())); 
+    c21_ = (4*(m_mw*m_mw-m_mal*m_mal-m_mv*m_mv)*(m_al.p4.Px()-m_al.p4.Pz()*(a2_/a4_))-8*(sqr(m_al.p4.E())-sqr(m_al.p4.Pz()))*(a1_*a2_/sqr(a4_))-8*m_al.p4.Px()*m_al.p4.Pz()*(a1_/a4_))/sqr(2*(m_b.p4.E()+m_al.p4.E())); 
+    c20_ = (-4*(sqr(m_al.p4.E())-sqr(m_al.p4.Px()))-4*(sqr(m_al.p4.E())-sqr(m_al.p4.Pz()))*sqr(a2_/a4_)-8*m_al.p4.Px()*m_al.p4.Pz()*(a2_/a4_))/sqr(2*(m_b.p4.E()+m_al.p4.E())); 
+    c11_ = (4*(m_mw*m_mw-m_mal*m_mal-m_mv*m_mv)*(m_al.p4.Py()-m_al.p4.Pz()*(a3_/a4_))-8*(sqr(m_al.p4.E())-sqr(m_al.p4.Pz()))*(a1_*a3_/sqr(a4_))-8*m_al.p4.Py()*m_al.p4.Pz()*(a1_/a4_))/sqr(2*(m_b.p4.E()+m_al.p4.E())); 
+    c10_ = (-8*(sqr(m_al.p4.E())-sqr(m_al.p4.Pz()))*(a2_*a3_/sqr(a4_)) + 8*m_al.p4.Px()*m_al.p4.Py() - 8*m_al.p4.Px()*m_al.p4.Pz()*(a3_/a4_) - 8*m_al.p4.Py()*m_al.p4.Pz()*(a2_/a4_))/sqr(2*(m_b.p4.E()+m_al.p4.E()));
+    c00_ = (-4*(sqr(m_al.p4.E())-sqr(m_al.p4.Py())) -4*(sqr(m_al.p4.E())-sqr(m_al.p4.Pz()))*sqr(a3_/a4_)-8*m_al.p4.Py()*m_al.p4.Pz()*(a3_/a4_))/sqr(2*(m_b.p4.E()+m_al.p4.E()));
 
 
     double D22,D21,D20,D11,D10,D00;
-    D22 = (sqr((mm_wbar*mm_wbar-m_ml*m_ml-m_mav*m_mav))-4*(sqr(m_l.p4.P4.E())-sqr(m_l.p4.Pz()))*sqr(b1_/b4_)-4*(mm_wbar*mm_wbar-m_ml*m_ml-m_mav*m_mav)*m_l.p4.Pz()*(b1_/b4_))/sqr(2*(m_bbar.p4.P4.E()+m_l.p4.P4.E())); 
-    D21 = (4*(mm_wbar*mm_wbar-m_ml*m_ml-m_mav*m_mav)*(m_l.p4.Px()-m_l.p4.Pz()*(b2_/b4_))-8*(sqr(m_l.p4.P4.E())-sqr(m_l.p4.Pz()))*(b1_*b2_/sqr(b4_))-8*m_l.p4.Px()*m_l.p4.Pz()*(b1_/b4_))/sqr(2*(m_bbar.p4.P4.E()+m_l.p4.P4.E())); 
-    D20 = (-4*(sqr(m_l.p4.P4.E())-sqr(m_l.p4.Px()))-4*(sqr(m_l.p4.E())-sqr(m_l.p4.Pz()))*sqr(b2_/b4_)-8*m_l.p4.Px()*m_l.p4.Pz()*(b2_/b4_))/sqr(2*(m_bbar.p4.E()+m_l.p4.E())); 
-    D11 = (4*(mm_wbar*mm_wbar-m_ml*m_ml-m_mav*m_mav)*(m_l.p4.Py()-m_l.p4.Pz()*(b3_/b4_))-8*(sqr(m_l.p4.E())-sqr(m_l.p4.Pz()))*(b1_*b3_/sqr(b4_))-8*m_l.p4.Py()*m_l.p4.Pz()*(b1_/b4_))/sqr(2*(m_bbar.p4.E()+m_l.p4.E())); 
+    D22 = (sqr((m_mwbar*m_mwbar-m_ml*m_ml-m_mav*m_mav))-4*(sqr(m_l.p4.E())-sqr(m_l.p4.Pz()))*sqr(b1_/b4_)-4*(m_mwbar*m_mwbar-m_ml*m_ml-m_mav*m_mav)*m_l.p4.Pz()*(b1_/b4_))/sqr(2*(m_bbar.p4.E()+m_l.p4.E())); 
+    D21 = (4*(m_mwbar*m_mwbar-m_ml*m_ml-m_mav*m_mav)*(m_l.p4.Px()-m_l.p4.Pz()*(b2_/b4_))-8*(sqr(m_l.p4.E())-sqr(m_l.p4.Pz()))*(b1_*b2_/sqr(b4_))-8*m_l.p4.Px()*m_l.p4.Pz()*(b1_/b4_))/sqr(2*(m_bbar.p4.E()+m_l.p4.E())); 
+    D20 = (-4*(sqr(m_l.p4.E())-sqr(m_l.p4.Px()))-4*(sqr(m_l.p4.E())-sqr(m_l.p4.Pz()))*sqr(b2_/b4_)-8*m_l.p4.Px()*m_l.p4.Pz()*(b2_/b4_))/sqr(2*(m_bbar.p4.E()+m_l.p4.E())); 
+    D11 = (4*(m_mwbar*m_mwbar-m_ml*m_ml-m_mav*m_mav)*(m_l.p4.Py()-m_l.p4.Pz()*(b3_/b4_))-8*(sqr(m_l.p4.E())-sqr(m_l.p4.Pz()))*(b1_*b3_/sqr(b4_))-8*m_l.p4.Py()*m_l.p4.Pz()*(b1_/b4_))/sqr(2*(m_bbar.p4.E()+m_l.p4.E())); 
     D10 = (-8*(sqr(m_l.p4.E())-sqr(m_l.p4.Pz()))*(b2_*b3_/sqr(b4_)) + 8*m_l.p4.Px()*m_l.p4.Py() - 8*m_l.p4.Px()*m_l.p4.Pz()*(b3_/b4_) - 8*m_l.p4.Py()*m_l.p4.Pz()*(b2_/b4_))/sqr(2*(m_bbar.p4.E()+m_l.p4.E()));
     D00  = (-4*(sqr(m_l.p4.E())-sqr(m_l.p4.Py())) -4*(sqr(m_l.p4.E())-sqr(m_l.p4.Pz()))*sqr(b3_/b4_)-8*m_l.p4.Py()*m_l.p4.Pz()*(b3_/b4_))/sqr(2*(m_bbar.p4.E()+m_l.p4.E()));
 
@@ -305,7 +335,7 @@ void dileptonTtbarRecoUtils::quartic_equation(const double& h0, const double& h1
     std::vector<double> result;
 
     if(sign(a4_)==0 || sign(b4_)==0) {
-        result.p4.Push_back(0);
+        result.push_back(0);
         v.swap(result);
     }
     else{
@@ -317,7 +347,7 @@ void dileptonTtbarRecoUtils::quartic_equation(const double& h0, const double& h1
             if(sign(h4)==0){
                 this->cubic_equation(h0,h1,h2,h3,result);
                 result[0]=result[0]+1;
-                result.p4.Push_back(0);
+                result.push_back(0);
                 v.swap(result);
             }
             else{
@@ -335,7 +365,7 @@ void dileptonTtbarRecoUtils::quartic_equation(const double& h0, const double& h1
                         result[i]=result[i]-H1/4;
                     }
                     result[0]=result[0]+1;
-                    result.p4.Push_back(-H1/4);
+                    result.push_back(-H1/4);
                     v.swap(result);
                 }
                 else{
@@ -343,25 +373,25 @@ void dileptonTtbarRecoUtils::quartic_equation(const double& h0, const double& h1
                     std::vector<double> result_t1;
                     std::vector<double> result_t2;
 
-                    result_t1.p4.Push_back(0);
-                    result_t2.p4.Push_back(0);
+                    result_t1.push_back(0);
+                    result_t2.push_back(0);
 
                     this->cubic_equation(1,2*K1,(K1*K1-4*K3),(-1)*K2*K2,result_t12); 
 
                     for(int i=1;i<=result_t12[0];++i){
                         if(result_t12[i]>=0){
                             result_t1[0]=result_t1[0]+2;
-                            result_t1.p4.Push_back(sqrt(result_t12[i]));
-                            result_t1.p4.Push_back((-1)*sqrt(result_t12[i]));
+                            result_t1.push_back(sqrt(result_t12[i]));
+                            result_t1.push_back((-1)*sqrt(result_t12[i]));
                             result_t2[0]=result_t2[0]+2;
-                            result_t2.p4.Push_back((K1+result_t12[i]-K2/sqrt(result_t12[i]))/2);
-                            result_t2.p4.Push_back((K1+result_t12[i]+K2/sqrt(result_t12[i]))/2);
+                            result_t2.push_back((K1+result_t12[i]-K2/sqrt(result_t12[i]))/2);
+                            result_t2.push_back((K1+result_t12[i]+K2/sqrt(result_t12[i]))/2);
                         }
                     }  
 
                     std::vector<double> pre_result1;
 
-                    result.p4.Push_back(0);
+                    result.push_back(0);
                     for(int i=1;i<=result_t1[0];++i){
                         this->quadratic_equation(1,result_t1[i],result_t2[i],pre_result1);
  
@@ -372,7 +402,7 @@ void dileptonTtbarRecoUtils::quartic_equation(const double& h0, const double& h1
                             }
                             if(flag){
                                 result.at(0)=result.at(0)+1;
-                                result.p4.Push_back(pre_result1[j]);
+                                result.push_back(pre_result1[j]);
                             }
                         }
                         pre_result1.clear();  
@@ -410,11 +440,11 @@ void dileptonTtbarRecoUtils::cubic_equation(const double& a, const double& b,
         double r2 = r*r;
         double S = r2-q3;
         if(sign(S)<0){
-            result.p4.Push_back(3);
+            result.push_back(3);
             double F = acos(r/sqrt(q3));
-            result.p4.Push_back(-2*sqrt(fabs(q))*cos(F/3)-s1/3);
-            result.p4.Push_back(-2*sqrt(fabs(q))*cos((F+2*TMath::Pi())/3)-s1/3);
-            result.p4.Push_back(-2*sqrt(fabs(q))*cos((F-2*TMath::Pi())/3)-s1/3);  
+            result.push_back(-2*sqrt(fabs(q))*cos(F/3)-s1/3);
+            result.push_back(-2*sqrt(fabs(q))*cos((F+2*TMath::Pi())/3)-s1/3);
+            result.push_back(-2*sqrt(fabs(q))*cos((F-2*TMath::Pi())/3)-s1/3);  
             v.swap(result);
         }
         else{
@@ -422,17 +452,17 @@ void dileptonTtbarRecoUtils::cubic_equation(const double& a, const double& b,
                 long double A = r+sqrt(fabs(r2-q3));
                 A = A<0 ? pow(fabs(A),(long double)1.0/3) : -pow(fabs(A),(long double)1.0/3);
                 long double B = sign(A) == 0 ? 0 : q/A; 
-                result.p4.Push_back(2);
-                result.p4.Push_back(A+B-s1/3);
-                result.p4.Push_back(-0.5*(A+B)-s1/3);  //!!!
+                result.push_back(2);
+                result.push_back(A+B-s1/3);
+                result.push_back(-0.5*(A+B)-s1/3);  //!!!
                 v.swap(result);
             }
             else{
                 long double A = r+sqrt(fabs(r2-q3));
                 A = A<0 ? pow(fabs(A),(long double)1.0/3) : -pow(fabs(A),(long double)1.0/3);
                 long double B = sign(A) == 0 ? 0 : q/A; 
-                result.p4.Push_back(1);
-                result.p4.Push_back(A+B-s1/3);
+                result.push_back(1);
+                result.push_back(A+B-s1/3);
                 v.swap(result);
             } // end else sign(S)!=0
         } // end else sign(S)<=0
@@ -456,19 +486,19 @@ void dileptonTtbarRecoUtils::quadratic_equation(const double& a, const double& b
         double D = b*b-4*a*c;
 
         if(this->sign(D)<0){
-            result.p4.Push_back(0);
+            result.push_back(0);
             v.swap(result);
         }
         else {
             if(sign(D)==0){
-                result.p4.Push_back(1);
-                result.p4.Push_back((-1)*b/(2*a));
+                result.push_back(1);
+                result.push_back((-1)*b/(2*a));
                 v.swap(result);
             }
             else{
-                result.p4.Push_back(2);
-                result.p4.Push_back((-b-sqrt(D))/(2*a));
-                result.p4.Push_back((-b+sqrt(D))/(2*a));
+                result.push_back(2);
+                result.push_back((-b-sqrt(D))/(2*a));
+                result.push_back((-b+sqrt(D))/(2*a));
                 v.swap(result);
             } // end else sign(D)!=0
         } // end else sign(D)>=0
@@ -483,12 +513,12 @@ void dileptonTtbarRecoUtils::linear_equation(const double& a, const double& b, s
     /* Linear equation for reconstruction */
     std::vector<double> result;
     if(a==0){
-        result.p4.Push_back(0);
+        result.push_back(0);
         v.swap(result);
     }
     else{
-        result.p4.Push_back(1);
-        result.p4.Push_back((-1)*(b/a));
+        result.push_back(1);
+        result.push_back((-1)*(b/a));
         v.swap(result);
     }
 
@@ -496,8 +526,8 @@ void dileptonTtbarRecoUtils::linear_equation(const double& a, const double& b, s
 }
 
 
-void dileptonTtbarRecoUtils::angle_rot(const double& alpha, const double& e, 
-                                       const Jet& inJet,    Jet& jet_sm) const {
+void dileptonTtbarRecoUtils::angle_rot(const double& alpha,  const double& e, 
+                                       const cmaBase& inJet, cmaBase& jet_sm) const {
     /* Angle rotation */
     double px_1, py_1, pz_1; // Coordinate system where momentum is along Z-axis
 
@@ -506,7 +536,7 @@ void dileptonTtbarRecoUtils::angle_rot(const double& alpha, const double& e,
     double x2, y2, z2;
     double x3, y3, z3;
 
-    Jet jet = inJet;
+    cmaBase jet = inJet;
     if( std::abs(jet.p4.Px())<=e ) jet.p4.SetPx(0);
     if( std::abs(jet.p4.Py())<=e ) jet.p4.SetPy(0);
     if( std::abs(jet.p4.Pz())<=e ) jet.p4.SetPz(0);
@@ -545,7 +575,7 @@ void dileptonTtbarRecoUtils::angle_rot(const double& alpha, const double& e,
         if ( std::abs(jet.p4.Px())<1e-6 )
             jet_sm.p4.SetPxPyPzE(jet.p4.Px(),jet.p4.Py(),jet.p4.Pz(),jet.p4.E());
         else
-            jet_sm.SetPxPyPzE(pz_1,px_1,py_1,jet.p4.E()); // not sure why the momenta are switched...
+            jet_sm.p4.SetPxPyPzE(pz_1,px_1,py_1,jet.p4.E()); // not sure why the momenta are switched...
     }
 
     return;
@@ -585,3 +615,4 @@ double dileptonTtbarRecoUtils::landau2D(const double& xv, const double& xvbar) c
 }
 
 // THE END
+

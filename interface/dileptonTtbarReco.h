@@ -6,12 +6,11 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
-#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
-#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoMeanSolution.h"
-#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
-#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
+#include "diHiggs/CyMiniAna/interface/tools.h"
+#include "diHiggs/CyMiniAna/interface/physicsObjects.h"
+#include "diHiggs/CyMiniAna/interface/configuration.h"
+#include "diHiggs/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
+#include "diHiggs/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
 
 
 
@@ -19,19 +18,20 @@ class dileptonTtbarReco{
 
   public:
 
-    dileptonTtbarReco(configuration& cmaConfig,   const Era::Era era, 
+    dileptonTtbarReco(configuration& cmaConfig,   const configuration::Era era, 
                       const int minNumberOfBtags, const bool preferBtags, 
                       const bool massLoop=false);
-    ~dileptonTtbarReco(){}
+    ~dileptonTtbarReco();
 
     int getNSol() const;
-    ttbarDilepton getSol() const;
-    std::vector<ttbarDilepton> getSols() const;
+    TtbarDilepton getSol() const;
+    std::vector<TtbarDilepton> getSols() const;
 
     void loadData();
 
     /// Retrieve all solutions valid for setup of kinematic reconstruction
-    dileptonTtbarRecoSolutions execute(const ttbarDilepton& ttSystem);
+    std::map<std::string,Top> execute(const DileptonReco& ttSystem);
+    dileptonTtbarRecoSolution buildTtbar(const TtbarDilepton& ttSystem);
 
 
     /* NOT USED */
@@ -43,31 +43,32 @@ class dileptonTtbarReco{
   private:
 
     /// Calculate solution for specific lepton, antilepton and pair of jets
-    std::vector<ttbarDilepton> getSolutions(const ttbarDilepton& singleTtbarSystem, const int numberOfBtags);
+    std::vector<TtbarDilepton> getSolutions(const TtbarDilepton& singleTtbarSystem, const int numberOfBtags);
 
     /// Calculate solution using smearing
-    bool getSmearedSolutions(std::vector<ttbarDilepton>& smeared_solutions,
-                             std::vector<double>& smeared_weights,
-                             const DileptonReco& ttSystem) const;
+    bool getSmearedSolutions(std::vector<TtbarDilepton>&, std::vector<double>&, const DileptonReco&) const;
+    void averageSmearedSolutions(const std::vector<TtbarDilepton>& smeared_solutions,
+                                 const std::vector<double>& smeared_weights,
+                                 TtbarDilepton& solution);
 
     // FIXME: temporary helper variables for cleanup
     void setSolutions();
-    void setSolutions(std::vector<ttbarDilepton> sols);
+    void setSolutions(std::vector<TtbarDilepton> sols);
 
 
     // Member variables
-    configuration *m_config;       /// CyMiniAna configuration
-    TRandom3* m_r3;                /// Random number generation
-    const Era::Era m_era;          /// Analysis era
-    const int m_minNumberOfBtags;  /// Minimum number of b-tags required for solutions (0, 1, 2)
-    const bool m_preferBtags;      /// Prefer solutions with b-tags (2 tags if existing, else 1 tag if existing, else 0 tags)
-    const bool m_massLoop;         /// Whether to run mass loop for top mass, instead of smearings according to uncertainties
-    double m_btag_wp;
+    configuration *m_config;        /// CyMiniAna configuration
+    TRandom3* m_r3;                 /// Random number generation
+    const configuration::Era m_era; /// Analysis era
+    const int m_minNumberOfBtags;   /// Minimum number of b-tags required for solutions (0, 1, 2)
+    const bool m_preferBtags;       /// Prefer solutions with b-tags (2 tags if existing, else 1 tag if existing, else 0 tags)
+    const bool m_massLoop;          /// Whether to run mass loop for top mass, instead of smearings according to uncertainties
+    std::string m_btag_wp;
     int m_rangeLow, m_rangeHigh;
 
     int m_NSol;
-    ttbarDilepton m_sol;
-    std::vector<ttbarDilepton> m_sols;
+    TtbarDilepton m_sol;
+    std::vector<TtbarDilepton> m_sols;
 
     double m_topMass;
 
@@ -94,3 +95,5 @@ class dileptonTtbarReco{
 };
 
 #endif
+
+
