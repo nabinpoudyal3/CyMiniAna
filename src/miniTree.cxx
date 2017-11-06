@@ -32,7 +32,6 @@ void miniTree::initialize(TTree* t, TFile& outputFile) {
 
     /*** setup new branches here ***/
     m_ttree->Branch( "DNN", &m_dnn );
-    m_ttree->Branch( "HME", &m_hme );
 
     /*** disable branches here ***/
     // m_ttree->SetBranchStatus("", 0);
@@ -50,7 +49,6 @@ void miniTree::saveEvent(Event& event) {
 
     // set the new values
     m_dnn = event.DNN();
-    m_hme = event.HME();
 
     cma::DEBUG("MINITREE : Fill the tree");
     m_ttree->Fill();

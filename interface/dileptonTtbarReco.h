@@ -6,11 +6,11 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 
-#include "diHiggs/CyMiniAna/interface/tools.h"
-#include "diHiggs/CyMiniAna/interface/physicsObjects.h"
-#include "diHiggs/CyMiniAna/interface/configuration.h"
-#include "diHiggs/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
-#include "diHiggs/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
+#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
 
 
 

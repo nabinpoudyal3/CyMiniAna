@@ -1,5 +1,5 @@
-#ifndef TOOLS_H
-#define TOOLS_H
+#ifndef TOOLS_H_
+#define TOOLS_H_
 
 #include <memory>
 #include <vector>
@@ -42,10 +42,10 @@ namespace cma{
     void getListOfKeys( TFile* file, std::vector<std::string> &fileKeys );
 
     /* calculate values for normalizing monte carlo samples */
-    void getSampleWeights( std::string &sw_files, 
-                           std::map<unsigned int,float> &m_mapXSection,
-                           std::map<unsigned int,float> &m_mapKFactor,
-                           std::map<unsigned int,float> &m_mapAMI );
+    void getSampleWeights( std::string metadata_file,
+                           std::map<std::string,float> &m_mapXSection,
+                           std::map<std::string,float> &m_mapKFactor,
+                           std::map<std::string,float> &m_mapAMI );
 
     /* Convert string to boolean */
     bool str2bool( const std::string value );
@@ -55,21 +55,10 @@ namespace cma{
 
     /* Random seed for dilepton ttbar reconstruction */
     unsigned int setRandomNumberSeeds(const Lepton& lepton, const Lepton& antiLepton, 
-                                      const Jet& jet1, const Jet& jet2) const;
+                                      const Jet& jet1, const Jet& jet2);
 
     /* DeltaR matching of TLorentzVectors (default deltaR=0.75) */
     bool deltaRMatch( TLorentzVector &particle1, TLorentzVector &particle2, double deltaR=0.75 );
-
-    // debug message handling
-    extern std::string m_debugLevel;
-    void setVerboseLevel(const std::string& verboseLevel);
-    void DEBUG(const std::string& message);
-    void INFO(const std::string& message);
-    void WARNING(const std::string& message);
-    void ERROR(const std::string& message);
-    void HELP(const std::string& runExecutable="run");
-    std::map<std::string,unsigned int> verboseMap();
-    void verbose(const std::string level, const std::string& message);
 
     /* Calculate the median of a vector */
     template<typename T>
@@ -82,6 +71,18 @@ namespace cma{
         else{ med = scores[size / 2]; }
         return med;
     };
+
+    // debug message handling
+    extern std::string m_debugLevel;
+    void setVerboseLevel(const std::string& verboseLevel);
+    void DEBUG(const std::string& message);
+    void INFO(const std::string& message);
+    void WARNING(const std::string& message);
+    void ERROR(const std::string& message);
+    void HELP(const std::string& runExecutable="run");
+    std::map<std::string,unsigned int> verboseMap();
+    void verbose(const std::string level, const std::string& message);
 }
 
 #endif
+

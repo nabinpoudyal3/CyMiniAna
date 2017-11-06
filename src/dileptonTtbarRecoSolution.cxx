@@ -19,7 +19,7 @@ Texas A&M University
  Functions retrieve information about the solutions for the user (dileptonTtbarReco)
 
 */
-#include "diHiggs/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
+#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoSolution.h"
 
 
 dileptonTtbarRecoSolution::dileptonTtbarRecoSolution() {

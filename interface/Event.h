@@ -29,6 +29,7 @@
 
 #include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
 #include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarReco.h"
 #include "cms-ttbarAC/lwtnn/interface/LightweightNeuralNetwork.hh"
 #include "cms-ttbarAC/lwtnn/interface/parse_json.hh"
 

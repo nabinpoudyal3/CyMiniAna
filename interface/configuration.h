@@ -117,7 +117,7 @@ class configuration {
     /// All analysis eras as needed
     enum Era{run2_13tev_25ns,     run2_13tev_2015_25ns, run2_13tev_2016_25ns, 
              run2_13tev_25ns_74X, undefined};
-    Era convert(const TString& era);       /// Convert an era from string to enum
+    Era convert(const std::string& era);       /// Convert an era from string to enum
     std::string convert(const Era& era);   /// Convert an era from enum to string
     double energyInTev(const Era era) {return 13.;}     /// Return energy for given era in TeV
 
@@ -191,6 +191,9 @@ class configuration {
     std::map<unsigned int, float> m_XSection; // map DSID to XSection
     std::map<unsigned int, float> m_KFactor;  // map DSID to KFactor
     std::map<unsigned int, float> m_AMI;      // map DSID to sum of weights
+
+    std::vector<std::string> m_qcdSelections = {"0b0t","0b1t","0b2t","1b0t",
+                                                "1b1t","1b2t","2b0t","2b1t", "2b2t"};
 
     double m_minDNN  = 0.0;   // min. value in the DNN discriminant
     double m_maxDNN  = 1.0;   // max. value in the DNN discriminant

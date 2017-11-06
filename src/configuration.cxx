@@ -376,18 +376,17 @@ void configuration::check_btag_WP(const std::string &wkpt){
     return;
 }
 
-Era configuration::convert(const std::string& era) {
+configuration::Era configuration::convert(const std::string& era) {
     /* Convert string to era enum */
-    if(era == "run2_13tev_25ns") return run2_13tev_25ns;
-    else if(era == "run2_13tev_2015_25ns") return run2_13tev_2015_25ns;
-    else if(era == "run2_13tev_2016_25ns") return run2_13tev_2016_25ns;
-    else if(era == "run2_13tev_25ns_74X") return run2_13tev_25ns_74X;
+    if(era == "run2_13tev_25ns") return configuration::run2_13tev_25ns;
+    else if(era == "run2_13tev_2015_25ns") return configuration::run2_13tev_2015_25ns;
+    else if(era == "run2_13tev_2016_25ns") return configuration::run2_13tev_2016_25ns;
+    else if(era == "run2_13tev_25ns_74X") return configuration::run2_13tev_25ns_74X;
     else {
         cma::ERROR("CONFIGURATION : ERA convert conversion is not implemented: "+era);
         exit(97);
     }
 }
-
 
 std::string configuration::convert(const Era& era) {
     /* Convert era to string */

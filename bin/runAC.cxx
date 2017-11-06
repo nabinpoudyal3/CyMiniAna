@@ -32,15 +32,15 @@ Steering macro for running CyMiniAna
 #include <string>
 #include <math.h>
 
-#include "diHiggs/CyMiniAna/interface/configuration.h"
-#include "diHiggs/CyMiniAna/interface/Event.h"
-#include "diHiggs/CyMiniAna/interface/eventSelection.h"
-#include "diHiggs/CyMiniAna/interface/miniTree.h"
-#include "diHiggs/CyMiniAna/interface/tools.h"
-#include "diHiggs/CyMiniAna/interface/histogrammer.h"
-#include "diHiggs/CyMiniAna/interface/histogrammerTruth.h"
-#include "diHiggs/CyMiniAna/interface/efficiency.h"
-#include "diHiggs/CyMiniAna/interface/efficiencyTruth.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
+#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
+#include "cms-ttbarAC/CyMiniAna/interface/miniTree.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/histogrammer.h"
+#include "cms-ttbarAC/CyMiniAna/interface/histogrammerTruth.h"
+#include "cms-ttbarAC/CyMiniAna/interface/efficiency.h"
+#include "cms-ttbarAC/CyMiniAna/interface/efficiencyTruth.h"
 
 
 int main(int argc, char** argv) {

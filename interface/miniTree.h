@@ -48,7 +48,6 @@ class miniTree {
 
     // new branches defined here 
     double m_dnn;
-    double m_hme;
 };
 
 #endif

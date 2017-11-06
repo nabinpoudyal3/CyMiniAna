@@ -403,9 +403,6 @@ void Event::initialize_jets(){
 
     m_btag_jets_default = m_btag_jets.at(m_config->jet_btagWkpt());
 
-    // for JER
-    calculateRho();         // decorate each jet with value rho
-
 /*
     m_btag_jets["70"].clear();
     m_btag_jets["77"].clear();
@@ -543,33 +540,6 @@ void Event::initialize_neutrinos(){
         m_neutrinos.push_back(nu2);
 
         m_ttbar = {};
-    }
-
-    return;
-}
-
-
-void Event::calculateRho(){
-    /* Calculate jet energy density.
-     * Using approximation: only two jets saved and don't know areas, assume 0.4
-     *   -> rho = median( {jet.p4.Pt() / area}_i for 0<i<N_jets ) 
-     */
-    double rho(0.0);
-    double area(0.4);  // approximation, not actual value!
-
-    // Calculate jet_pt/area for each jet and store in vector
-    std::vector<double> values;
-    for (const auto& jet : m_jets){
-        double value = jet.p4.Pt() / area;
-        values.push_back(value);
-    }
-
-    // Get rho
-    rho = cma::median<double>( values );
-
-    // Store it as atttribute for each jet
-    for (auto& jet : m_jets){
-        jet.rho = rho;
     }
 
     return;

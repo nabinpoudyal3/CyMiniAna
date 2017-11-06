@@ -31,10 +31,10 @@ Steering macro for running CyMiniAna
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "diHiggs/CyMiniAna/interface/tools.h"
-#include "diHiggs/CyMiniAna/interface/configuration.h"
-#include "diHiggs/CyMiniAna/interface/Event.h"
-#include "diHiggs/CyMiniAna/interface/eventSelection.h"
+#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
+#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
 
 
 

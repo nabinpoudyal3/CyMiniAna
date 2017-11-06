@@ -109,10 +109,10 @@ void getListOfKeys( TFile* file, std::vector<std::string> &fileKeys ){
 }
 
 
-void getSampleWeights( std::string &sw_files, 
-                       std::map<unsigned int,float> &m_mapXSection,
-                       std::map<unsigned int,float> &m_mapKFactor,
-                       std::map<unsigned int,float> &m_mapAMI ){
+void getSampleWeights( std::string metadata_file,
+                       std::map<std::string,float>& m_mapXSection,
+                       std::map<std::string,float>& m_mapKFactor,
+                       std::map<std::string,float>& m_mapAMI ){
     /* Calculate XSection, KFactor, and sum of weights (AMI) */
     cma::INFO("TOOLS : Get sample weights (including sum of weights)");
 
@@ -124,73 +124,37 @@ void getSampleWeights( std::string &sw_files,
         cma::WARNING("TOOLS :    'CYMINIANADIR' " );
         cma::WARNING("TOOLS : is not set.  Relative paths will be used " );
         cma::WARNING("TOOLS : This may cause problems submitting batch jobs." );
-        cma_absPath = ".";
+        cma_absPath = "./";
         cma::WARNING("TOOLS : path set to: "+cma_absPath );
     }
     else{
         cma_absPath = cma_path;
     }
 
-    // Read in XSection data
-    std::ifstream in = open_file("config/XSection-MC15-13TeV.data");
 
-    for( ; !in.eof() ; ) {
-        std::string line;
-        if (!std::getline(in,line)) break;
+    std::ifstream in( (cma_absPath+"/"+metadata_file).c_str());
+    if (!in) cma::WARNING("TOOLS : File does not exist: "+cma_absPath+"/"+metadata_file);
+
+    std::string line;
+    while( std::getline(in,line) ) {
+
         if (!line.empty() && line[0]!='#') {
-            int dsid(-1);
-            float xSect,kFact;
-            std::string s_shower;
+            std::string dsid("");
+            float xSect,kFact,sumWeights;
 
             std::istringstream istr(line);
-            istr >> dsid >> xSect >> kFact >> s_shower;
-            // ignoring everything after the KFactor
+            istr >> dsid >> xSect >> sumWeights >> kFact;
 
             m_mapXSection[dsid]  = xSect;
             m_mapKFactor[dsid]   = kFact;
+            m_mapAMI[dsid]       = sumWeights;
         }
     }
     in.close();
-    m_mapXSection[0]  = 1.0; // protection for Data
-    m_mapKFactor[0]   = 1.0;
 
-    // save sum of weights before derivations
-    std::vector<std::string> sw_filenames;
-    read_file( sw_files, sw_filenames, "#");
-
-    float sum_of_weights(0.0);
-    for (const auto& filename : sw_filenames) {
-
-        auto file = TFile::Open(filename.c_str());
-        if (!file || file->IsZombie()){
-            cma::WARNING("TOOLS : File "+filename+" does not exist. Continuing.");
-            continue;
-        }
-
-        TTreeReader sumWeights("sumWeights", file);
-        TTreeReaderValue<float> totalEventsWeighted(sumWeights, "totalEventsWeighted");
-        TTreeReaderValue<unsigned long long> totalEvents(sumWeights, "totalEvents");
-        TTreeReaderValue<int>   dsid(sumWeights, "dsid");
-
-        sum_of_weights = 0.0;
-        while (sumWeights.Next()){
-            if (*dsid >= 361020 && *dsid <= 361032)
-                sum_of_weights = 1.0*(*totalEvents);    // different weighting for JZ*W samples
-            else
-                sum_of_weights = (*totalEventsWeighted);
-
-            if (m_mapAMI.find((*dsid)) == m_mapAMI.end()){
-                m_mapAMI[(*dsid)]  = sum_of_weights;
-            }
-            else{
-                m_mapAMI[(*dsid)] += sum_of_weights;
-            }
-        }
-
-        delete file;
-        file = ((TFile *)0);
-    } // end loop over files
-    m_mapAMI[0] = 1.0; // protection for Data
+    m_mapXSection["data"]  = 1.0; // protection for Data
+    m_mapKFactor["data"]   = 1.0;
+    m_mapAMI["data"]       = 1.0;
 
     return;
 }
@@ -221,7 +185,7 @@ std::string vectorToStr( const std::vector<std::string> &vec ){
 
 
 unsigned int setRandomNumberSeeds(const Lepton& lepton, const Lepton& antiLepton, 
-                                  const Jet& jet1, const Jet& jet2) const {
+                                  const Jet& jet1, const Jet& jet2) {
     /* 
        Asymmetric treatment of both jets, and also both leptons, 
        to ensure different seed for each combination in dileptonTtbarReco
@@ -314,33 +278,13 @@ void HELP(const std::string& runExecutable){
     std::cout << "   a few histograms or efficiencies, and make plots.\n" << std::endl;
 
     std::cout << "   To run:" << std::endl;
-    std::cout << "      ./" << runExecutable << " <config> \n" << std::endl;
-    std::cout << "    where <config> is the configuration text file \n" << std::endl;
+    std::cout << "      ./" << runExecutable << " share/cmaConfig.txt \n" << std::endl;
+    std::cout << "    where 'share/cmaConfig.txt' is the configuration file \n" << std::endl;
 
     return;
 }
 
-
-//template typename median<int>;
-//template typename median<float>;
-//template typename median<double>;
-/*
-double median(std::vector<double> scores) {
-    // Calculate the median for a vector of values //
-    double med;
-    std::size_t size = scores.size();
-    std::sort(scores.begin(), scores.end());
-
-    if (size%2 == 0)
-        med = (scores[size / 2 - 1] + scores[size / 2]) / 2;
-    else 
-        med = scores[size / 2];
-
-    return med;
-}
-*/
-
-
 } // end namespace
 
 // the end
+
