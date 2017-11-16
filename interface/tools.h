@@ -1,5 +1,5 @@
-#ifndef TOOLS_H_
-#define TOOLS_H_
+#ifndef TOOLS_H
+#define TOOLS_H
 
 #include <memory>
 #include <vector>
@@ -45,7 +45,8 @@ namespace cma{
     void getSampleWeights( std::string metadata_file,
                            std::map<std::string,float> &m_mapXSection,
                            std::map<std::string,float> &m_mapKFactor,
-                           std::map<std::string,float> &m_mapAMI );
+                           std::map<std::string,float> &m_mapAMI,
+                           std::map<std::string,unsigned int>& m_mapNEvents );
 
     /* Convert string to boolean */
     bool str2bool( const std::string value );

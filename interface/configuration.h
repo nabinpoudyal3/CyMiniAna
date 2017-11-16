@@ -30,9 +30,15 @@ class configuration {
     // Print configuration
     virtual void print();
 
+    // Type of File(s) being processed
     virtual bool isMC();              // must call "checkFileType(file)" or "isMC(file)" first!
     virtual bool isMC( TFile& file );
     bool isGridFile();
+
+    // Type of analysis (all-hadronic, semi-leptonic, or di-leptonic)
+    virtual bool isZeroLeptonAnalysis();
+    virtual bool isOneLeptonAnalysis();
+    virtual bool isTwoleptonAnalysis();
 
     // object declarations
     virtual bool useJets();
@@ -43,6 +49,7 @@ class configuration {
     virtual bool useTruth();
 
     std::string jet_btagWkpt();
+    std::vector<std::string> btagWkpts();
     float cMVAv2L() {return m_cMVAv2L;}
     float cMVAv2M() {return m_cMVAv2M;}
     float cMVAv2T() {return m_cMVAv2T;}
@@ -103,7 +110,7 @@ class configuration {
     void setMatchTruthToReco(bool truthToReco);
 
     // misc. for dilepton ttbar
-    bool buildNeutrinos();
+    bool kinematicReco();
     unsigned int NJetSmear();
     unsigned int NMassPoints();
     unsigned int massMin();
@@ -128,9 +135,15 @@ class configuration {
     std::map<std::string,std::string> m_map_config;
     const std::string m_configFile;
 
+    // type of file(s)
     bool m_isMC;
     bool m_isGridFile;
     bool m_useTruth;
+
+    // type of analysis
+    bool m_isZeroLeptonAnalysis;
+    bool m_isOneLeptonAnalysis;
+    bool m_isTwoleptonAnalysis;
 
     // object declarations
     bool m_useJets;
@@ -209,23 +222,26 @@ class configuration {
     const int NCHAN       = 4;
     const double m_sqrt_s = 13000;      // center-of-mass energy
 
-    bool m_buildNeutrinos;
+    bool m_kinematicReco;
     unsigned int m_NJetSmear;    // 500
     unsigned int m_NMassPoints;  // 500
     unsigned int m_massMin;      // 100
     unsigned int m_massMax;      // 300
 
     std::map<std::string,std::string> m_defaultConfigs = {
-             {"useJets",               "true"},
-             {"useLeptons",            "true"},
-             {"useLargeRJets",         "true"},
+             {"isZeroLeptonAnalysis",  "false"},
+             {"isOneLeptonAnalysis",   "false"},
+             {"isTwoLeptonAnalysis",   "false"},
+             {"useJets",               "false"},
+             {"useLeptons",            "false"},
+             {"useLargeRJets",         "false"},
              {"useRCJets",             "false"},
-             {"useNeutrinos",          "true"},
+             {"useNeutrinos",          "false"},
              {"useTruth",              "false"},
-             {"jet_btag_wkpt",         "70"},
-             {"makeNewFile",           "true"},
-             {"makeHistograms",        "true"},
-             {"makeEfficiencies",      "true"},
+             {"jet_btag_wkpt",         "M"},
+             {"makeNewFile",           "false"},
+             {"makeHistograms",        "false"},
+             {"makeEfficiencies",      "false"},
              {"NEvents",               "-1"},
              {"firstEvent",            "0"},
              {"input_selection",       "grid"},
@@ -246,7 +262,7 @@ class configuration {
              {"getHME",                "false"},
              {"doRecoEventLoop",       "true"},
              {"doTruthEventLoop",      "false"},
-             {"buildNeutrinos",        "true"},
+             {"kinematicReco",        "true"},
              {"NJetSmear",             "500"},
              {"NMassPoints",           "1"},
              {"massMin",               "172"},

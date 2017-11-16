@@ -20,6 +20,9 @@ configuration::configuration(const std::string &configFile) :
   m_configFile(configFile),
   m_isMC(false),
   m_isGridFile(false),
+  m_isZeroLeptonAnalysis(false),
+  m_isOneLeptonAnalysis(false),
+  m_isTwoleptonAnalysis(false),
   m_useTruth(false),
   m_useJets(false),
   m_useLeptons(false),
@@ -40,6 +43,7 @@ configuration::configuration(const std::string &configFile) :
   m_makeHistograms(false),
   m_sumWeightsFiles("SetMe"),
   m_cma_absPath("SetMe"),
+  m_metadataFile("SetMe"),
   m_getDNN(false),
   m_dnnFile("SetMe"),
   m_dnnKey("SetMe"),
@@ -51,7 +55,7 @@ configuration::configuration(const std::string &configFile) :
   m_calcWeightSystematics(false),
   m_listOfWeightSystematicsFile("SetMe"),
   m_listOfWeightVectorSystematicsFile("SetMe"),
-  m_buildNeutrinos(true){
+  m_kinematicReco(true){
     m_XSection.clear();
     m_KFactor.clear();
     m_AMI.clear();
@@ -124,6 +128,16 @@ void configuration::initialize() {
     m_input_selection  = getConfigOption("input_selection"); // "grid", "pre", etc.
     m_selection        = getConfigOption("selection");
 
+    m_isZeroLeptonAnalysis = cma::str2bool( getConfigOption("isZeroLeptonAnalysis") );
+    m_isOneLeptonAnalysis  = cma::str2bool( getConfigOption("isOneLeptonAnalysis") );
+    m_isTwoleptonAnalysis  = cma::str2bool( getConfigOption("isTwoleptonAnalysis") );
+
+    if ( (m_isZeroLeptonAnalysis + m_isOneLeptonAnalysis + m_isTwoleptonAnalysis) != 1 ){
+        cma::ERROR("CONFIG : Must choose only one of 'isZeroLeptonAnalysis', 'isOneLeptonAnalysis', 'isTwoLeptonAnalysis'");
+        exit(1);
+    }
+
+
     // check that b-tag and top-tag WPs are recognized as one of supported values
     check_btag_WP(getConfigOption("jet_btag_wkpt"));
 
@@ -148,11 +162,12 @@ void configuration::initialize() {
     m_doRecoEventLoop  = cma::str2bool( getConfigOption("doRecoEventLoop") );
     m_doTruthEventLoop = cma::str2bool( getConfigOption("doTruthEventLoop") );
     m_matchTruthToReco = true;  // not needed in this analysis (so it's not a config option) but here in case we do later
-    m_buildNeutrinos   = cma::str2bool( getConfigOption("buildNeutrinos") );
+    m_kinematicReco   = cma::str2bool( getConfigOption("kinematicReco") );
     m_NJetSmear        = std::stoi( getConfigOption("NJetSmear") );
     m_NMassPoints      = std::stoi( getConfigOption("NMassPoints") );
     m_massMin          = std::stoi( getConfigOption("massMin") );
     m_massMax          = std::stoi( getConfigOption("massMax") );
+    m_metadataFile     = getConfigOption("metadataFile");
     m_calcWeightSystematics             = cma::str2bool( getConfigOption("calcWeightSystematics") );
     m_listOfWeightSystematicsFile       = getConfigOption("weightSystematicsFile");
     m_listOfWeightVectorSystematicsFile = getConfigOption("weightVectorSystematicsFile");
@@ -160,19 +175,13 @@ void configuration::initialize() {
     cma::read_file( getConfigOption("inputfile"), m_filesToProcess );
     cma::read_file( getConfigOption("treenames"), m_treeNames );
 
-    // if grid file, do some extra calculations
-    // this is specific to this framework where the files from the grid (AnalysisTop)
-    // are slightly different from the ones this framework makes
-    if (m_input_selection.compare("grid")==0){
-        m_isGridFile = true;
-        m_XSection.clear();
-        m_KFactor.clear();
-        m_AMI.clear();
-//        cma::getSampleWeights( m_sumWeightsFiles,m_XSection,m_KFactor,m_AMI );
-    }
-    else{
-        m_isGridFile = false;
-    }
+    m_isGridFile = (m_input_selection.compare("grid")==0) ? true : false;
+
+    m_XSection.clear();
+    m_KFactor.clear();
+    m_AMI.clear();
+    m_NEvents.clear();
+    cma::getSampleWeights( m_metadataFile,m_XSection,m_KFactor,m_AMI,m_NEvents );
 
     // systematics that are weights in the nominal tree
     m_listOfWeightSystematics.resize(0);
@@ -301,6 +310,24 @@ bool configuration::isMC( TFile& file ){
     return m_isMC;
 }
 
+
+// Kind of analysis (0/1/2-leptons)
+bool configuration::isZeroLeptonAnalysis(){
+    /* All-hadronic */
+    return m_isZeroLeptonAnalysis;
+}
+
+bool configuration::isOneLeptonAnalysis(){
+    /* Semi-leptonic */
+    return m_isOneLeptonAnalysis;
+}
+
+bool configuration::isTwoleptonAnalysis(){
+    /* Dileptonic */
+    return m_isTwoleptonAnalysis;
+}
+
+// weights + systematics
 bool configuration::calcWeightSystematics(){
     return m_calcWeightSystematics;
 }
@@ -321,13 +348,18 @@ std::string configuration::listOfWeightVectorSystematicsFile(){
     return m_listOfWeightVectorSystematicsFile;
 }
 
-double configuration::XSectionMap( unsigned int mcChannelNumber ){
+std::string configuration::metadataFile(){
+    return m_metadataFile;
+}
+
+double configuration::XSectionMap( std::string mcChannelNumber ){
     /* XSection values */
     double XSectionValue(0.0);
 
     if (m_XSection.find(mcChannelNumber)==m_XSection.end()){
         XSectionValue = 1.;
-        cma::WARNING("CONFIG : Request for XSection value that does not exist -- returning 1.0");
+        cma::WARNING("CONFIG : Request for XSection value that does not exist "+mcChannelNumber);
+        cma::WARNING("CONFIG : -- returning 1.0");
     }
     else{
         XSectionValue = m_XSection.at( mcChannelNumber );
@@ -336,13 +368,14 @@ double configuration::XSectionMap( unsigned int mcChannelNumber ){
     return XSectionValue;
 }
 
-double configuration::KFactorMap( unsigned int mcChannelNumber ){
+double configuration::KFactorMap( std::string mcChannelNumber ){
     /* KFactor values */
     double KFactorValue(0.0);
 
     if (m_KFactor.find(mcChannelNumber)==m_KFactor.end()){
         KFactorValue = 1.;
-       	cma::WARNING("CONFIG : Request for KFactor value that does not exist -- returning 1.0");
+       	cma::WARNING("CONFIG : Request for KFactor value that does not exist "+mcChannelNumber);
+        cma::WARNING("CONFIG : -- returning 1.0");
     }
     else{
         KFactorValue = m_KFactor.at( mcChannelNumber );
@@ -351,13 +384,14 @@ double configuration::KFactorMap( unsigned int mcChannelNumber ){
     return KFactorValue;
 }
 
-double configuration::sumWeightsMap( unsigned int mcChannelNumber ){
+double configuration::sumWeightsMap( std::string mcChannelNumber ){
     /* Sum of Weights values */
     double AMIValue(0.0);
 
     if (m_AMI.find(mcChannelNumber)==m_AMI.end()){
         AMIValue = 1.;
-        cma::WARNING("CONFIG : Request for SumOfWeights value that does not exist -- returning 1.0");
+        cma::WARNING("CONFIG : Request for SumOfWeights value that does not exist "+mcChannelNumber);
+        cma::WARNING("CONFIG : -- returning 1.0");
     }
     else{
         AMIValue = m_AMI.at( mcChannelNumber );
@@ -366,7 +400,9 @@ double configuration::sumWeightsMap( unsigned int mcChannelNumber ){
     return AMIValue;
 }
 
+
 void configuration::check_btag_WP(const std::string &wkpt){
+    /* Check the b-tagging working point */
     if(! std::any_of(m_btag_WPs.begin(), m_btag_WPs.end(), [&](const std::string& s){return (s.compare(wkpt) == 0);} ) ) {
         cma::ERROR("CONFIG : Unknown b-tagging WP: "+wkpt+". Aborting!");
         cma::ERROR("CONFIG : Available b-tagging WPs: "+cma::vectorToStr(m_btag_WPs));
@@ -375,6 +411,7 @@ void configuration::check_btag_WP(const std::string &wkpt){
 
     return;
 }
+
 
 configuration::Era configuration::convert(const std::string& era) {
     /* Convert string to era enum */
@@ -434,6 +471,10 @@ std::string configuration::cutsfile(){
 
 std::string configuration::jet_btagWkpt(){
     return m_jet_btag_wkpt;
+}
+
+std::vector<std::string> configuration::btagWkpts(){
+    return m_btag_WPs;
 }
 
 int configuration::nEventsToProcess(){
@@ -522,8 +563,8 @@ void configuration::setMatchTruthToReco(bool truthToReco){
     return;
 }
 
-bool configuration::buildNeutrinos(){
-    return m_buildNeutrinos;
+bool configuration::kinematicReco(){
+    return m_kinematicReco;
 }
 unsigned int configuration::NJetSmear(){
     return m_NJetSmear;

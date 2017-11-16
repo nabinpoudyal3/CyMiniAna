@@ -38,7 +38,7 @@ class dileptonTtbarRecoUtils{
 
     void sortBy(std::string ch);  // re-arrange the vector based on a different metric
 
-    void angle_rot(const double& alpha, const double& e, const cmaBase& inJet, cmaBase& jet_sm) const;
+    void angle_rot(const double& alpha, const double& e, const CmaBase& inJet, CmaBase& jet_sm) const;
 
 
   private:
@@ -87,8 +87,8 @@ class dileptonTtbarRecoUtils{
     Lepton m_l;
     Jet m_b;
     Jet m_bbar;
-    Top m_top;
-    Top m_topbar;
+    LepTop m_top;
+    LepTop m_topbar;
     Neutrino m_neutrino;
     Neutrino m_neutrinobar;
     TLorentzVector m_w;

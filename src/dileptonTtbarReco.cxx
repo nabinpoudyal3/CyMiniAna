@@ -56,7 +56,7 @@ dileptonTtbarReco::~dileptonTtbarReco() {
 }
 
 
-std::map<std::string,Top> dileptonTtbarReco::execute(const DileptonReco& ttSystem){
+std::map<std::string,LepTop> dileptonTtbarReco::execute(const DileptonReco& ttSystem){
     /* Pass information from event to this class and return the solution */
     TtbarDilepton ttbarSystem;
     ttbarSystem.lepton_pos = ttSystem.lepton_pos;
@@ -68,7 +68,7 @@ std::map<std::string,Top> dileptonTtbarReco::execute(const DileptonReco& ttSyste
     dileptonTtbarRecoSolution ttDileptonSolution = buildTtbar(ttbarSystem);
     // convert this solution to a map for use in CyMiniAna
 
-    std::map<std::string,Top> ttbarDileptonSolution;  // solution for the Event class
+    std::map<std::string,LepTop> ttbarDileptonSolution;  // solution for the Event class
     if (ttDileptonSolution.numberOfSolutions()<1)
         return ttbarDileptonSolution;
 
@@ -512,13 +512,13 @@ void dileptonTtbarReco::averageSmearedSolutions(const std::vector<TtbarDilepton>
     TLorentzVector wplus  = alep.p4 + nu.p4;
     TLorentzVector wminus = lep.p4  + antiNu.p4;
 
-    Top top;
+    LepTop top;
     top.lepton   = alep;
     top.neutrino = nu;
     top.jet      = smeared_solutions.at(0).bJet;
     top.p4.SetXYZM(px_top,py_top,pz_top,m_topMass);
 
-    Top antiTop;
+    LepTop antiTop;
     antiTop.lepton   = lep;
     antiTop.neutrino = antiNu;
     antiTop.jet      = smeared_solutions.at(0).bbarJet;

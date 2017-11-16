@@ -56,7 +56,8 @@ class eventSelection{
     configuration* m_config;
 
     // cut information
-    std::string m_level;
+    std::string m_level;     // useful if you want to define one 'family' of selections 
+                             // e.g., ABCD method for selection='qcd'; m_level = 'A', or something 
     std::string m_selection;
     std::string m_cutsfile;
     unsigned int m_numberOfCuts;

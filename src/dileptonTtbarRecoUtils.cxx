@@ -263,12 +263,12 @@ void dileptonTtbarRecoUtils::topRec(const double& px_neutrino) {
     m_top.lepton   = m_al;
     m_top.neutrino = m_neutrino;
     m_top.jet      = m_b;
-    m_top.set_p4_lep();
+    m_top.set_p4();
 
     m_topbar.lepton   = m_l;
     m_topbar.neutrino = m_neutrinobar;
     m_topbar.jet      = m_bbar;
-    m_topbar.set_p4_lep();
+    m_topbar.set_p4();
 
     m_tt = m_top.p4 + m_topbar.p4;
 
@@ -527,7 +527,7 @@ void dileptonTtbarRecoUtils::linear_equation(const double& a, const double& b, s
 
 
 void dileptonTtbarRecoUtils::angle_rot(const double& alpha,  const double& e, 
-                                       const cmaBase& inJet, cmaBase& jet_sm) const {
+                                       const CmaBase& inJet, CmaBase& jet_sm) const {
     /* Angle rotation */
     double px_1, py_1, pz_1; // Coordinate system where momentum is along Z-axis
 
@@ -536,7 +536,7 @@ void dileptonTtbarRecoUtils::angle_rot(const double& alpha,  const double& e,
     double x2, y2, z2;
     double x3, y3, z3;
 
-    cmaBase jet = inJet;
+    CmaBase jet = inJet;
     if( std::abs(jet.p4.Px())<=e ) jet.p4.SetPx(0);
     if( std::abs(jet.p4.Py())<=e ) jet.p4.SetPy(0);
     if( std::abs(jet.p4.Pz())<=e ) jet.p4.SetPz(0);

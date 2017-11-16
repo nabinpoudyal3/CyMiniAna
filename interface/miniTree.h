@@ -47,7 +47,7 @@ class miniTree {
     configuration * m_config;
 
     // new branches defined here 
-    double m_dnn;
+    float m_dnn;
 };
 
 #endif

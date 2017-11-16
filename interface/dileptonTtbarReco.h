@@ -30,7 +30,7 @@ class dileptonTtbarReco{
     void loadData();
 
     /// Retrieve all solutions valid for setup of kinematic reconstruction
-    std::map<std::string,Top> execute(const DileptonReco& ttSystem);
+    std::map<std::string,LepTop> execute(const DileptonReco& ttSystem);
     dileptonTtbarRecoSolution buildTtbar(const TtbarDilepton& ttSystem);
 
 

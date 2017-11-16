@@ -112,7 +112,8 @@ void getListOfKeys( TFile* file, std::vector<std::string> &fileKeys ){
 void getSampleWeights( std::string metadata_file,
                        std::map<std::string,float>& m_mapXSection,
                        std::map<std::string,float>& m_mapKFactor,
-                       std::map<std::string,float>& m_mapAMI ){
+                       std::map<std::string,float>& m_mapAMI,
+                       std::map<std::string,unsigned int>& m_mapNEvents ){
     /* Calculate XSection, KFactor, and sum of weights (AMI) */
     cma::INFO("TOOLS : Get sample weights (including sum of weights)");
 
@@ -141,13 +142,15 @@ void getSampleWeights( std::string metadata_file,
         if (!line.empty() && line[0]!='#') {
             std::string dsid("");
             float xSect,kFact,sumWeights;
+            unsigned int nEvents;
 
             std::istringstream istr(line);
-            istr >> dsid >> xSect >> sumWeights >> kFact;
+            istr >> dsid >> xSect >> sumWeights >> kFact >> nEvents;
 
             m_mapXSection[dsid]  = xSect;
             m_mapKFactor[dsid]   = kFact;
             m_mapAMI[dsid]       = sumWeights;
+            m_mapNEvents[dsid]   = nEvents;
         }
     }
     in.close();
@@ -155,6 +158,7 @@ void getSampleWeights( std::string metadata_file,
     m_mapXSection["data"]  = 1.0; // protection for Data
     m_mapKFactor["data"]   = 1.0;
     m_mapAMI["data"]       = 1.0;
+    m_mapNEvents["data"]   = 1;
 
     return;
 }

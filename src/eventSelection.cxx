@@ -37,8 +37,8 @@ eventSelection::eventSelection(configuration &cmaConfig, const std::string &leve
   m_selection("SetMe"),
   m_cutsfile("SetMe"),
   m_numberOfCuts(0),
-  m_exampleSelection(false),
-  m_example2Selection(false){
+  m_allHadDNNSelection(false),
+  m_dummySelection(false){
     m_cuts.resize(0);
     m_cutflowNames.clear();
 
@@ -90,13 +90,12 @@ void eventSelection::initialize(const std::string &cutsfile) {
 
 void eventSelection::identifySelection(){
     /* Set the booleans for applying the selection below */
-    m_exampleSelection  = false;
-    m_example2Selection = false;
+    m_allHadDNNSelection  = false;
 
     // Define selections to be exclusive (if/else if), but this could be modified
     // Use either m_selection or m_level to make these decisions
-    if (m_selection.compare("example")==0)       m_exampleSelection  = true;
-    else if (m_selection.compare("example2")==0) m_example2Selection = true;
+    if (m_selection.compare("allHadDNN")==0) m_allHadDNNSelection = true;
+    else if (m_selection.compare("none")==0) m_dummySelection = true;
 
     return;
 }
@@ -113,32 +112,39 @@ bool eventSelection::applySelection(Event &event, TH1D &cutflow, TH1D &cutflow_u
           if (n_jets==3 && n_ljets<1)  FAIL
           else :                       PASS & fill cutflows
     */
-    float nominal_weight  = event.nominal_weight();
+    bool passSelection(false);
+
+    float nominal_weight = event.nominal_weight();
     double first_bin(0.5);            // first bin value in cutflow histogram ("INITIAL")
-                                      // easily increment by 1 for each cut (don't need to remeber values)
 
     // fill cutflow histograms with initial value (before any cuts)
     cutflow.Fill(first_bin,nominal_weight); // event weights
     cutflow_unweighted.Fill( first_bin );   // raw event numbers
 
-    // FIRST CHECK IF VALID EVENT FROM TREE
-    // this is particularly important when looping over truth tree,
-    // where a match in reco tree is not guaranteed
-    if(!event.isValidRecoEntry()) return false;
 
-    // Example #1
-    if (m_exampleSelection){
+    // FIRST CHECK IF VALID EVENT FROM TREE
+    if(!event.isValidRecoEntry())
+        return false;             // skip event
+
+    // no selection applied
+    if (m_dummySelection)
+        return true;              // event 'passed'  
+
+    // selection for all-hadronic DNN 
+    if (m_allHadDNNSelection){
         std::vector<Jet> jets = event.jets();  // access some event information
+
         // cut0 :: >=1 jets 
         if ( jets.size()<1 )                   // check if the event passes the cut!
-            return false;
+            passSelection = false;
         else{
             cutflow.Fill(first_bin+1,nominal_weight);  // fill cutflow
             cutflow_unweighted.Fill(first_bin+1);
+            passSelection = true;
         }
     }
 
-    return true;
+    return passSelection;
 }
 
 

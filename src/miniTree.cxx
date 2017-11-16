@@ -31,7 +31,8 @@ void miniTree::initialize(TTree* t, TFile& outputFile) {
     m_ttree = m_oldTTree->CloneTree(0);  // clone the tree (branches) but copy no data
 
     /*** setup new branches here ***/
-    m_ttree->Branch( "DNN", &m_dnn );
+    if ( m_config->getDNN() )
+        m_ttree->Branch( "DNN", &m_dnn, "DNN/F" );
 
     /*** disable branches here ***/
     // m_ttree->SetBranchStatus("", 0);
