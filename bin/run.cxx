@@ -58,6 +58,7 @@ int main(int argc, char** argv) {
     config.initialize();
 
     int nEvents         = config.nEventsToProcess(); // requested number of events to run
+    std::string outpathBase = config.outputFilePath();   // directory for output files
     std::string outpath = config.outputFilePath();   // directory for output files
     unsigned long long firstEvent      = config.firstEvent();       // first event to begin running over
     std::vector<std::string> filenames = config.filesToProcess();
