@@ -4,7 +4,7 @@ Last Updated:    5 November  2016
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
+Texas A&M University
 
 Bennett Magy
 bmagy@umichSPAMNOT.edu

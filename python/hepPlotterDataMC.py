@@ -35,7 +35,7 @@ import numpy as np
 
 rc('text', usetex=True)
 rc('font', family='sans-serif')
-if mpl_version.startswith('1.5'):
+if mpl_version.startswith('1.5') or mpl_version.startswith('2'):
     fontProperties = {}
 else:
     fontProperties = {'family':'sans-serif','sans-serif':['Helvetica']}
