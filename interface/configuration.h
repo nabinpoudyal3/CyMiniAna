@@ -47,6 +47,8 @@ class configuration {
     virtual bool useLargeRJets();
     virtual bool useRCJets();
     virtual bool useTruth();
+    virtual bool useFlags();
+    virtual bool useTtbar();
 
     std::string jet_btagWkpt();
     std::vector<std::string> btagWkpts();
@@ -83,9 +85,10 @@ class configuration {
     bool makeEfficiencies();
 
     // information for event weights
-    double XSectionMap ( unsigned int );
-    double KFactorMap ( unsigned int );
-    double sumWeightsMap ( unsigned int );
+    std::string metadataFile();
+    double XSectionMap ( std::string mcChannelNumber);
+    double KFactorMap ( std::string mcChannelNumber );
+    double sumWeightsMap ( std::string mcChannelNumber );
     virtual double LUMI();
 
     // weight systematics
@@ -138,7 +141,6 @@ class configuration {
     // type of file(s)
     bool m_isMC;
     bool m_isGridFile;
-    bool m_useTruth;
 
     // type of analysis
     bool m_isZeroLeptonAnalysis;
@@ -146,11 +148,14 @@ class configuration {
     bool m_isTwoleptonAnalysis;
 
     // object declarations
+    bool m_useTruth;
     bool m_useJets;
     bool m_useLeptons;
     bool m_useLargeRJets;
     bool m_useRCJets;
     bool m_useNeutrinos;
+    bool m_useFlags;
+    bool m_useTtbar;
 
     // luminosity
     double m_LUMI      = 36074.56; // 2015+2016 luminosity
@@ -173,6 +178,7 @@ class configuration {
     bool m_makeEfficiencies;
     std::string m_sumWeightsFiles;
     std::string m_cma_absPath;
+    std::string m_metadataFile;
     bool m_getDNN;
     std::string m_dnnFile;
     std::string m_dnnKey;
@@ -201,9 +207,10 @@ class configuration {
     std::string m_listOfWeightSystematicsFile;
     std::string m_listOfWeightVectorSystematicsFile;
 
-    std::map<unsigned int, float> m_XSection; // map DSID to XSection
-    std::map<unsigned int, float> m_KFactor;  // map DSID to KFactor
-    std::map<unsigned int, float> m_AMI;      // map DSID to sum of weights
+    std::map<std::string, float> m_XSection; // map file to XSection
+    std::map<std::string, float> m_KFactor;  // map file to KFactor
+    std::map<std::string, float> m_AMI;      // map file to sum of weights
+    std::map<std::string, unsigned int> m_NEvents;   // map file to total number of events
 
     std::vector<std::string> m_qcdSelections = {"0b0t","0b1t","0b2t","1b0t",
                                                 "1b1t","1b2t","2b0t","2b1t", "2b2t"};
@@ -238,6 +245,7 @@ class configuration {
              {"useRCJets",             "false"},
              {"useNeutrinos",          "false"},
              {"useTruth",              "false"},
+             {"useFlags",              "false"},
              {"jet_btag_wkpt",         "M"},
              {"makeNewFile",           "false"},
              {"makeHistograms",        "false"},

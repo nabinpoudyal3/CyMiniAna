@@ -29,6 +29,8 @@ configuration::configuration(const std::string &configFile) :
   m_useLargeRJets(false),
   m_useRCJets(false),
   m_useNeutrinos(false),
+  m_useFlags(false),
+  m_useTtbar(false),
   m_input_selection("SetMe"),
   m_selection("SetMe"),
   m_cutsfile("SetMe"),
@@ -152,6 +154,8 @@ void configuration::initialize() {
     m_useLargeRJets    = cma::str2bool( getConfigOption("useLargeRJets") );
     m_useRCJets        = cma::str2bool( getConfigOption("useRCJets") );
     m_useNeutrinos     = cma::str2bool( getConfigOption("useNeutrinos") );
+    m_useFlags         = cma::str2bool( getConfigOption("useFlags") );
+    m_useTtbar         = cma::str2bool( getConfigOption("useTtbar") );
     m_makeNewFile      = cma::str2bool( getConfigOption("makeNewFile") );
     m_makeHistograms   = cma::str2bool( getConfigOption("makeHistograms") );
     m_makeEfficiencies = cma::str2bool( getConfigOption("makeEfficiencies") );
@@ -455,6 +459,14 @@ bool configuration::useRCJets(){
 
 bool configuration::useNeutrinos(){
     return m_useNeutrinos;
+}
+
+bool configuration::useFlags(){
+    return m_useFlags;
+}
+
+bool configuration::useTtbar(){
+    return m_useTtbar;
 }
 
 std::string configuration::configFileName(){

@@ -37,8 +37,8 @@ eventSelection::eventSelection(configuration &cmaConfig, const std::string &leve
   m_selection("SetMe"),
   m_cutsfile("SetMe"),
   m_numberOfCuts(0),
-  m_allHadDNNSelection(false),
-  m_dummySelection(false){
+  m_dummySelection(false),
+  m_allHadDNNSelection(false){
     m_cuts.resize(0);
     m_cutflowNames.clear();
 

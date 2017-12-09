@@ -56,6 +56,7 @@ struct Ljet : Jet{
     float softDropMass_CHS;
     float vSubjetIndex0;
     float vSubjetIndex1;
+    float charge;
 };
 
 struct Tjet : Jet{
@@ -82,8 +83,10 @@ struct Lepton : CmaBase{
 
 struct Electron : Lepton{
     // extra electron attributes
-    isElectron = true;
-    isMuon     = false;
+    Electron() {
+        isElectron = true;
+        isMuon     = false;
+    }
 
     float iso03;
     float iso03db;
@@ -115,8 +118,10 @@ struct Electron : Lepton{
 };
 struct Muon : Lepton{
     // extra muon attributes
-    isElectron = false;
-    isMuon     = true;
+    Muon() {
+        isElectron = false;
+        isMuon     = true;
+    }
 
     float iso04;
     float soft;
@@ -204,8 +209,8 @@ struct TtbarDilepton : DileptonReco {
     TLorentzVector Wplus;
     TLorentzVector Wminus;
 
-    Top top;
-    Top topBar;
+    LepTop top;
+    LepTop topBar;
     TLorentzVector ttbar;
 
     double recMtop;     // top mass used in the reconstruction (needed if doing massLoop)

@@ -31,6 +31,9 @@ Basic steering macro for running CyMiniAna
 #include <fstream>
 #include <string>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
 #include "cms-ttbarAC/CyMiniAna/interface/Event.h"
@@ -58,6 +61,7 @@ int main(int argc, char** argv) {
     config.initialize();
 
     int nEvents         = config.nEventsToProcess(); // requested number of events to run
+    std::string outpathBase = config.outputFilePath();   // directory for output files
     std::string outpath = config.outputFilePath();   // directory for output files
     unsigned long long firstEvent      = config.firstEvent();       // first event to begin running over
     std::vector<std::string> filenames = config.filesToProcess();
@@ -100,14 +104,24 @@ int main(int argc, char** argv) {
             continue;
         }
 
+
         // -- Output file -- //
+        // CMS doesn't use something like 'mcChannelNumber', need to keep the same file names
+        // therefore, make new directories for the different selections
+        struct stat dirBuffer;
+        std::string outpath = outpathBase+"/"+selection+customFileEnding;
+        if ( !(stat((outpath).c_str(),&dirBuffer)==0 && S_ISDIR(dirBuffer.st_mode)) ){
+            cma::DEBUG("RUN : Creating directory for storing output: "+outpath);
+            system( ("mkdir "+outpath).c_str() );  // make the directory so the files are grouped together
+        }
+
         std::size_t pos   = filename.find_last_of(".");     // the last ".", i.e., ".root"
         std::size_t found = filename.find_last_of("/");     // the last "/"
         std::string outputFilename = filename.substr(found+1,pos-1-found); // betwee "/" and "."
         // hopefully this returns: "diboson_WW_361082" given something like:
         // "/some/path/to/file/diboson_WW_361082.root"
 
-        std::string fullOutputFilename = outpath+"/"+outputFilename+"_"+selection+customFileEnding+".root";
+        std::string fullOutputFilename = outpath+"/"+outputFilename+".root";
         std::unique_ptr<TFile> outputFile(TFile::Open( fullOutputFilename.c_str(), "RECREATE"));
         cma::INFO("RUN :   >> Saving to "+fullOutputFilename);
 

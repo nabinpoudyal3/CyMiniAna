@@ -65,10 +65,10 @@ class eventSelection{
     std::vector<Cut> m_cuts;
 
     // booleans for each selection
+    bool m_dummySelection;
+    bool m_allHadDNNSelection;
     bool m_exampleSelection;
     bool m_example2Selection;
 };
 
 #endif
-
-
