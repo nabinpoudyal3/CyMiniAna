@@ -133,12 +133,22 @@ void getSampleWeights( std::string metadata_file,
     }
 
 
-    std::ifstream in( (cma_absPath+"/"+metadata_file).c_str());
-    if (!in) cma::WARNING("TOOLS : File does not exist: "+cma_absPath+"/"+metadata_file);
+    std::string weightsFile(metadata_file);
+    std::string weightsFileFull(cma_absPath+"/"+metadata_file);
+
+    std::ifstream in( weightsFile.c_str());
+    if (!in){
+        cma::WARNING("TOOLS : File does not exist: "+weightsFile);
+        cma::WARNING("TOOLS : -> Checking "+weightsFileFull);
+        in.open(weightsFileFull);
+        if (!in){
+            cma::WARNING("TOOLS : File does not exist: "+weightsFileFull);
+            cma::WARNING("TOOLS : Please check the metadatafile! ");
+        }
+    }
 
     std::string line;
     while( std::getline(in,line) ) {
-
         if (!line.empty() && line[0]!='#') {
             std::string dsid("");
             float xSect,kFact,sumWeights;
