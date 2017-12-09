@@ -290,9 +290,9 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     cma::DEBUG("HISTOGRAMMER : Fill histograms.");
 
     // Load some objects from Event
-    std::map<std::string,Top> ttbar = event.ttbar();
-    Top top     = ttbar.at("top");
-    Top antitop = ttbar.at("antitop");
+    std::map<std::string,LepTop> ttbar = event.ttbar();
+    LepTop top     = ttbar.at("top");
+    LepTop antitop = ttbar.at("antitop");
 
     cma::DEBUG("HISTOGRAMMER : event weight = "+std::to_string(event_weight) );
     cma::DEBUG("HISTOGRAMMER : Top pT       = "+std::to_string(top.p4.Pt()) );

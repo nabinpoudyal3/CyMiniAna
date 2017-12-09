@@ -86,15 +86,15 @@ class Event {
     virtual float met( const std::string& met_name );
     virtual float HT();
     virtual float ST();
+    virtual void getBtaggedJets( Jet& jet );
     virtual std::vector<int> btag_jets(const std::string &wkpt);
     virtual std::vector<int> btag_jets(); // using configured b-tag WP
 
 //    virtual unsigned long long eventNumber();
 //    virtual unsigned int runNumber();
-    long long entry() { return m_entry };
+    long long entry() { return m_entry; }
     virtual float eventNumber();
     virtual float runNumber();
-    virtual unsigned int mcChannelNumber();
     virtual float mu();
     virtual int lumiblock();
     virtual std::string treeName();
@@ -148,6 +148,7 @@ class Event {
 
     // neural network & kinematic reconstruction
     bool m_kinematicReco;
+    bool m_buildNeutrinos;
     bool m_getDNN;
     lwt::LightweightNeuralNetwork* m_lwnn;
     std::map<std::string, double> m_dnnInputs;   // values for inputs to the DNN
@@ -418,6 +419,9 @@ class Event {
     TTreeReaderArray<float> * m_truth_ljet_subjet_phi;    // subjetAK8CHS_GenJetPhi
     TTreeReaderArray<float> * m_truth_ljet_subjet_e;      // subjetAK8CHS_GenJetE
     TTreeReaderArray<float> * m_truth_ljet_subjet_charge; // subjetAK8CHS_GenJetCharge
+    TTreeReaderArray<float> * m_truth_ljet_Qw;
+    TTreeReaderArray<float> * m_truth_ljet_tau32_wta;
+    TTreeReaderArray<float> * m_truth_ljet_split23;
 
     // Jet info
     TTreeReaderValue<unsigned int> * m_jet_size;             // jetAK4CHS_size
@@ -447,6 +451,33 @@ class Event {
     TTreeReaderArray<float> * m_jet_JERSFDown;               // jetAK4CHS_JERSFDown
     TTreeReaderArray<float> * m_jet_smearedPt;               // jetAK4CHS_SmearedPt
     std::vector<std::vector<int> > * m_jet_keys;             // jetAK4CHS_Keys
+
+
+
+    // Reconstructed neutrinos
+    TTreeReaderArray<float> * m_nu_pt;
+    TTreeReaderArray<float> * m_nu_eta;
+    TTreeReaderArray<float> * m_nu_phi;
+
+    // Reconstructed ttbar
+    TTreeReaderValue<float> * m_top_pt;
+    TTreeReaderValue<float> * m_top_eta;
+    TTreeReaderValue<float> * m_top_phi;
+    TTreeReaderValue<float> * m_top_e;
+    TTreeReaderValue<int> * m_lepton_top_index;
+    TTreeReaderValue<int> * m_jet_top_index;
+    TTreeReaderValue<int> * m_nu_top_index;
+    TTreeReaderValue<float> * m_antitop_pt;
+    TTreeReaderValue<float> * m_antitop_eta;
+    TTreeReaderValue<float> * m_antitop_phi;
+    TTreeReaderValue<float> * m_antitop_e;
+    TTreeReaderValue<int> * m_lepton_antitop_index;
+    TTreeReaderValue<int> * m_jet_antitop_index;
+    TTreeReaderValue<int> * m_nu_antitop_index;
+
+    TTreeReaderValue<float> * m_dileptonTtbarWeight;
+    TTreeReaderValue<float> * m_semileptonTtbarWeight;
+    TTreeReaderValue<float> * m_allhadTtbarWeight;
 
 
     // Truth jet info
@@ -498,7 +529,6 @@ class Event {
     TTreeReaderArray<float> * m_MC_cstar;             // MC_cstar
     TTreeReaderArray<float> * m_MC_x_F;               // MC_x_F
     TTreeReaderArray<float> * m_MC_Mtt;               // MC_Mtt
-
 
     // HLT 
     TTreeReaderArray<int> * m_HLT_Ele45_WPLoose_Gsf;          // HLT_Ele45_WPLoose_Gsf

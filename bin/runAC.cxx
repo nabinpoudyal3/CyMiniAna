@@ -31,6 +31,9 @@ Steering macro for running CyMiniAna
 #include <fstream>
 #include <string>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
 #include "cms-ttbarAC/CyMiniAna/interface/Event.h"
@@ -62,8 +65,8 @@ int main(int argc, char** argv) {
     cma::INFO("RUN : Configuration initialized");
 
     // -- Config arguments
-    int p_nEvents       = config.nEventsToProcess(); // requested number of events to run
-    std::string outpath = config.outputFilePath();   // directory for output files
+    int p_nEvents = config.nEventsToProcess(); // requested number of events to run
+    std::string outpathBase = config.outputFilePath();   // directory for output files
     std::vector<std::string> filenames = config.filesToProcess();
     std::vector<std::string> treenames = config.treeNames();
     std::string selection(config.selection());

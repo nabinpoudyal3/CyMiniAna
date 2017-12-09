@@ -31,6 +31,9 @@ Basic steering macro for running CyMiniAna
 #include <fstream>
 #include <string>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
 #include "cms-ttbarAC/CyMiniAna/interface/Event.h"
