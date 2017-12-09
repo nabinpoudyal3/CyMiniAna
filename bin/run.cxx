@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     unsigned long long maxEntriesToRun(0);     // maximum number of entries in TTree
     unsigned int numberOfEventsToRun(0); // number of events to run
     bool passEvent(false);   // event passed selection
-    bool isMC(false);      // Running over MC file
+    //bool isMC(false);      // Running over MC file
 
     // configuration
     configuration config(argv[1]);                         // configuration file
@@ -126,29 +126,10 @@ int main(int argc, char** argv) {
         cma::INFO("RUN :   >> Saving to "+fullOutputFilename);
 
         // check the file type
-        isMC = config.isMC( *file );
+        //isMC = config.isMC( *file );  // not need at the moment
 
         std::vector<std::string> fileKeys;
         cma::getListOfKeys(file,fileKeys); // keep track of ttrees in file
-
-/*
-        // -- Extra trees to just clone into new file
-        TChain * truth_chain;
-        TChain * sumWeights_chain;
-
-        if (makeNewFile){
-            if (isMC){
-                truth_chain = new TChain("truth");
-                truth_chain->Add( filename.c_str() );
-                truth_chain->CloneTree(-1,"fast");      // clone the truth tree
-            }
-
-            sumWeights_chain = new TChain("sumWeights");
-            sumWeights_chain->Add( filename.c_str() );
-            sumWeights_chain->CloneTree(-1,"fast");    // clone the sumWeights tree
-        }
-        // -- End tree cloning
-*/
 
         histogrammer histMaker(config);      // initialize histogrammer
         efficiency effMaker(config);         // initialize efficiency class
