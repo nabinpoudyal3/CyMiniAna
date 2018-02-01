@@ -2,8 +2,8 @@
 #define DILEPTONTTBARRECOSOLUTION_H
 
 #include <map>
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
-#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
+#include "Analysis/CyMiniAna/interface/tools.h"
+#include "Analysis/CyMiniAna/interface/physicsObjects.h"
 
 
 

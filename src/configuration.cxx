@@ -13,7 +13,7 @@ Configuration class
      to return configurations later
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/configuration.h"
 
 
 configuration::configuration(const std::string &configFile) : 

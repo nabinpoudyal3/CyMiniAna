@@ -10,7 +10,7 @@ Texas A&M University
 
 Create and fill TTree.
 */
-#include "cms-ttbarAC/CyMiniAna/interface/miniTree.h"
+#include "Analysis/CyMiniAna/interface/miniTree.h"
 
 
 miniTree::miniTree(configuration &cmaConfig) : 

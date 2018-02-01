@@ -10,7 +10,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "Analysis/CyMiniAna/interface/tools.h"
 
 
 class configuration {

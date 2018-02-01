@@ -18,9 +18,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
-#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/Event.h"
+#include "Analysis/CyMiniAna/interface/eventSelection.h"
+#include "Analysis/CyMiniAna/interface/configuration.h"
 
 class miniTree {
   public:

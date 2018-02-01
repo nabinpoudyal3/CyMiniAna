@@ -15,9 +15,9 @@
 #include <map>
 #include <vector>
 
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
-#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
+#include "Analysis/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/tools.h"
+#include "Analysis/CyMiniAna/interface/Event.h"
 
 class histogrammer {
   public:

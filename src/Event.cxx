@@ -4,15 +4,14 @@ Last Updated:   22 August 2017
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
-
+Texas A&M University
 -----
 
 Event class
 Contains all the objects (& structs) with event information
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
+#include "Analysis/CyMiniAna/interface/Event.h"
 
 // constructor
 Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :

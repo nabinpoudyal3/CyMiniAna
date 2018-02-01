@@ -1,7 +1,7 @@
 <use   name="JetMETCorrections/Modules"/>
 <use   name="CondFormats/JetMETObjects"/>
 <use   name="DataFormats/JetReco"/>
-<use   name="cms-ttbarAC/lwtnn"/>
+<use   name="lwtnn/lwtnn"/>
 
 <use   name="boost"/>
 <use   name="eigen"/>

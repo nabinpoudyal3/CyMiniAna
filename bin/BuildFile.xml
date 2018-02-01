@@ -1,5 +1,5 @@
-<use   name="cms-ttbarAC/CyMiniAna"/>
-<use   name="cms-ttbarAC/lwtnn"/>
+<use   name="Analysis/CyMiniAna"/>
+<use   name="lwtnn/lwtnn"/>
 <use   name="rootphysics"/>
 <use   name="rootgraphics"/>
 <use   name="root"/>

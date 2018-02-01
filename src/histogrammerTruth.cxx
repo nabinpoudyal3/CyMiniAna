@@ -18,7 +18,7 @@ Originally developed by Oliver for ATLAS tasks.
 Kept here for completion & no need to duplicate work in the future.
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/histogrammerTruth.h"
+#include "Analysis/CyMiniAna/interface/histogrammerTruth.h"
 
 
 histogrammerTruth::histogrammerTruth( configuration &cmaConfig ) : 

@@ -19,7 +19,7 @@ Texas A&M University
   Reconstructs the ttbar system, other "utility" functions
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
+#include "Analysis/CyMiniAna/interface/dileptonTtbarRecoUtils.h"
 
 
 dileptonTtbarRecoUtils::dileptonTtbarRecoUtils(const std::map<std::string,double>& truth_masses, const double& beamEnergy){

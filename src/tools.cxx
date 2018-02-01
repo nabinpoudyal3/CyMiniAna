@@ -4,14 +4,13 @@ Last Updated:   20 August    2016
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
-
+Texas A&M University
 -----
 
 Common tools needed
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "Analysis/CyMiniAna/interface/tools.h"
 
 namespace cma{
 

@@ -52,46 +52,47 @@ perform your work.
 
 _The master branch is only used to make new tags!_
 
-To get started, you first need a proper CMSSW release environment and other packages to work with CyMiniAna.
+To get started, you first need a proper CMSSW release environment and other packages to work with CyMiniAna.  
 
 ```shell
 ## setup CMSSW (slc6_amd64_gcc530)
 cmsrel CMSSW_8_0_24_patch1
 cd CMSSW_8_0_24_patch1/src/
 cmsenv
-git cms-init  # I think this links to your Github repository (?)
+git cms-init
+```
 
-## add necessary packages
+Next, it is necessary to add CyMiniAna and the external packages on which it depends.  
+The lwtnn package, used for neural network inference in c++, can be included by 
+following the steps [here](https://github.com/demarley/lwtnn/tree/CMSSW_8_0_X-compatible#cmssw-compatibility).
+
+```
+# Add lwtnn (using instructions above)
+# Add necessary packages for dilepton reconstruction
 git cms-addpkg CondFormats/JetMETObjects  # not explicitly used, but needed for Matrix Weighting
 git cms-addpkg DataFormats/JetReco        # not explicitly used, available for using official "Jet" objects
 git cms-addpkg JetMETCorrections/Modules  # Jet resolution smearing functions
-mkdir cms-jet
-cd cms-jet
+mkdir cms-jet && cd cms-jet
 git clone https://github.com/cms-jet/JRDatabase.git  # values for Jet resolution smearing
 cd ../
 
-## add our code - the cms-ttbarAC packages!
-mkdir cms-ttbarAC
-cd cms-ttbarAC
-git clone https://gitlab.cern.ch/cms-ttbarAC/CyMiniAna.git
-git clone https://gitlab.cern.ch/cms-ttbarAC/lwtnn.git     # Keras Neural Networks in c++
+## Add our code - the cms-ttbarAC packages!
+git clone https://github.com/cms-ttbarAC/CyMiniAna.git Analysis/CyMiniAna
 ```
 
-Once everything is checked out, compile it all!
-
+Once everything is checked out, compile it all!  
 ```
-scram b  # Add the '-j' argument if you need this to go faster
+scram b -j8
 ```
 
-For setting up the environment after the first time and whenever you open a new shell:
-
+To set the environment anytime you open a new session:  
 ```shell
-source diHiggs/CyMiniAna/setup.sh   # ALWAYS DO THIS FIRST! (initializes everything)
+source setup.csh   # ALWAYS DO THIS FIRST! (initializes everything)
 ```
 
-And anytime you modify `*.cxx` or `*.h` code:
+Anytime you modify `*.cxx` or `*.h` code, be sure to recompile:
 ```shell
-scram b
+scram b -j8
 ```
 
 

@@ -24,7 +24,7 @@
 #include "TTreeReaderValue.h"
 #include "TTreeReaderArray.h"
 
-#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
+#include "Analysis/CyMiniAna/interface/physicsObjects.h"
 
 namespace cma{
 

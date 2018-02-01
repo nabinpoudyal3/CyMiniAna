@@ -4,8 +4,7 @@ Last Updated:   22 May 2017
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
-
+Texas A&M University
 -----
 
 Steering macro for running CyMiniAna
@@ -31,10 +30,10 @@ Steering macro for running CyMiniAna
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
-#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
-#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
+#include "Analysis/CyMiniAna/interface/tools.h"
+#include "Analysis/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/Event.h"
+#include "Analysis/CyMiniAna/interface/eventSelection.h"
 
 
 

@@ -27,11 +27,11 @@
 #include <unordered_set>
 #include <vector>
 
-#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
-#include "cms-ttbarAC/CyMiniAna/interface/dileptonTtbarReco.h"
-#include "cms-ttbarAC/lwtnn/interface/LightweightNeuralNetwork.hh"
-#include "cms-ttbarAC/lwtnn/interface/parse_json.hh"
+#include "Analysis/CyMiniAna/interface/physicsObjects.h"
+#include "Analysis/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/dileptonTtbarReco.h"
+#include "lwtnn/lwtnn/interface/LightweightNeuralNetwork.hh"
+#include "lwtnn/lwtnn/interface/parse_json.hh"
 
 
 // Event Class

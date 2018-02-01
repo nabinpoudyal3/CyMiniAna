@@ -12,7 +12,7 @@ Make histograms for systematic uncertainties (& nominal)
 to go into plots || TRexFitter
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/histogrammer.h"
+#include "Analysis/CyMiniAna/interface/histogrammer.h"
 
 
 histogrammer::histogrammer( configuration& cmaConfig, std::string name ) :

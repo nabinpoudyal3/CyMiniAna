@@ -20,8 +20,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/Event.h"
+#include "Analysis/CyMiniAna/interface/configuration.h"
 
 class eventSelection{
 

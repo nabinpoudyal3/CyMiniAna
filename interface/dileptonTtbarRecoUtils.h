@@ -8,9 +8,9 @@
 #include <TF2.h>
 #include <TRandom3.h>
 
-#include "cms-ttbarAC/CyMiniAna/interface/physicsObjects.h"
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
+#include "Analysis/CyMiniAna/interface/physicsObjects.h"
+#include "Analysis/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/tools.h"
 
 
 class dileptonTtbarRecoUtils{

@@ -4,8 +4,7 @@ Last Updated:   20 August    2016
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
-
+Texas A&M University
 -----
 
 Steering macro for running CyMiniAna
@@ -35,15 +34,15 @@ Steering macro for running CyMiniAna
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "cms-ttbarAC/CyMiniAna/interface/configuration.h"
-#include "cms-ttbarAC/CyMiniAna/interface/Event.h"
-#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
-#include "cms-ttbarAC/CyMiniAna/interface/miniTree.h"
-#include "cms-ttbarAC/CyMiniAna/interface/tools.h"
-#include "cms-ttbarAC/CyMiniAna/interface/histogrammer.h"
-#include "cms-ttbarAC/CyMiniAna/interface/histogrammerTruth.h"
-#include "cms-ttbarAC/CyMiniAna/interface/efficiency.h"
-#include "cms-ttbarAC/CyMiniAna/interface/efficiencyTruth.h"
+#include "Analysis/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/Event.h"
+#include "Analysis/CyMiniAna/interface/eventSelection.h"
+#include "Analysis/CyMiniAna/interface/miniTree.h"
+#include "Analysis/CyMiniAna/interface/tools.h"
+#include "Analysis/CyMiniAna/interface/histogrammer.h"
+#include "Analysis/CyMiniAna/interface/histogrammerTruth.h"
+#include "Analysis/CyMiniAna/interface/efficiency.h"
+#include "Analysis/CyMiniAna/interface/efficiencyTruth.h"
 
 
 int main(int argc, char** argv) {

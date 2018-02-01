@@ -11,7 +11,7 @@ Texas A&M University
 Make TEfficiencies for measuring efficiencies in truth information
 
 */
-#include "cms-ttbarAC/CyMiniAna/interface/efficiencyTruth.h"
+#include "Analysis/CyMiniAna/interface/efficiencyTruth.h"
 
 efficiencyTruth::efficiencyTruth(configuration &cmaConfig) : 
   efficiency::efficiency(cmaConfig){

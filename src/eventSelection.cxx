@@ -27,7 +27,7 @@ Recommended Use:
   Contact Dan with any questions about using this
   or suggestions for your specific use case
 */
-#include "cms-ttbarAC/CyMiniAna/interface/eventSelection.h"
+#include "Analysis/CyMiniAna/interface/eventSelection.h"
 
 
 
