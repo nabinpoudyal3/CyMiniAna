@@ -12,6 +12,7 @@ to use in the NN.
 """
 import os
 import sys
+import util
 
 class Config(object):
     """Configuration object that handles the setup"""
@@ -43,14 +44,6 @@ class Config(object):
         return value
 
 
-    def str2bool(self,param):
-        """Convert a string to a boolean"""
-        if param in ['true','True','1']:
-            return True
-        else:
-            return False
-
-
     def getConfiguration(self):
         """Read the configuration file and set arguments"""
         for line in self.file:
@@ -64,14 +57,15 @@ class Config(object):
 
     def setAttributes(self):
         """Set attributes of class for the configurations"""
-        setattr(self,'buildNN',      self.str2bool( self.get('buildNN') ))
-        setattr(self,'loadNN',       self.str2bool( self.get('loadNN') ))
+        setattr(self,'runTraining',  util.str2bool( self.get('runTraining') ))
+        setattr(self,'runInference', util.str2bool( self.get('runInference') ))
         setattr(self,'hep_data',     self.get('hep_data'))
+        setattr(self,'treename',     self.get('treename'))
         setattr(self,'dnn_data',     self.get('dnn_data'))
         setattr(self,'output_path',  self.get('output_path'))
         setattr(self,'nHiddenLayers',int( self.get('nHiddenLayers') ))
         setattr(self,'nNodes',       self.get('nNodes').split(','))
-        setattr(self,'nb_epoch',     int( self.get('nb_epoch') ))
+        setattr(self,'epochs',       int( self.get('epochs') ))
         setattr(self,'batch_size',   int( self.get('batch_size') ))
         setattr(self,'loss',         self.get('loss'))
         setattr(self,'optimizer',    self.get('optimizer'))
@@ -90,14 +84,15 @@ class Config(object):
 
     def set_defaults(self):
         """Set default values for configurations"""
-        defaults = {'buildNN':False,
-                    'loadNN': False,
+        defaults = {'runTraining':False,
+                    'runInference': False,
                     'hep_data':None,
+                    'treename':"",
                     'dnn_data':None,
                     'output_path':'./',
                     'nHiddenLayers':1,
                     'nNodes':5,
-                    'nb_epoch':10,
+                    'epochs':10,
                     'batch_size':32,
                     'loss':'binary_crossentropy',
                     'optimizer':'adam',
@@ -133,6 +128,5 @@ class Config(object):
                 continue
 
         return command
-
 
 ## THE END ##

@@ -4,7 +4,7 @@ Last Updated:    5 November  2016
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-Texas A&M University
+University of Michigan, Ann Arbor, MI 48109
 
 Bennett Magy
 bmagy@umichSPAMNOT.edu
@@ -34,7 +34,7 @@ from matplotlib import rc
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
 from matplotlib.colors import LogNorm
-from matplotlib.ticker import AutoMinorLocator
+from matplotlib.ticker import AutoMinorLocator,FormatStrFormatter
 import numpy as np
 
 rc('text', usetex=True)
@@ -42,7 +42,7 @@ rc('font', family='sans-serif')
 params = {'text.latex.preamble' : [r'\usepackage{amsmath}']}
 plt.rcParams.update(params)
 
-if mpl_version.startswith('1.5'):
+if mpl_version.startswith('1.5') or mpl_version.startswith('2'):
     fontProperties = {}
 else:
     fontProperties = {'family':'sans-serif','sans-serif':['Helvetica']}
@@ -53,7 +53,7 @@ else:
     plt.register_cmap(name='plasma',  cmap=cmaps.plasma)
 ## ------------------------------ ##
 import hepPlotterTools as hpt
-from hepPlotterTools import PlotText,Text
+import hepPlotterLabels as hpl
 
 
 
@@ -92,7 +92,7 @@ class HepPlotter(object):
         self.x_label        = 'x'
         self.y_label        = 'y'
         self.y_ratio_label  = 'y ratio'
-        self.extra_text     = PlotText()
+        self.extra_text     = hpl.PlotText()
         self.minor_ticks    = True
         self.lumi           = '14.7'
         self.plotLUMI       = False
@@ -105,6 +105,9 @@ class HepPlotter(object):
         self.drawStatUncertainty   = False
         self.drawUncertaintyTopFig = False  # draw uncertainties in the top frame
         self.uncertaintyHistType   = 'step'
+        self.text_coords = {'top left':{'x':[0.03]*3,'y':[0.97,0.90,0.83]},\
+                            'top right':{'x':[0.97]*3,'y':[0.97,0.90,0.83]},\
+                            'outer':{'x':[0.02,0.99,0.99],'y':[1.0,1.0,0.9]}}
 
         return
 
@@ -283,7 +286,6 @@ class HepPlotter(object):
         else:
             fig,self.ax1 = plt.subplots(figsize=(10,6))
 
-
         if self.typeOfPlot=="efficiency":
             # draw horizontal lines to guide the eye
             self.ax1.axhline(y=0.25,color='lightgray',ls='--',lw=1,zorder=0)
@@ -316,10 +318,12 @@ class HepPlotter(object):
 
 
         ## -- Loop over samples for errorbar plot
-        binning    = None
-        totpred    = [0]
-        bottomEdge = None    # for stacking plots (use this instead of the 'stack' argument
-                             # so that all plots can be made in one for-loop
+        binning     = None
+        y_lim_value = None    # weird protection against the axis autoscaling to values smaller than previously drawn histograms
+                              # I can't find the source, and no one else seems to have this problem :/
+        max_value   = 0.0
+        bottomEdge  = None    # for stacking plots (use this instead of the 'stack' argument
+                              # so that all plots can be made in one for-loop
         for n,name in enumerate(self.names):
             if name in self.effData: continue
 
@@ -330,7 +334,6 @@ class HepPlotter(object):
             binning    = self.hists2plot[name]['bins']
 
             if name in self.errorbarplot:
-                data  = np.array([i if i else float('NaN') for i in data])  # hide empty values
                 if not self.kwargs[name].get("mec"):
                     self.kwargs[name]["mec"] = self.linecolors[name]
                 if not self.kwargs[name].get("mfc"):
@@ -339,14 +342,21 @@ class HepPlotter(object):
                     self.kwargs[name]["capsize"] = 0
 
                 # Make the errorbar plot
+                if self.kwargs[name].get("normed") and self.kwargs[name]["normed"]:
+                    data, bin_edges = np.histogram(bin_center,bins=binning,weights=data,normed=True)
+                    self.kwargs[name].pop("normed",None)
+                data  = np.array([i if i else float('NaN') for i in data])  # hide empty values
+                NaN_values = np.isnan(data)
+
                 p,c,b = self.ax1.errorbar(bin_center,data,yerr=error,fmt=self.linestyles[name],
                                      color=self.colors[name],label=self.labels[name],
                                      zorder=100,**self.kwargs[name])
                 # record data for later
-                self.histograms[name]    = data
+                data[NaN_values] = 0
+                self.histograms[name]    = data    # np.array(self.hists2plot[name]['data'])
                 self.uncertainties[name] = np.array(error)
             else:
-                # Hack for changing legend for step histograms (line instead of rectangle)
+                # Hack for changing legend for step histograms (make a line instead of a rectangle)
                 if self.draw_types[name]=='step':
                     this_label      = None
                     histStep_pseudo = self.ax1.plot([],[],color=self.linecolors[name],
@@ -356,11 +366,13 @@ class HepPlotter(object):
                     this_label = self.labels[name]
 
                 # Make the histogram
+                if not self.kwargs[name].get("normed"):
+                    self.kwargs[name]["normed"] = self.normed
                 data,b,p = self.ax1.hist(bin_center,bins=binning,weights=data,lw=self.linewidths[name],
                                  histtype=self.draw_types[name],bottom=bottomEdge,
                                  ls=self.linestyles[name],log=self.logplot,color=self.colors[name],
                                  edgecolor=self.linecolors[name],label=this_label,
-                                 normed=self.normed,**self.kwargs[name])
+                                 **self.kwargs[name])
                 if self.stacked:
                     if bottomEdge is None:
                         bottomEdge  = data
@@ -377,8 +389,11 @@ class HepPlotter(object):
                     self.plotUncertainty(self.ax1,pltname=name,normalize=False)
 
             # record tallest point for scaling plot
-            if max(data) > max(totpred):
-                totpred = data
+            if max(data) > max_value:
+                max_value = max(data)
+            if y_lim_value is None or y_lim_value < self.ax1.get_ylim()[1]:
+                y_lim_value = self.ax1.get_ylim()[1]
+                # only increase the autoscale of the y-axis limit
         ## End loop over data
 
         self.binning = np.array(binning) # re-set binning for this instance of hepPlotter
@@ -386,11 +401,13 @@ class HepPlotter(object):
         # y-axis
         if self.ymaxScale is None:
             self.ymaxScale = self.yMaxScaleValues[self.typeOfPlot]
-        self.ax1.set_ylim(0.,self.ymaxScale*self.ax1.get_ylim()[1])
+        self.ax1.set_ylim(0.,self.ymaxScale*y_lim_value)
         self.ax1.set_yticks(self.ax1.get_yticks()[1:])
+        self.ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         self.setYAxis(self.ax1)
 
         # x-axis
+        self.ax1.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         if self.xlim is not None:
             plt.xlim(self.xlim)
         if self.ratio_plot:
@@ -441,7 +458,7 @@ class HepPlotter(object):
 
         if self.colormap is None:
             hh,bb = np.histogram2d( x_bin_center,y_bin_center,bins=[binns_x,binns_y],
-                                  weights=h_data )
+                                    weights=h_data )
             self.colormap = hpt.getDataStructure( hh )
 
         if self.logplot:  norm2d = LogNorm()
@@ -546,6 +563,9 @@ class HepPlotter(object):
                           ymax=self.ratio_ylims['ymax'][self.ratio_type])
         self.ratio_yticks['significance']=self.ax2.get_yticks()[::2]
 
+        self.ax2.yaxis.set_major_formatter(FormatStrFormatter('%g'))
+        self.ax2.xaxis.set_major_formatter(FormatStrFormatter('%g'))
+
         self.ax2.set_yticks(self.ax2.get_yticks()[::2])
         self.ax2.set_yticklabels(self.ax2.get_yticks(),fontProperties,fontsize=self.label_size)
         self.ax2.set_ylabel(self.y_ratio_label,fontsize=self.label_size,ha='center',va='bottom')
@@ -625,6 +645,7 @@ class HepPlotter(object):
         """Draw labels for x-axis"""
         x_axis.set_xlabel(self.x_label,fontsize=self.label_size,ha='right',va='top',position=(1,0))
         x_axis_xticks = x_axis.get_xticks()
+
         if len(set(x_axis_xticks.astype(int)))==len(x_axis_xticks):
             x_axis.set_xticklabels(x_axis_xticks.astype(int),fontProperties,fontsize=self.label_size)
         else:
@@ -652,49 +673,49 @@ class HepPlotter(object):
 
     def text_labels(self):
         """Labels for CMS plots"""
-        text_args = {'fontsize':18,'ha':'left','va':'top','transform':self.ax1.transAxes}
-
         if self.dimensions==2 and self.CMSlabel!='outer':
-			print " "
-			print " WARNING :: You have chosen a label position "
-			print "            not considered for 2D plots. "
-			print "            Please consider changing the "
-			print "            parameter 'CMSlabel' to 'outer'."
+            print " WARNING :: You have chosen a label position "
+            print "            not considered for 2D plots. "
+            print "            Please consider changing the "
+            print "            parameter 'CMSlabel' to 'outer'."
 
-        coords = {'top left':{'x':[0.03]*3,'y':[0.97,0.90,0.83]},\
-                  'top right':{'x':[0.97]*3,'y':[0.97,0.90,0.83]},\
-                  'outer':{'x':[0.02,0.99,0.99],'y':[1.0,1.0,0.9]}}
-        text = coords[self.CMSlabel]
+        text = self.text_coords[self.CMSlabel]
 
-        energy = r"$\sqrt{\text{s}}$ = 13 TeV"
-        lumi   = r"%s fb$^{\text{-1}}$"%(self.lumi)
 
+        ## CMS, Energy, and LUMI labels
+
+        cms_stamp    = hpl.CMSStamp(self.CMSlabelStatus)
+        lumi_stamp   = hpl.LumiStamp(self.lumi)
+        energy_stamp = hpl.EnergyStamp()
+
+        cms_stamp.coords    = [text['x'][0], text['y'][0]]
+        lumi_stamp.coords   = [text['x'][1], text['y'][1]]  # not used right now, always drawn with the energy
+        energy_stamp.coords = [text['x'][1], text['y'][1]]
+
+        # modify defaults
         if self.CMSlabel == 'top right':
-            text_args['ha'] = 'right'
+            cms_stamp.ha = 'right'
         if self.dimensions==2:
-            text_args['va'] = 'bottom' # change alignment for 2d labels
+            cms_stamp.va  = 'bottom'   # change alignment for 2d labels
+            lumi_stamp.ha = 'right'
+            energy_stamp.ha = 'right'
 
-        ## CMS Label
-        self.ax1.text(text['x'][0],text['y'][0],r"\textbf{CMS} "+self.CMSlabelStatus,**text_args)
 
-        ## Luminosity & Energy
-        if self.dimensions==2:
-            text_args['ha'] = 'right' # change alignment for energy label
-        if self.plotLUMI:
-            self.ax1.text(text['x'][1],text['y'][1],energy+", "+lumi,**text_args)
-        else:
-            self.ax1.text(text['x'][1],text['y'][1],energy,**text_args)
+        self.ax1.text(cms_stamp.coords[0],cms_stamp.coords[1],cms_stamp.text,fontsize=cms_stamp.fontsize,
+                      ha=cms_stamp.ha,va=cms_stamp.va,transform=self.ax1.transAxes)
 
-        ## Extra text
-        if len( self.extra_text.texts )>0:
+        energy_lumi_text = energy_stamp.text+", "+lumi_stamp.text if self.plotLUMI else energy_stamp.text
+        self.ax1.text(energy_stamp.coords[0],energy_stamp.coords[1],energy_lumi_text,
+                      fontsize=energy_stamp.fontsize,ha=energy_stamp.ha,va=energy_stamp.va,
+                      color=energy_stamp.color,transform=self.ax1.transAxes)
 
-            # loop over text items and draw them on plot
-            for txtItem in self.extra_text.texts:
-                if txtItem.transform is None:
-                    txtItem.transform = self.ax1.transAxes
-                self.ax1.text( txtItem.coords[0],txtItem.coords[1],txtItem.text,
-                               fontsize=txtItem.fontsize,ha=txtItem.ha,va=txtItem.va,
-                               color=txtItem.color,transform=txtItem.transform  )
+
+        ## Extra text -- other text labels the user wants to add
+        for txtItem in self.extra_text.texts:
+            if txtItem.transform is None: txtItem.transform = self.ax1.transAxes
+            self.ax1.text( txtItem.coords[0],txtItem.coords[1],txtItem.text,
+                           fontsize=txtItem.fontsize,ha=txtItem.ha,va=txtItem.va,
+                           color=txtItem.color,transform=txtItem.transform  )
 
         return
 
@@ -731,6 +752,7 @@ class HepPlotter(object):
                             verticalalignment='center',
                             color=text_colors[i])
 
+        return
 
 
     def savefig(self):
@@ -743,3 +765,4 @@ class HepPlotter(object):
 
 
 ## THE END
+

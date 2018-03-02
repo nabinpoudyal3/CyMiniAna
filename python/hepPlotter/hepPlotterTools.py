@@ -1,12 +1,12 @@
 """
 Created:         1 September 2016
-Last Updated:   28 September 2016
+Last Updated:   16 February  2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
 Texas A&M University
-
 -----
+
 Simple functions to help with basic plots.
 """
 import ROOT
@@ -15,12 +15,34 @@ import matplotlib.pyplot as plt
 
 
 def betterColors():
-    """ Better colors for plotting """
-    old_colors = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),    
-         (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),    
-         (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),    
-         (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),    
-         (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)]
+    """
+    Better colors for plotting.
+    In matplotlib 2.0, these are available by default: 
+    > https://matplotlib.org/users/dflt_style_changes.html#colors-color-cycles-and-color-maps
+    """
+    old_colors = [
+         (31, 119, 180),  #blue
+         (214, 39, 40),   #red
+         (44, 160, 44),   #green
+         (255, 127, 14),  #orange
+         (148, 103, 189), #purple
+         (227, 119, 194), #pink
+         (127, 127, 127), #teal
+         (188, 189, 34),  #gray
+         (23, 190, 207),  #green-gold
+         (140, 86, 75),   #brown
+         # lighter versions
+         (174, 199, 232), #blue
+         (255, 152, 150), #red
+         (152, 223, 138), #green
+         (255, 187, 120), #orange
+         (197, 176, 213), #purple
+         (247, 182, 210), #pink
+         (158, 218, 229), #teal
+         (199, 199, 199), #gray
+         (219, 219, 141), #green-gold
+         (196, 156, 148), #brown
+    ]
     lc = []
     for jj in old_colors:
         new_color = [i/255. for i in jj]
@@ -30,13 +52,6 @@ def betterColors():
     ls += ['dashed' for _ in lc]
 
     return {'linecolors':lc,'linestyles':ls}
-
-
-def extract(str_value, start_='{', stop_='}'):
-    """Extract a string between two symbols, e.g., parentheses."""
-    extraction = str_value[str_value.index(start_)+1:str_value.index(stop_)]
-
-    return extraction
 
 
 def getName(filename):
@@ -70,6 +85,18 @@ def getSampleType(name):
     return sampletype
 
 
+def hist1d(nbins,bin_low,bin_high):
+    """
+    Set the binning for each histogram.
+    @param nbins	  Number of bins in histogram
+    @param bin_low    Lower bin edge
+    @param bin_high   Upper bin edge
+    """
+    binsize = float(bin_high-bin_low)/nbins
+    arr     = [i*binsize+bin_low for i in xrange(nbins+1)]
+    return arr
+
+
 def data2list(data,weights=None,normed=False,binning=1):
     """Convert array of data into dictionary of information matching 'hist2list' """
     data,bins = np.histogram(data,bins=binning,weights=weights,normed=normed)
@@ -88,7 +115,7 @@ def data2list2D(data,weights=None,normed=False,binning=1):
     try:
         x = data['x']
         y = data['y']
-    except IndexError:
+    except:
         x = data[0]
         y = data[1]
     _,bins_x,bins_y = np.histogram2d(x, y, bins=binning,normed=normed,weights=weights)
@@ -107,6 +134,8 @@ def data2list2D(data,weights=None,normed=False,binning=1):
                          'y':binnsy},
                'width': {'x':0.5*(bins_x[:-1]-bins_x[1:]),
                          'y':0.5*(bins_y[:-1]-bins_y[1:])}}
+
+    print results
 
     return results
 
@@ -293,66 +322,6 @@ def getDataStructure(h_data):
         colormap = plt.cm.bwr         # blue2red map
 
     return colormap
-
-
-## -- Classes for handling text on plots
-
-class Text(object):
-    """Class to hold extra text object"""
-    def __init__(self):
-        self.text     = ''
-        self.coords   = [0.,0.]
-        self.fontsize = 16
-        self.color    = 'k'
-        self.ha = 'left'
-        self.va = 'top'
-        self.transform = None   # 'None' so the user can change it -- it will be set below
-        return
-    def __str__(self):
-        """print text object with attributes"""
-        for i in ['text','coords','fontsize','color','ha','va','transform']:
-            print "%-*s: %s" % (10,i,self.__dict__[i])
-        return
-
-
-
-class PlotText(object):
-    """Class to draw new text on the plots"""
-    def __init__(self):
-        self.texts  = []
-        self.params = ['coords','fontsize','color','ha','va','transform']
-
-    def Add(self,plt_text,**txt_kwargs):
-        """
-        Add new text to the plot
-        @param plt_text    text to draw
-        @param txt_kwargs  key-word arguments:
-                             'coords','fontsize','color','ha','va','transform'
-        """
-        pltTextObject = Text()
-        pltTextObject.text = plt_text
-
-        # set parameters of the text object if they are passed to the 'Add()' function
-        # - use defaults if no argument is passed - this ensures any extra arguments don't
-        # harm anything in the text object
-        for param in self.params:
-            try:
-                setattr( pltTextObject,param,txt_kwargs[param] )
-            except KeyError:
-                # use the defaults
-                continue
-
-        self.texts.append(pltTextObject)
-
-        return
-    
-    def Print(self):
-        """Print out the text arguments"""
-        for text in self.texts:
-            print text
-    def getText(self):
-        """Return the list of Text objects"""
-        return self.texts
 
 
 ## THE END
