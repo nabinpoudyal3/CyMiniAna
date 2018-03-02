@@ -26,6 +26,11 @@ histogrammer::histogrammer( configuration& cmaConfig, std::string name ) :
 
     m_isMC  = m_config->isMC();
 
+    m_useJets      = m_config->useJets();
+    m_useLjets     = m_config->useLjets();
+    m_useLeptons   = m_config->useLeptons();
+    m_useNeutrinos = m_config->useNeutrinos();
+
     if (m_name.length()>0  && m_name.substr(m_name.length()-1,1).compare("_")!=0)
         m_name = m_name+"_"; // add '_' to end of string, if needed
   }
@@ -104,8 +109,6 @@ void histogrammer::initialize( TFile& outputFile, bool doSystWeights ){
 
     // weight systematics
     if (m_isMC && m_doSystWeights){
-        // In ATLAS these were only necessary for the nominal tree.
-        // Do not need to make them for every systematic variation!
         for (const auto& syst : m_config->listOfWeightSystematics()){
             bookHists( m_name+syst );
         } // end weight systematics
@@ -128,59 +131,49 @@ void histogrammer::bookHists( std::string name ){
     */
     m_names.resize(0); // append names to this to keep track of later
 
-    if (m_config->useJets()){
+    if (m_useJets){
         init_hist("n_jets_"+name,   31, -0.5,  30.5);
         init_hist("n_btags_"+name,  11, -0.5,  10.5);
 
-        init_hist("jet1_pt_"+name,  500, 0.0, 2000);
-        init_hist("jet1_eta_"+name,  50, -2.5, 2.5);
-        init_hist("jet1_phi_"+name,  64, -3.2, 3.2);
-        init_hist("jet1_cMVAv2_"+name, 200, -1,1);
-        init_hist("jet2_pt_"+name,  500, 0.0, 2000);
-        init_hist("jet2_eta_"+name,  50, -2.5, 2.5);
-        init_hist("jet2_phi_"+name,  64, -3.2, 3.2);
-        init_hist("jet2_cMVAv2_"+name, 200, -1,1);
-
-        init_hist("jet_top_pt_"+name,  500, 0.0, 2000);
-        init_hist("jet_top_eta_"+name,  50, -2.5, 2.5);
-        init_hist("jet_top_phi_"+name,  64, -3.2, 3.2);
-        init_hist("jet_top_cMVAv2_"+name, 200, -1,1);
-        init_hist("jet_antitop_pt_"+name,  500, 0.0, 2000);
-        init_hist("jet_antitop_eta_"+name,  50, -2.5, 2.5);
-        init_hist("jet_antitop_phi_"+name,  64, -3.2, 3.2);
-        init_hist("jet_antitop_cMVAv2_"+name, 200, -1,1);
+        init_hist("jet_pt_"+cname,     2000,  0.0, 2000.0);
+        init_hist("jet_eta_"+cname,      50, -2.5,    2.5);
+        init_hist("jet_phi_"+cname,      64, -3.2,    3.2);
+        init_hist("jet_bdisc_"+cname,   100,  0.0,    1.0);
     }
 
-    if (m_config->useLeptons()){
-        init_hist("lep1_pt_"+name,  500, 0.0, 2000);
-        init_hist("lep1_eta_"+name,  50, -2.5, 2.5);
-        init_hist("lep1_phi_"+name,  64, -3.2, 3.2);
-        init_hist("lep2_pt_"+name,  500, 0.0, 2000);
-        init_hist("lep2_eta_"+name,  50, -2.5, 2.5);
-        init_hist("lep2_phi_"+name,  64, -3.2, 3.2);
+    if (m_useLjets){
+        init_hist("ljet_pt_"+cname,     2000,  0.0, 2000.0);
+        init_hist("ljet_eta_"+cname,      50, -2.5,    2.5);
+        init_hist("ljet_phi_"+cname,      64, -3.2,    3.2);
+        init_hist("ljet_SDmass_"+cname,  500,  0.0,  500.0);
+        init_hist("ljet_tau1_"+cname,    200,  0.0,    2.0);
+        init_hist("ljet_tau2_"+cname,    200,  0.0,    2.0);
+        init_hist("ljet_tau3_"+cname,    200,  0.0,    2.0);
+        init_hist("ljet_tau21_"+cname,   100,  0.0,    1.0);
+        init_hist("ljet_tau32_"+cname,   100,  0.0,    1.0);
+        init_hist("ljet_subjet0_bdisc_"+cname, 100, 0.0, 1.0);
+        init_hist("ljet_subjet1_bdisc_"+cname, 100, 0.0, 1.0);
+        init_hist("ljet_subjet0_charge_"+cname, 100, -5.0, 5.0);
+        init_hist("ljet_subjet1_charge_"+cname, 500, -5.0, 5.0);
 
-        init_hist("lep_p_pt_"+name,  500, 0.0, 2000);
-        init_hist("lep_p_eta_"+name,  50, -2.5, 2.5);
-        init_hist("lep_p_phi_"+name,  64, -3.2, 3.2);
-        init_hist("lep_n_pt_"+name,  500, 0.0, 2000);
-        init_hist("lep_n_eta_"+name,  50, -2.5, 2.5);
-        init_hist("lep_n_phi_"+name,  64, -3.2, 3.2);
+        init_hist("ljet_pt_eta_"+cname,    200,  0.0, 2000.0,  50, -2.5, 2.5);  // pt vs eta (pt=x-axis)
+        init_hist("ljet_pt_SDmass_"+cname, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
     }
 
-    if (m_config->useNeutrinos()){
-        init_hist("nu1_pt_"+name,  500, 0.0, 2000);
-        init_hist("nu1_eta_"+name,  50, -2.5, 2.5);
-        init_hist("nu1_phi_"+name,  64, -3.2, 3.2);
-        init_hist("nu2_pt_"+name,  500, 0.0, 2000);
-        init_hist("nu2_eta_"+name,  50, -2.5, 2.5);
-        init_hist("nu2_phi_"+name,  64, -3.2, 3.2);
+    if (m_useLeptons){
+        init_hist("el_pt_"+name,  500, 0.0, 2000);
+        init_hist("el_eta_"+name,  50, -2.5, 2.5);
+        init_hist("el_phi_"+name,  64, -3.2, 3.2);
 
-        init_hist("nu_top_pt_"+name,  500, 0.0, 2000);
-        init_hist("nu_top_eta_"+name,  50, -2.5, 2.5);
-        init_hist("nu_top_phi_"+name,  64, -3.2, 3.2);
-        init_hist("nu_antitop_pt_"+name,  500, 0.0, 2000);
-        init_hist("nu_antitop_eta_"+name,  50, -2.5, 2.5);
-        init_hist("nu_antitop_phi_"+name,  64, -3.2, 3.2);
+        init_hist("mu_pt_"+name,  500, 0.0, 2000);
+        init_hist("mu_eta_"+name,  50, -2.5, 2.5);
+        init_hist("mu_phi_"+name,  64, -3.2, 3.2);
+    }
+
+    if (m_useNeutrinos){
+        init_hist("nu_pt_"+name,  500, 0.0, 2000);
+        init_hist("nu_eta_"+name,  50, -2.5, 2.5);
+        init_hist("nu_phi_"+name,  64, -3.2, 3.2);
     }
 
     // kinematics
@@ -188,23 +181,12 @@ void histogrammer::bookHists( std::string name ){
     init_hist("met_phi_"+name, 6.4, -3.2,  3.2);
     init_hist("ht_"+name,     5000,  0.0, 5000);
 
-    // HME && DNN && AMWT
-    //init_hist("hme_"+name, 2000, 0.0, 2000);
     //init_hist("dnn_"+name,  100, 0.0,   1.);
-    init_hist("amwt_"+name,   200, -1.,   1.);
-    init_hist("amwt_ES_"+name,200, -1.,   10.);
 
-    init_hist("top_pt_"+name,  2000, 0.0, 2000);
-    init_hist("top_eta_"+name,   50,-2.5,  2.5);
-    init_hist("top_phi_"+name,   64,-3.2,  3.2);
-    init_hist("top_m_"+name,    200, 100,  300);
-    init_hist("antitop_pt_"+name,  2000, 0.0, 2000);
-    init_hist("antitop_eta_"+name,   50,-2.5,  2.5);
-    init_hist("antitop_phi_"+name,   64,-3.2,  3.2);
-    init_hist("antitop_m_"+name,    200, 100,  300);
-
+    // asymmetry variables
     init_hist("mttbar_"+name,  5000, 0.0, 5000);
     init_hist("pTttbar_"+name,  300, 0.0,  300);
+    init_hist("yttbar_"+name,   100,-10.,   10);
 
     return;
 }
@@ -216,8 +198,12 @@ void histogrammer::bookHists( std::string name ){
 
 void histogrammer::fill( const std::string& name, const double& value, const double& weight ){
     /* TH1D */
-    TH1D* this_hist = m_map_histograms1D.at("h_"+name);
+    if (!m_map_histograms1D.count("h_"+name)){
+        cma::ERROR("HISTOGRAMMER : Filling 1D histogram with key '"+name+"': KEY DOES NOT EXIST");
+        cma::ERROR("HISTOGRAMMER : Please check 'init_hist' and 'fill' functions");
+    }
 
+    TH1D* this_hist = m_map_histograms1D.at("h_"+name);
     this_hist->Fill(value,weight);
 
     return;
@@ -226,8 +212,12 @@ void histogrammer::fill( const std::string& name, const double& value, const dou
 void histogrammer::fill( const std::string& name, 
                          const double& xvalue, const double& yvalue, const double& weight ){
     /* TH2D */
-    TH2D* this_hist = m_map_histograms2D.at("h_"+name);
+    if (!m_map_histograms2D.count("h_"+name)){
+        cma::ERROR("HISTOGRAMMER : Filling 2D histogram with key '"+name+"': KEY DOES NOT EXIST");
+        cma::ERROR("HISTOGRAMMER : Please check 'init_hist' and 'fill' functions");
+    }
 
+    TH2D* this_hist = m_map_histograms2D.at("h_"+name);
     this_hist->Fill(xvalue,yvalue,weight);
 
     return;
@@ -236,8 +226,12 @@ void histogrammer::fill( const std::string& name,
 void histogrammer::fill( const std::string& name, 
                          const double& xvalue, const double& yvalue, const double& zvalue, const double& weight ){
     /* TH3D */
-    TH3D* this_hist = m_map_histograms3D.at("h_"+name);
+    if (!m_map_histograms3D.count("h_"+name)){
+        cma::ERROR("HISTOGRAMMER : Filling 3D histogram with key '"+name+"': KEY DOES NOT EXIST");
+        cma::ERROR("HISTOGRAMMER : Please check 'init_hist' and 'fill' functions");
+    }
 
+    TH3D* this_hist = m_map_histograms3D.at("h_"+name);
     this_hist->Fill(xvalue,yvalue,zvalue,weight);
 
     return;
@@ -257,7 +251,6 @@ void histogrammer::fill( Event& event ){
     // if there are systematics stored as weights (e.g., b-tagging, pileup, etc.)
     // the following calls the fill() function with different event weights
     // to make histograms
-    // In ATLAS, these weights only existed in the 'nominal' tree
     bool isNominal = m_config->isNominalTree( treeName );
     if (m_isMC && isNominal && m_doSystWeights){
         // weight systematics
@@ -288,108 +281,74 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
        This is the function to modify / inherit for analysis-specific purposes
     */
     cma::DEBUG("HISTOGRAMMER : Fill histograms.");
-
-    // Load some objects from Event
-    std::map<std::string,LepTop> ttbar = event.ttbar();
-    LepTop top     = ttbar.at("top");
-    LepTop antitop = ttbar.at("antitop");
-
     cma::DEBUG("HISTOGRAMMER : event weight = "+std::to_string(event_weight) );
-    cma::DEBUG("HISTOGRAMMER : Top pT       = "+std::to_string(top.p4.Pt()) );
-    cma::DEBUG("HISTOGRAMMER : Top nu pT    = "+std::to_string(top.neutrino.p4.Pt()) );
 
-    if (m_config->useJets()){
+    // physics information
+    std::vector<Jet> jets = event.jets();
+    std::vector<Ljet> ljets = event.ljets();
+    std::vector<Muon> muons = event.muons();
+    std::vector<Electron> electrons = event.electrons();
+    std::vector<Neutrino> neutrinos = event.neutrinos();
+    MET met = event.MET();
+
+    // fill histograms!
+
+    if (m_useJets){
         cma::DEBUG("HISTOGRAMMER : Fill small-R jets");
         fill("n_btags_"+name, event.btag_jets().size(), event_weight );
 
-        std::vector<Jet> jets = event.jets();
         fill("n_jets_"+name, jets.size(), event_weight );  // reflects the "nJetsL" variables, not 2
 
-        fill("jet1_pt_"+name,  jets.at(0).p4.Pt(),   event_weight);
-        fill("jet1_eta_"+name, jets.at(0).p4.Eta(),  event_weight);
-        fill("jet1_phi_"+name, jets.at(0).p4.Phi(),  event_weight);
-        fill("jet1_cMVAv2_"+name, jets.at(0).cMVAv2, event_weight);
-        fill("jet2_pt_"+name,  jets.at(1).p4.Pt(),   event_weight);
-        fill("jet2_eta_"+name, jets.at(1).p4.Eta(),  event_weight);
-        fill("jet2_phi_"+name, jets.at(1).p4.Phi(),  event_weight);
-        fill("jet2_cMVAv2_"+name, jets.at(1).cMVAv2, event_weight);
-
-        fill("jet_top_pt_"+name,      top.jet.p4.Pt(),   event_weight);
-        fill("jet_top_eta_"+name,     top.jet.p4.Eta(),  event_weight);
-        fill("jet_top_phi_"+name,     top.jet.p4.Phi(),  event_weight);
-        fill("jet_top_cMVAv2_"+name,  top.jet.cMVAv2,    event_weight);
-        fill("jet_antitop_pt_"+name,  antitop.jet.p4.Pt(),   event_weight);
-        fill("jet_antitop_eta_"+name, antitop.jet.p4.Eta(),  event_weight);
-        fill("jet_antitop_phi_"+name, antitop.jet.p4.Phi(),  event_weight);
-        fill("jet_antitop_cMVAv2_"+name, antitop.jet.cMVAv2, event_weight);
+        for (const auto& jet : jets){
+            fill("jet1_pt_"+name,  jet.p4.Pt(),   event_weight);
+            fill("jet1_eta_"+name, jet.p4.Eta(),  event_weight);
+            fill("jet1_phi_"+name, jet.p4.Phi(),  event_weight);
+            fill("jet1_bdisc_"+name, jet.cMVAv2,  event_weight);
+        }
     }
 
 
-    if (m_config->useLeptons()){
+    if (m_useLeptons){
         cma::DEBUG("HISTOGRAMMER : Fill leptons");
-        std::vector<Lepton> leptons = event.leptons();
-        fill("lep1_pt_"+name,  leptons.at(0).p4.Pt(), event_weight);
-        fill("lep1_eta_"+name, leptons.at(0).p4.Eta(), event_weight);
-        fill("lep1_phi_"+name, leptons.at(0).p4.Phi(), event_weight);
-        fill("lep2_pt_"+name,  leptons.at(1).p4.Pt(),  event_weight);
-        fill("lep2_eta_"+name, leptons.at(1).p4.Eta(), event_weight);
-        fill("lep2_phi_"+name, leptons.at(1).p4.Phi(), event_weight);
+        for (const auto& el : electrons){
+            fill("el_pt_"+name,  electrons.p4.Pt(),  event_weight);
+            fill("el_eta_"+name, electrons.p4.Eta(), event_weight);
+            fill("el_phi_"+name, electrons.p4.Phi(), event_weight);
+        }
 
-        fill("lep_p_pt_"+name,  top.lepton.p4.Pt(),  event_weight);
-        fill("lep_p_eta_"+name, top.lepton.p4.Eta(), event_weight);
-        fill("lep_p_phi_"+name, top.lepton.p4.Phi(), event_weight);
-        fill("lep_n_pt_"+name,  antitop.lepton.p4.Pt(),  event_weight);
-        fill("lep_n_eta_"+name, antitop.lepton.p4.Eta(), event_weight);
-        fill("lep_n_phi_"+name, antitop.lepton.p4.Phi(), event_weight);
+        for (const auto& mu : muons){
+            fill("mu_pt_"+name,  muons.p4.Pt(),  event_weight);
+            fill("mu_eta_"+name, muons.p4.Eta(), event_weight);
+            fill("mu_phi_"+name, muons.p4.Phi(), event_weight);
+        }
     }
 
-
-    if (m_config->useNeutrinos()){
+    if (m_useNeutrinos){
         cma::DEBUG("HISTOGRAMMER : Fill neutrinos");
-        std::vector<Neutrino> nus = event.neutrinos();
-
-        fill("nu1_pt_"+name,  nus.at(0).p4.Pt(),  event_weight);
-        fill("nu1_eta_"+name, nus.at(0).p4.Eta(), event_weight);
-        fill("nu1_phi_"+name, nus.at(0).p4.Phi(), event_weight);
-        fill("nu2_pt_"+name,  nus.at(1).p4.Pt(),  event_weight);
-        fill("nu2_eta_"+name, nus.at(1).p4.Eta(), event_weight);
-        fill("nu2_phi_"+name, nus.at(1).p4.Phi(), event_weight);
-
-        fill("nu_top_pt_"+name,  top.neutrino.p4.Pt(),  event_weight);
-        fill("nu_top_eta_"+name, top.neutrino.p4.Eta(), event_weight);
-        fill("nu_top_phi_"+name, top.neutrino.p4.Phi(), event_weight);
-        fill("nu_antitop_pt_"+name,  antitop.neutrino.p4.Pt(),  event_weight);
-        fill("nu_antitop_eta_"+name, antitop.neutrino.p4.Eta(), event_weight);
-        fill("nu_antitop_phi_"+name, antitop.neutrino.p4.Phi(), event_weight);
+        for (const auto& nu : neutrinos){
+            fill("nu_pt_"+name,  nuetrinos.p4.Pt(),   event_weight);
+            fill("nu_eta_"+name, nuetrinos.p4.Eta(),  event_weight);
+            fill("nu_phi_"+name, nueutrinos.p4.Phi(), event_weight);
+        }
     }
-
 
     // kinematics
     cma::DEBUG("HISTOGRAMMER : Fill kinematics");
-    fill("met_met_"+name, event.met("met"), event_weight);
-    fill("met_phi_"+name, event.met("phi"), event_weight);
-    fill("ht_"+name,      event.HT(),       event_weight);
+    fill("met_met_"+name, met.p4.Pt(),  event_weight);
+    fill("met_phi_"+name, met.p4.Phi(), event_weight);
+    fill("ht_"+name,      event.HT(),   event_weight);
 
-    // HME && DNN && AMWT
-    cma::DEBUG("HISTOGRAMMER : Fill AMWT");
-    //fill("hme_"+name, event.hme(), event_weight); // N/A
-    //fill("dnn_"+name, event.dnn(), event_weight); // N/A
-    fill("amwt_"+name,  top.weight, event_weight);  // both top and antitop store the weight from AMWT
-    fill("amwt_ES_"+name,  top.weight_ES, event_weight);  // both top and antitop store the EventShape weight from AMWT
+/*
+    // DNN
+    cma::DEBUG("HISTOGRAMMER : Fill DNN");
+    fill("dnn_"+name, event.dnn(), event_weight); // N/A
 
-    cma::DEBUG("HISTOGRAMMER : Fill top/antitop");
-    fill("top_pt_"+name,  top.p4.Pt(),  event_weight);
-    fill("top_eta_"+name, top.p4.Eta(), event_weight);
-    fill("top_phi_"+name, top.p4.Phi(), event_weight);
-    fill("top_m_"+name,   top.p4.M(),   event_weight);
-    fill("antitop_pt_"+name,  antitop.p4.Pt(),  event_weight); 
-    fill("antitop_eta_"+name, antitop.p4.Eta(), event_weight);
-    fill("antitop_phi_"+name, antitop.p4.Phi(), event_weight);
-    fill("antitop_m_"+name,   antitop.p4.M(),   event_weight);
-
-    fill("mttbar_"+name,  (top.p4+antitop.p4).M(), event_weight);
+    // Asymmetry
+    cma::DEBUG("HISTOGRAMMER : Fill ttbar AC values");
+    fill("mttbar_"+name,  (top.p4+antitop.p4).M(),  event_weight);
     fill("pTttbar_"+name, (top.p4+antitop.p4).Pt(), event_weight);
-
+    fill("yttbar_"+name,  (top.p4+antitop.p4).Rapidity(), event_weight);
+*/
     cma::DEBUG("HISTOGRAMMER : End histograms");
 
     return;

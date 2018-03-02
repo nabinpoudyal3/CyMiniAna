@@ -22,6 +22,7 @@
 
 #include "Analysis/CyMiniAna/interface/Event.h"
 #include "Analysis/CyMiniAna/interface/configuration.h"
+#include "Analysis/CyMiniAna/interface/physicsObjects.h"
 
 class eventSelection{
 
@@ -35,13 +36,24 @@ class eventSelection{
     virtual void initialize(const std::string &cutsfile); // use any cut file desired
     virtual void identifySelection();
 
-    // Run for every event (in every systematic) that needs saving
-    virtual bool applySelection(Event &event, TH1D &cutflow, TH1D &cutflow_unweighted);
+    // Run for every tree (before the event loop)
+    void setCutflowHistograms(TH1D &cutflow, TH1D &cutflow_unweighted) {
 
-    // External access to information in this class
+    // Run for every event (in every systematic) that needs saving
+    virtual bool applySelection(Event &event);
+
+    // Selections put into functions (easily reference them in other cuts)
+    bool allHadDNNSelection(double cutflow_bin);
+    bool zeroLeptonSelection(double cutflow_bin);
+    bool oneLeptonSelection(double cutflow_bin);
+    bool twoLeptonSelection(double cutflow_bin);
+
+    // Helper functions: Provide external access to information in this class
+    void fillCutflows(double cutflow_bin);                                // fill cutflow histograms
     virtual void getCutNames();
-    virtual std::vector<std::string> cutNames();     // Return a vector of the cut names (for labeling bins in cutflow histograms)
-    virtual unsigned int numberOfCuts();             // Return the number of cuts (for binning cutflow histograms)
+    virtual std::vector<std::string> cutNames(){ return m_cutflowNames;}  // Return a vector of the cut names 
+    virtual unsigned int numberOfCuts(){ return m_numberOfCuts;}          // Return the number of cuts
+
 
   protected:
 
@@ -64,11 +76,27 @@ class eventSelection{
     std::vector<std::string> m_cutflowNames;
     std::vector<Cut> m_cuts;
 
+    // cutflow histograms
+    TH1D m_cutflow;
+    TH1D m_cutflow_unw;
+
     // booleans for each selection
-    bool m_dummySelection;
+    bool m_isZeroLeptonAnalysis;
+    bool m_isOneLeptonAnalysis;
+    bool m_isTwoLeptonAnalysis;
+
     bool m_allHadDNNSelection;
-    bool m_exampleSelection;
-    bool m_example2Selection;
+
+    // physics information
+    float m_nominal_weight;
+    std::vector<Ljet> m_ljets;
+    std::vector<Jet> m_jets;
+    std::vector<Muon> m_muons;
+    std::vector<Electron> m_electrons;
+    std::vector<Neutrino> m_neutrinos;
+    MET m_met;
+    float m_ht;
+    float m_st;
 };
 
 #endif

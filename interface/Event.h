@@ -30,8 +30,6 @@
 #include "Analysis/CyMiniAna/interface/physicsObjects.h"
 #include "Analysis/CyMiniAna/interface/configuration.h"
 #include "Analysis/CyMiniAna/interface/dileptonTtbarReco.h"
-#include "lwtnn/lwtnn/interface/LightweightNeuralNetwork.hh"
-#include "lwtnn/lwtnn/interface/parse_json.hh"
 
 
 // Event Class
@@ -44,10 +42,6 @@ class Event {
     // Destructor
     virtual ~Event();
 
-    // create hash tables in truth/reco TTree to match truth <-> reco events
-    // uses configuration option matchTruthToReco to match truth to reco (reco loop)
-    // OR match reco to truth (truth loop, for acceptance studies)
-    void matchTruthWithReco();
     // check during looping over truth events, if reco event match is found
     bool isValidRecoEntry();
 
@@ -73,17 +67,21 @@ class Event {
 
     // Get physics information
     std::vector<Lepton> leptons();
+    std::vector<Electron> electrons();
+    std::vector<Muon> muons();
     std::vector<Neutrino> neutrinos();
     std::vector<Ljet> ljets();
     std::vector<Jet>  jets();
 
     // Get truth physics information 
     std::vector<Lepton> truth_leptons();
+    std::vector<Electron> truth_electrons();
+    std::vector<Muon> truth_muons();
     std::vector<Neutrino> truth_neutrinos();
     std::vector<Ljet> truth_ljets();
     std::vector<Jet>  truth_jets();
 
-    virtual float met( const std::string& met_name );
+    virtual MET MET();
     virtual float HT();
     virtual float ST();
     virtual void getBtaggedJets( Jet& jet );
@@ -150,10 +148,6 @@ class Event {
     bool m_kinematicReco;
     bool m_buildNeutrinos;
     bool m_getDNN;
-    lwt::LightweightNeuralNetwork* m_lwnn;
-    std::map<std::string, double> m_dnnInputs;   // values for inputs to the DNN
-    std::string m_dnnKey;                        // string to access DNN from lwtnn
-    double m_DNN;                                // DNN score
 
     // dilepton
     bool m_ee;

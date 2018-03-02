@@ -23,22 +23,22 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
   m_DNN(0.0),
   m_dileptonTtbar(nullptr){
     m_isMC     = m_config->isMC();
-    m_grid     = m_config->isGridFile();             // file directly from original analysis team
+    m_grid     = m_config->isGridFile();             // file directly from EDM->FlatNtuple step
     m_treeName = m_ttree.GetTree()->GetName();       // for systematics
     m_fileName = m_config->filename();               // for accessing file metadata
 
     // Neural network and kinematic reconstruction information
     m_isZeroLeptonAnalysis = m_config->isZeroLeptonAnalysis();
     m_isOneLeptonAnalysis  = m_config->isOneLeptonAnalysis();
-    m_isTwoLeptonAnalysis  = false; // m_config->isTwoLeptonAnalysis(); (handled elsewhere)
+    m_isTwoLeptonAnalysis  = m_config->isTwoLeptonAnalysis(); (handled elsewhere)
 
     m_getDNN        = m_config->getDNN();            // build DNN
     m_kinematicReco = m_config->kinematicReco();     // build the ttbar system
 
     // b-tagging working points
-    m_cMVAv2L = m_config->cMVAv2L();
-    m_cMVAv2M = m_config->cMVAv2M();
-    m_cMVAv2T = m_config->cMVAv2T();
+    m_CSVv2L = m_config->CSVv2L();
+    m_CSVv2M = m_config->CSVv2M();
+    m_CSVv2T = m_config->CSVv2T();
 
 
     //** Access branches from Tree **//
@@ -46,255 +46,162 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_runNumber    = new TTreeReaderValue<int>(m_ttree,"evt_RunNumber");
     m_rho          = new TTreeReaderValue<double>(m_ttree,"evt_rho");
     m_lumiblock    = new TTreeReaderValue<int>(m_ttree,"evt_LumiBlock");
-    m_NGoodVtx     = new TTreeReaderArray<int>(m_ttree,"evt_NGoodVtx");
-    m_LHAPDF_ID    = new TTreeReaderArray<int>(m_ttree,"evt_LHA_PDF_ID");
-    m_NIsoTrk      = new TTreeReaderArray<int>(m_ttree,"evt_NIsoTrk");
-    m_pu_NtrueInt  = new TTreeReaderArray<int>(m_ttree,"pu_NtrueInt");
+    m_NGoodVtx     = new TTreeReaderValue<int>(m_ttree,"evt_NGoodVtx");
+    m_LHAPDF_ID    = new TTreeReaderValue<int>(m_ttree,"evt_LHA_PDF_ID");
+    m_NIsoTrk      = new TTreeReaderValue<int>(m_ttree,"evt_NIsoTrk");
+    m_pu_NtrueInt  = new TTreeReaderValue<int>(m_ttree,"pu_NtrueInt");
 
-    m_HLT_Ele45_WPLoose_Gsf          = new TTreeReaderArray<int>(m_ttree,"HLT_Ele45_WPLoose_Gsf");
-    m_HLT_Ele45_WPLoose_Gsf_prescale = new TTreeReaderArray<int>(m_ttree,"HLT_Ele45_WPLoose_Gsf_prescale");
-    m_HLT_Mu50            = new TTreeReaderArray<int>(m_ttree,"HLT_Mu50");
-    m_HLT_Mu50_prescale   = new TTreeReaderArray<int>(m_ttree,"HLT_Mu50_prescale");
-    m_HLT_TkMu50          = new TTreeReaderArray<int>(m_ttree,"HLT_TkMu50");
-    m_HLT_TkMu50_prescale = new TTreeReaderArray<int>(m_ttree,"HLT_TkMu50_prescale");
+    m_HLT_Ele45_WPLoose_Gsf          = new TTreeReaderValue<int>(m_ttree,"HLT_Ele45_WPLoose_Gsf");
+    m_HLT_Ele45_WPLoose_Gsf_prescale = new TTreeReaderValue<int>(m_ttree,"HLT_Ele45_WPLoose_Gsf_prescale");
+    m_HLT_Mu50            = new TTreeReaderValue<int>(m_ttree,"HLT_Mu50");
+    m_HLT_Mu50_prescale   = new TTreeReaderValue<int>(m_ttree,"HLT_Mu50_prescale");
+    m_HLT_TkMu50          = new TTreeReaderValue<int>(m_ttree,"HLT_TkMu50");
+    m_HLT_TkMu50_prescale = new TTreeReaderValue<int>(m_ttree,"HLT_TkMu50_prescale");
 
     m_scale_size     = new TTreeReaderValue<unsigned int>(m_ttree,"scale_size");
-    m_scale_Weights  = new TTreeReaderArray<float>(m_ttree,"scale_Weights");
+    m_scale_Weights  = new TTreeReaderValue<float>(m_ttree,"scale_Weights");
     m_pdf_size       = new TTreeReaderValue<unsigned int>(m_ttree,"pdf_size");
-    m_weights_pdf    = new TTreeReaderArray<float>(m_ttree,"pdf_Weights");
+    m_weights_pdf    = new TTreeReaderValue<float>(m_ttree,"pdf_Weights");
     m_alphas_size    = new TTreeReaderValue<unsigned int>(m_ttree,"alphas_size");
-    m_weights_alphas = new TTreeReaderArray<float>(m_ttree,"alphas_Weights");
+    m_weights_alphas = new TTreeReaderValue<float>(m_ttree,"alphas_Weights");
 
     if (m_config->useFlags()){
-      m_Flag_BadChargedCandidateFilter = new TTreeReaderArray<int>(m_ttree,"Flag_BadChargedCandidateFilter");
-      m_Flag_HBHENoiseFilter           = new TTreeReaderArray<int>(m_ttree,"Flag_HBHENoiseFilter");
-      m_Flag_HBHENoiseIsoFilter        = new TTreeReaderArray<int>(m_ttree,"Flag_HBHENoiseIsoFilter");
-      m_Flag_CSCTightHaloFilter        = new TTreeReaderArray<int>(m_ttree,"Flag_CSCTightHaloFilter");
-      m_Flag_HcalStripHaloFilter  = new TTreeReaderArray<int>(m_ttree,"Flag_HcalStripHaloFilter");
-      m_Flag_hcalLaserEventFilter = new TTreeReaderArray<int>(m_ttree,"Flag_hcalLaserEventFilter");
-      m_Flag_goodVertices         = new TTreeReaderArray<int>(m_ttree,"Flag_goodVertices");
-      m_Flag_eeBadScFilter        = new TTreeReaderArray<int>(m_ttree,"Flag_eeBadScFilter");
-      m_Flag_ecalLaserCorrFilter  = new TTreeReaderArray<int>(m_ttree,"Flag_ecalLaserCorrFilter");
-      m_Flag_CSCTightHaloTrkMuUnvetoFilter  = new TTreeReaderArray<int>(m_ttree,"Flag_CSCTightHaloTrkMuUnvetoFilter");
-      m_Flag_CSCTightHalo2015Filter         = new TTreeReaderArray<int>(m_ttree,"Flag_CSCTightHalo2015Filter");
-      m_Flag_globalTightHalo2016Filter      = new TTreeReaderArray<int>(m_ttree,"Flag_globalTightHalo2016Filter");
-      m_Flag_globalSuperTightHalo2016Filter = new TTreeReaderArray<int>(m_ttree,"Flag_globalSuperTightHalo2016Filter");
-      m_Flag_EcalDeadCellTriggerPrimitiveFilter = new TTreeReaderArray<int>(m_ttree,"Flag_EcalDeadCellTriggerPrimitiveFilter");
-      m_Flag_EcalDeadCellBoundaryEnergyFilter   = new TTreeReaderArray<int>(m_ttree,"Flag_EcalDeadCellBoundaryEnergyFilter");
-      m_Flag_chargedHadronTrackResolutionFilter = new TTreeReaderArray<int>(m_ttree,"Flag_chargedHadronTrackResolutionFilter");
+      m_Flag_BadChargedCandidateFilter = new TTreeReaderValue<int>(m_ttree,"Flag_BadChargedCandidateFilter");
+      m_Flag_HBHENoiseFilter           = new TTreeReaderValue<int>(m_ttree,"Flag_HBHENoiseFilter");
+      m_Flag_HBHENoiseIsoFilter        = new TTreeReaderValue<int>(m_ttree,"Flag_HBHENoiseIsoFilter");
+      m_Flag_CSCTightHaloFilter        = new TTreeReaderValue<int>(m_ttree,"Flag_CSCTightHaloFilter");
+      m_Flag_HcalStripHaloFilter  = new TTreeReaderValue<int>(m_ttree,"Flag_HcalStripHaloFilter");
+      m_Flag_hcalLaserEventFilter = new TTreeReaderValue<int>(m_ttree,"Flag_hcalLaserEventFilter");
+      m_Flag_goodVertices         = new TTreeReaderValue<int>(m_ttree,"Flag_goodVertices");
+      m_Flag_eeBadScFilter        = new TTreeReaderValue<int>(m_ttree,"Flag_eeBadScFilter");
+      m_Flag_ecalLaserCorrFilter  = new TTreeReaderValue<int>(m_ttree,"Flag_ecalLaserCorrFilter");
+      m_Flag_CSCTightHaloTrkMuUnvetoFilter  = new TTreeReaderValue<int>(m_ttree,"Flag_CSCTightHaloTrkMuUnvetoFilter");
+      m_Flag_CSCTightHalo2015Filter         = new TTreeReaderValue<int>(m_ttree,"Flag_CSCTightHalo2015Filter");
+      m_Flag_globalTightHalo2016Filter      = new TTreeReaderValue<int>(m_ttree,"Flag_globalTightHalo2016Filter");
+      m_Flag_globalSuperTightHalo2016Filter = new TTreeReaderValue<int>(m_ttree,"Flag_globalSuperTightHalo2016Filter");
+      m_Flag_EcalDeadCellTriggerPrimitiveFilter = new TTreeReaderValue<int>(m_ttree,"Flag_EcalDeadCellTriggerPrimitiveFilter");
+      m_Flag_EcalDeadCellBoundaryEnergyFilter   = new TTreeReaderValue<int>(m_ttree,"Flag_EcalDeadCellBoundaryEnergyFilter");
+      m_Flag_chargedHadronTrackResolutionFilter = new TTreeReaderValue<int>(m_ttree,"Flag_chargedHadronTrackResolutionFilter");
 
-      m_Flag_trkPOGFilters                  = new TTreeReaderArray<int>(m_ttree,"Flag_trkPOGFilters");
-      m_Flag_trkPOG_manystripclus53X        = new TTreeReaderArray<int>(m_ttree,"Flag_trkPOG_manystripclus53X");
-      m_Flag_trkPOG_toomanystripclus53X     = new TTreeReaderArray<int>(m_ttree,"Flag_trkPOG_toomanystripclus53X");
-      m_Flag_trkPOG_logErrorTooManyClusters = new TTreeReaderArray<int>(m_ttree,"Flag_trkPOG_logErrorTooManyClusters");
+      m_Flag_trkPOGFilters                  = new TTreeReaderValue<int>(m_ttree,"Flag_trkPOGFilters");
+      m_Flag_trkPOG_manystripclus53X        = new TTreeReaderValue<int>(m_ttree,"Flag_trkPOG_manystripclus53X");
+      m_Flag_trkPOG_toomanystripclus53X     = new TTreeReaderValue<int>(m_ttree,"Flag_trkPOG_toomanystripclus53X");
+      m_Flag_trkPOG_logErrorTooManyClusters = new TTreeReaderValue<int>(m_ttree,"Flag_trkPOG_logErrorTooManyClusters");
 
-      m_Flag_METFilters = new TTreeReaderArray<int>(m_ttree,"Flag_METFilters");
+      m_Flag_METFilters = new TTreeReaderValue<int>(m_ttree,"Flag_METFilters");
 
-      m_Flag_BadPFMuonFilter = new TTreeReaderArray<int>(m_ttree,"Flag_BadPFMuonFilter");
-      m_Flag_badMuons        = new TTreeReaderArray<int>(m_ttree,"Flag_badMuons");
-      m_Flag_muonBadTrackFilter = new TTreeReaderArray<int>(m_ttree,"Flag_muonBadTrackFilter");
-      m_Flag_duplicateMuons  = new TTreeReaderArray<int>(m_ttree,"Flag_duplicateMuons");
-      m_Flag_noBadMuons      = new TTreeReaderArray<int>(m_ttree,"Flag_noBadMuons");
+      m_Flag_BadPFMuonFilter = new TTreeReaderValue<int>(m_ttree,"Flag_BadPFMuonFilter");
+      m_Flag_badMuons        = new TTreeReaderValue<int>(m_ttree,"Flag_badMuons");
+      m_Flag_muonBadTrackFilter = new TTreeReaderValue<int>(m_ttree,"Flag_muonBadTrackFilter");
+      m_Flag_duplicateMuons  = new TTreeReaderValue<int>(m_ttree,"Flag_duplicateMuons");
+      m_Flag_noBadMuons      = new TTreeReaderValue<int>(m_ttree,"Flag_noBadMuons");
     }
 
 
     /** JETS **/
     if (m_config->useJets()){
       // small-R jet information
-      m_jet_size = new TTreeReaderValue<unsigned int>(m_ttree,"jetAK4CHS_size");
-      m_jet_pt   = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_Pt");
-      m_jet_eta  = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_Eta");
-      m_jet_phi  = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_Phi");
-      m_jet_e    = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_E");
-      m_jet_charge = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_Charge");
-      m_jet_CSVv2  = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_CSVv2");
-      m_jet_CMVAv2 = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_CMVAv2");
-      m_jet_CvsL   = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_CvsL");
-      m_jet_CvsB   = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_CvsB");
-      m_jet_partonFlavour = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_PartonFlavour");
-      m_jet_hadronFlavour = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_HadronFlavour");
-      m_jet_neutralMultiplicity     = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_neutralMultiplicity");
-      m_jet_neutralHadronEnergyFrac = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_neutralHadronEnergyFrac");
-      m_jet_neutralEmEnergyFrac     = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_neutralEmEnergyFrac");
-      m_jet_chargedHadronEnergyFrac = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_chargedHadronEnergyFrac");
-      m_jet_chargedEmEnergyFrac     = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_chargedEmEnergyFrac");
-      m_jet_chargedMultiplicity     = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_chargedMultiplicity");
-      m_jet_jecFactor0 = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_jecFactor0");
-      m_jet_jetArea    = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_jetArea");
-      m_jet_jecUncertainty = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_jecUncertainty");
-      m_jet_ptResolution   = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_PtResolution");
-      m_jet_JERSF     = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_JERSF");
-      m_jet_JERSFUp   = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_JERSFUp");
-      m_jet_JERSFDown = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_JERSFDown");
-      m_jet_smearedPt = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_SmearedPt");
+      m_jet_pt   = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_Pt");
+      m_jet_eta  = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_Eta");
+      m_jet_phi  = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_Phi");
+      m_jet_e    = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_E");
+      m_jet_charge = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_Charge");
+      m_jet_CSVv2  = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_CSVv2");
     }
     if (m_config->useLargeRJets()){
       // large-R Jet information
       m_ljet_size = new TTreeReaderValue<unsigned int>(m_ttree,"jetAK8CHS_size");
-      m_ljet_pt   = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_Pt");
-      m_ljet_eta  = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_Eta");
-      m_ljet_phi  = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_Phi");
-      m_ljet_e    = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_E");
-      m_ljet_softDropMass_CHS = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_softDropMassCHS");
-      m_ljet_tau1_CHS = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_tau1CHS");
-      m_ljet_tau2_CHS = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_tau1CHS");
-      m_ljet_tau3_CHS = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_tau1CHS");
-      m_ljet_charge = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_Charge");
-      m_ljet_CSVv2  = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_CSVv2");
-      m_ljet_CMVAv2 = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_CMVAv2");
-      m_ljet_CvsL   = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_CvsL");
-      m_ljet_CvsB   = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_CvsB");
-      m_ljet_PartonFlavour = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_PartonFlavour");
-      m_ljet_HadronFlavour = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_HadronFlavour");
-      m_ljet_neutralMultiplicity     = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_neutralMultiplicity");
-      m_ljet_neutralHadronEnergyFrac = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_neutralHadronEnergyFrac");
-      m_ljet_neutralEmEnergyFrac     = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_neutralEmEnergyFrac");
-      m_ljet_chargedHadronEnergyFrac = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_chargedHadronEnergyFrac");
-      m_ljet_chargedEmEnergyFrac = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_chargedEmEnergyFrac");
-      m_ljet_chargedMultiplicity = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_chargedMultiplicity");
-      m_ljet_jecFactor0 = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_jecFactor0");
-      m_ljet_jetArea    = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_jetArea");
-      m_ljet_jecUncertainty = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_jecUncertainty");
-      m_ljet_PtResolution   = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_PtResolution");
-      m_ljet_JERSF     = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_JERSF");
-      m_ljet_JERSFUp   = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_JERSFUp");
-      m_ljet_JERSFDown = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_JERSFDown");
-      m_ljet_SmearedPt = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_SmearedPt");
-      m_ljet_vSubjetIndex0 = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_vSubjetIndex0");
-      m_ljet_vSubjetIndex1 = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_vSubjetIndex1");
+      m_ljet_pt   = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_Pt");
+      m_ljet_eta  = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_Eta");
+      m_ljet_phi  = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_Phi");
+      m_ljet_e    = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_E");
+      m_ljet_softDropMass_CHS = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_softDropMassCHS");
+      m_ljet_tau1_CHS = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_tau1CHS");
+      m_ljet_tau2_CHS = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_tau1CHS");
+      m_ljet_tau3_CHS = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_tau1CHS");
+      m_ljet_charge = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_Charge");
+      m_ljet_CSVv2  = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_CSVv2");
 
-      m_ljet_subjet_size = new TTreeReaderValue<unsigned int>(m_ttree,"subjetAK8CHS_size");
-      m_ljet_subjet_pt   = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_Pt");
-      m_ljet_subjet_eta  = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_Eta");
-      m_ljet_subjet_phi  = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_Phi");
-      m_ljet_subjet_e    = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_E");
-      m_ljet_subjet_charge = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_Charge");
-      m_ljet_subjet_CSVv2  = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_CSVv2");
-      m_ljet_subjet_CMVAv2 = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_CMVAv2");
-      m_ljet_subjet_CvsL = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_CvsL");
-      m_ljet_subjet_CvsB = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_CvsB");
-      m_ljet_subjet_partonFlavour = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_PartonFlavour");
-      m_ljet_subjet_hadronFlavour = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_HadronFlavour");
-      m_ljet_subjet_neutralMultiplicity     = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_neutralMultiplicity");
-      m_ljet_subjet_neutralHadronEnergyFrac = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_neutralHadronEnergyFrac");
-      m_ljet_subjet_neutralEmEnergyFrac     = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_neutralEmEnergyFrac");
-      m_ljet_subjet_chargedHadronEnergyFrac = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_chargedHadronEnergyFrac");
-      m_ljet_subjet_chargedEmEnergyFrac = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_chargedEmEnergyFrac");
-      m_ljet_subjet_chargedMultiplicity = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_chargedMultiplicity");
-      m_ljet_subjet_jecFactor0 = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_jecFactor0");
-      m_ljet_subjet_jetArea    = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_jetArea");
+      m_ljet_subjet_pt   = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_Pt");
+      m_ljet_subjet_eta  = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_Eta");
+      m_ljet_subjet_phi  = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_Phi");
+      m_ljet_subjet_e    = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_E");
+      m_ljet_subjet_charge = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_Charge");
+      m_ljet_subjet_CSVv2  = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_CSVv2");
     }
 
 
     /** LEPTONS **/
     if (m_config->useLeptons()){
-      m_el_size = new TTreeReaderValue<unsigned int>(m_ttree,"el_size");
-      m_el_pt   = new TTreeReaderArray<float>(m_ttree,"el_Pt");
-      m_el_eta  = new TTreeReaderArray<float>(m_ttree,"el_Eta");
-      m_el_phi  = new TTreeReaderArray<float>(m_ttree,"el_Phi");
-      m_el_e    = new TTreeReaderArray<float>(m_ttree,"el_E");
-      m_el_charge  = new TTreeReaderArray<float>(m_ttree,"el_Charge");
-      m_el_key     = new TTreeReaderArray<float>(m_ttree,"el_Key");
-      m_el_iso03   = new TTreeReaderArray<float>(m_ttree,"el_Iso03");
-      m_el_iso03db = new TTreeReaderArray<float>(m_ttree,"el_Iso03db");
-      m_el_miniIso = new TTreeReaderArray<float>(m_ttree,"el_MiniIso");
-      m_el_SCEta   = new TTreeReaderArray<float>(m_ttree,"el_SCEta");
-      m_el_SCPhi   = new TTreeReaderArray<float>(m_ttree,"el_SCPhi");
+      m_el_pt   = new TTreeReaderValue<float>(m_ttree,"el_Pt");
+      m_el_eta  = new TTreeReaderValue<float>(m_ttree,"el_Eta");
+      m_el_phi  = new TTreeReaderValue<float>(m_ttree,"el_Phi");
+      m_el_e    = new TTreeReaderValue<float>(m_ttree,"el_E");
+      m_el_charge  = new TTreeReaderValue<float>(m_ttree,"el_Charge");
+      m_el_key     = new TTreeReaderValue<float>(m_ttree,"el_Key");
+      m_el_iso03   = new TTreeReaderValue<float>(m_ttree,"el_Iso03");
+      m_el_iso03db = new TTreeReaderValue<float>(m_ttree,"el_Iso03db");
+      m_el_miniIso = new TTreeReaderValue<float>(m_ttree,"el_MiniIso");
+      m_el_SCEta   = new TTreeReaderValue<float>(m_ttree,"el_SCEta");
+      m_el_SCPhi   = new TTreeReaderValue<float>(m_ttree,"el_SCPhi");
 
-      m_el_vidVeto        = new TTreeReaderArray<float>(m_ttree,"el_vidVeto");
-      m_el_vidLoose       = new TTreeReaderArray<float>(m_ttree,"el_vidLoose");
-      m_el_vidMedium      = new TTreeReaderArray<float>(m_ttree,"el_vidMedium");
-      m_el_vidTight       = new TTreeReaderArray<float>(m_ttree,"el_vidTight");
-      m_el_vidHEEP        = new TTreeReaderArray<float>(m_ttree,"el_vidHEEP");
-      m_el_vidVetonoiso   = new TTreeReaderArray<float>(m_ttree,"el_vidVetonoiso");
-      m_el_vidLoosenoiso  = new TTreeReaderArray<float>(m_ttree,"el_vidLoosenoiso");
-      m_el_vidMediumnoiso = new TTreeReaderArray<float>(m_ttree,"el_vidMediumnoiso");
-      m_el_vidTightnoiso  = new TTreeReaderArray<float>(m_ttree,"el_vidTightnoiso");
-      m_el_vidHEEPnoiso   = new TTreeReaderArray<float>(m_ttree,"el_vidHEEPnoiso");
-      m_el_vidMvaGPvalue  = new TTreeReaderArray<float>(m_ttree,"el_vidMvaGPvalue");
-      m_el_vidMvaGPcateg  = new TTreeReaderArray<float>(m_ttree,"el_vidMvaGPcateg");
-      m_el_vidMvaHZZvalue = new TTreeReaderArray<float>(m_ttree,"el_vidMvaHZZvalue");
-      m_el_vidMvaHZZcateg = new TTreeReaderArray<float>(m_ttree,"el_vidMvaHZZcateg");
+      m_el_vidVeto        = new TTreeReaderValue<float>(m_ttree,"el_vidVeto");
+      m_el_vidLoose       = new TTreeReaderValue<float>(m_ttree,"el_vidLoose");
+      m_el_vidMedium      = new TTreeReaderValue<float>(m_ttree,"el_vidMedium");
+      m_el_vidTight       = new TTreeReaderValue<float>(m_ttree,"el_vidTight");
+      m_el_vidHEEP        = new TTreeReaderValue<float>(m_ttree,"el_vidHEEP");
+      m_el_vidVetonoiso   = new TTreeReaderValue<float>(m_ttree,"el_vidVetonoiso");
+      m_el_vidLoosenoiso  = new TTreeReaderValue<float>(m_ttree,"el_vidLoosenoiso");
+      m_el_vidMediumnoiso = new TTreeReaderValue<float>(m_ttree,"el_vidMediumnoiso");
+      m_el_vidTightnoiso  = new TTreeReaderValue<float>(m_ttree,"el_vidTightnoiso");
+      m_el_vidHEEPnoiso   = new TTreeReaderValue<float>(m_ttree,"el_vidHEEPnoiso");
+      m_el_vidMvaGPvalue  = new TTreeReaderValue<float>(m_ttree,"el_vidMvaGPvalue");
+      m_el_vidMvaGPcateg  = new TTreeReaderValue<float>(m_ttree,"el_vidMvaGPcateg");
+      m_el_vidMvaHZZvalue = new TTreeReaderValue<float>(m_ttree,"el_vidMvaHZZvalue");
+      m_el_vidMvaHZZcateg = new TTreeReaderValue<float>(m_ttree,"el_vidMvaHZZcateg");
 
-      m_el_veto_NoIsoID   = new TTreeReaderArray<int>(m_ttree,"el_IDVeto_NoIso");
-      m_el_loose_NoIsoID  = new TTreeReaderArray<int>(m_ttree,"el_IDLoose_NoIso");
-      m_el_medium_NoIsoID = new TTreeReaderArray<int>(m_ttree,"el_IDMedium_NoIso");
-      m_el_tight_NoIsoID  = new TTreeReaderArray<int>(m_ttree,"el_IDTight_NoIso");
-      m_el_isoVeto   = new TTreeReaderArray<int>(m_ttree,"el_IsoVeto");
-      m_el_isoLoose  = new TTreeReaderArray<int>(m_ttree,"el_IsoLoose");
-      m_el_isoMedium = new TTreeReaderArray<int>(m_ttree,"el_IsoMedium");
-      m_el_isoTight  = new TTreeReaderArray<int>(m_ttree,"el_IsoTight");
-      m_el_vetoID    = new TTreeReaderArray<int>(m_ttree,"el_IDVeto");
-      m_el_looseID   = new TTreeReaderArray<int>(m_ttree,"el_IDLoose");
-      m_el_mediumID  = new TTreeReaderArray<int>(m_ttree,"el_IDMedium");
-      m_el_tightID   = new TTreeReaderArray<int>(m_ttree,"el_IDTight");
+      m_el_veto_NoIsoID   = new TTreeReaderValue<int>(m_ttree,"el_IDVeto_NoIso");
+      m_el_loose_NoIsoID  = new TTreeReaderValue<int>(m_ttree,"el_IDLoose_NoIso");
+      m_el_medium_NoIsoID = new TTreeReaderValue<int>(m_ttree,"el_IDMedium_NoIso");
+      m_el_tight_NoIsoID  = new TTreeReaderValue<int>(m_ttree,"el_IDTight_NoIso");
+      m_el_isoVeto   = new TTreeReaderValue<int>(m_ttree,"el_IsoVeto");
+      m_el_isoLoose  = new TTreeReaderValue<int>(m_ttree,"el_IsoLoose");
+      m_el_isoMedium = new TTreeReaderValue<int>(m_ttree,"el_IsoMedium");
+      m_el_isoTight  = new TTreeReaderValue<int>(m_ttree,"el_IsoTight");
+      m_el_vetoID    = new TTreeReaderValue<int>(m_ttree,"el_IDVeto");
+      m_el_looseID   = new TTreeReaderValue<int>(m_ttree,"el_IDLoose");
+      m_el_mediumID  = new TTreeReaderValue<int>(m_ttree,"el_IDMedium");
+      m_el_tightID   = new TTreeReaderValue<int>(m_ttree,"el_IDTight");
 
       m_mu_size = new TTreeReaderValue<int>(m_ttree,"mu_size");
-      m_mu_pt   = new TTreeReaderArray<float>(m_ttree,"mu_Pt");
-      m_mu_eta  = new TTreeReaderArray<float>(m_ttree,"mu_Eta");
-      m_mu_phi  = new TTreeReaderArray<float>(m_ttree,"mu_Phi");
-      m_mu_e    = new TTreeReaderArray<float>(m_ttree,"mu_E");
-      m_mu_charge  = new TTreeReaderArray<float>(m_ttree,"mu_Charge");
-      m_mu_key     = new TTreeReaderArray<float>(m_ttree,"mu_Key");
-      m_mu_iso04   = new TTreeReaderArray<float>(m_ttree,"mu_Iso04");
-      m_mu_miniIso = new TTreeReaderArray<float>(m_ttree,"mu_MiniIso");
-      m_mu_soft       = new TTreeReaderArray<float>(m_ttree,"mu_IsSoftMuon");
-      m_mu_loose      = new TTreeReaderArray<float>(m_ttree,"mu_IsLooseMuon");
-      m_mu_medium     = new TTreeReaderArray<float>(m_ttree,"mu_IsMediumMuon");
-      m_mu_medium2016 = new TTreeReaderArray<float>(m_ttree,"mu_IsMediumMuon2016");
-      m_mu_tight   = new TTreeReaderArray<float>(m_ttree,"mu_IsTightMuon");
-      m_mu_hightPt = new TTreeReaderArray<float>(m_ttree,"mu_IsHighPtMuon");
+      m_mu_pt   = new TTreeReaderValue<float>(m_ttree,"mu_Pt");
+      m_mu_eta  = new TTreeReaderValue<float>(m_ttree,"mu_Eta");
+      m_mu_phi  = new TTreeReaderValue<float>(m_ttree,"mu_Phi");
+      m_mu_e    = new TTreeReaderValue<float>(m_ttree,"mu_E");
+      m_mu_charge  = new TTreeReaderValue<float>(m_ttree,"mu_Charge");
+      m_mu_key     = new TTreeReaderValue<float>(m_ttree,"mu_Key");
+      m_mu_iso04   = new TTreeReaderValue<float>(m_ttree,"mu_Iso04");
+      m_mu_miniIso = new TTreeReaderValue<float>(m_ttree,"mu_MiniIso");
+      m_mu_soft       = new TTreeReaderValue<float>(m_ttree,"mu_IsSoftMuon");
+      m_mu_loose      = new TTreeReaderValue<float>(m_ttree,"mu_IsLooseMuon");
+      m_mu_medium     = new TTreeReaderValue<float>(m_ttree,"mu_IsMediumMuon");
+      m_mu_medium2016 = new TTreeReaderValue<float>(m_ttree,"mu_IsMediumMuon2016");
+      m_mu_tight   = new TTreeReaderValue<float>(m_ttree,"mu_IsTightMuon");
+      m_mu_hightPt = new TTreeReaderValue<float>(m_ttree,"mu_IsHighPtMuon");
     }
 
     if (!m_kinematicReco && m_config->useNeutrinos()){
       if (m_config->useNeutrinos()){
         // Neutrinos aren't stored in the baseline ntuples, requires 'kinematicReco' to create
-        m_nu_pt  = new TTreeReaderArray<float>(m_ttree, "nu_pt");
-        m_nu_eta = new TTreeReaderArray<float>(m_ttree, "nu_eta");
-        m_nu_phi = new TTreeReaderArray<float>(m_ttree, "nu_phi");
-      }
-
-      if (m_config->useTtbar()){
-        // ttbar system isn't stored in the baseline ntuples, requires 'kinematicReco' to create
-        m_top_pt  = new TTreeReaderValue<float>(m_ttree, "top_pt");
-        m_top_eta = new TTreeReaderValue<float>(m_ttree, "top_eta");
-        m_top_phi = new TTreeReaderValue<float>(m_ttree, "top_phi");
-        m_top_e   = new TTreeReaderValue<float>(m_ttree, "top_e");
-        m_lepton_top_index = new TTreeReaderValue<int>(m_ttree, "lepton_top_index");
-        m_jet_top_index    = new TTreeReaderValue<int>(m_ttree, "jet_top_index");
-        m_nu_top_index     = new TTreeReaderValue<int>(m_ttree, "nu_top_index");
-
-        m_antitop_pt  = new TTreeReaderValue<float>(m_ttree, "antitop_pt");
-        m_antitop_eta = new TTreeReaderValue<float>(m_ttree, "antitop_eta");
-        m_antitop_phi = new TTreeReaderValue<float>(m_ttree, "antitop_phi");
-        m_antitop_e   = new TTreeReaderValue<float>(m_ttree, "antitop_e");
-        m_lepton_antitop_index = new TTreeReaderValue<int>(m_ttree, "lepton_antitop_index");
-        m_jet_antitop_index    = new TTreeReaderValue<int>(m_ttree, "jet_antitop_index");
-        m_nu_antitop_index     = new TTreeReaderValue<int>(m_ttree, "nu_antitop_index");
-
-        m_dileptonTtbarWeight = new TTreeReaderValue<float>(m_ttree, "dileptonTtbar");
+        m_nu_pt  = new TTreeReaderValue<float>(m_ttree, "nu_pt");
+        m_nu_eta = new TTreeReaderValue<float>(m_ttree, "nu_eta");
+        m_nu_phi = new TTreeReaderValue<float>(m_ttree, "nu_phi");
       }
     }
 
 
-    m_met_size = new TTreeReaderValue<unsigned int>(m_ttree,"m_met_size");
-    m_met_met  = new TTreeReaderArray<float>(m_ttree,"met_Pt");
-    m_met_phi  = new TTreeReaderArray<float>(m_ttree,"met_Phi");
-    m_met_met_uncor = new TTreeReaderArray<float>(m_ttree,"met_uncorPt");
-    m_met_phi_uncor = new TTreeReaderArray<float>(m_ttree,"met_uncorPhi");
-
-    m_met_muCleanOnly_size = new TTreeReaderValue<unsigned int>(m_ttree,"met_muCleanOnly_size");
-    m_met_muCleanOnly_met  = new TTreeReaderArray<float>(m_ttree,"met_MuCleanOnly_Pt");
-    m_met_muCleanOnly_phi  = new TTreeReaderArray<float>(m_ttree,"met_MuCleanOnly_Phi");
-    m_met_muCleanOnly_met_uncor = new TTreeReaderArray<float>(m_ttree,"met_MuCleanOnly_uncorPt");
-    m_met_muCleanOnly_phi_uncor = new TTreeReaderArray<float>(m_ttree,"met_MuCleanOnly_uncorPhi");
-
-    m_met_syst_size = new TTreeReaderValue<unsigned int>(m_ttree,"met_syst_size");
-    m_met_syst_met  = new TTreeReaderArray<float>(m_ttree,"metsyst_Pt");
-    m_met_syst_phi  = new TTreeReaderArray<float>(m_ttree,"metsyst_Phi");
-    m_met_syst_muCleanOnly_met = new TTreeReaderArray<float>(m_ttree,"metsyst_MuCleanOnly_Pt");
-    m_met_syst_muCleanOnly_phi = new TTreeReaderArray<float>(m_ttree,"metsyst_MuCleanOnly_Phi");
-
+    m_met_met  = new TTreeReaderValue<float>(m_ttree,"met_Pt");
+    m_met_phi  = new TTreeReaderValue<float>(m_ttree,"met_Phi");
 
     // set some event weights and access necessary branches
     m_xsection       = 1.0;
@@ -311,59 +218,59 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
       m_mc_ht = new TTreeReaderValue<float>(m_ttree,"evt_Gen_Ht");
 
-      m_MC_part1_factor = new TTreeReaderArray<float>(m_ttree,"MC_part1_factor");
-      m_MC_part1_ID = new TTreeReaderArray<float>(m_ttree,"MC_part1_ID");
-      m_MC_part2_factor = new TTreeReaderArray<float>(m_ttree,"MC_part2_factor");
-      m_MC_part2_ID = new TTreeReaderArray<float>(m_ttree,"MC_part2_ID");
+      m_MC_part1_factor = new TTreeReaderValue<float>(m_ttree,"MC_part1_factor");
+      m_MC_part1_ID = new TTreeReaderValue<float>(m_ttree,"MC_part1_ID");
+      m_MC_part2_factor = new TTreeReaderValue<float>(m_ttree,"MC_part2_factor");
+      m_MC_part2_ID = new TTreeReaderValue<float>(m_ttree,"MC_part2_ID");
 
-      m_MC_t_pt  = new TTreeReaderArray<float>(m_ttree,"MC_t_pt");
-      m_MC_t_eta = new TTreeReaderArray<float>(m_ttree,"MC_t_eta");
-      m_MC_t_phi = new TTreeReaderArray<float>(m_ttree,"MC_t_phi");
-      m_MC_t_e   = new TTreeReaderArray<float>(m_ttree,"MC_t_E");
-      m_MC_tbar_pt  = new TTreeReaderArray<float>(m_ttree,"MC_tbar_pt");
-      m_MC_tbar_eta = new TTreeReaderArray<float>(m_ttree,"MC_tbar_eta");
-      m_MC_tbar_phi = new TTreeReaderArray<float>(m_ttree,"MC_tbar_phi");
-      m_MC_tbar_e = new TTreeReaderArray<float>(m_ttree,"MC_tbar_E");
-      m_MC_lep_pt = new TTreeReaderArray<float>(m_ttree,"MC_lep_pt");
-      m_MC_lep_eta = new TTreeReaderArray<float>(m_ttree,"MC_lep_eta");
-      m_MC_lep_phi = new TTreeReaderArray<float>(m_ttree,"MC_lep_phi");
-      m_MC_lep_e  = new TTreeReaderArray<float>(m_ttree,"MC_lep_E");
-      m_MC_lep_ID = new TTreeReaderArray<float>(m_ttree,"MC_lep_ID");
-      m_MC_nu_pt  = new TTreeReaderArray<float>(m_ttree,"MC_nu_pt");
-      m_MC_nu_eta = new TTreeReaderArray<float>(m_ttree,"MC_nu_eta");
-      m_MC_nu_phi = new TTreeReaderArray<float>(m_ttree,"MC_nu_phi");
-      m_MC_nu_e   = new TTreeReaderArray<float>(m_ttree,"MC_nu_E");
-      m_MC_lepb_pt  = new TTreeReaderArray<float>(m_ttree,"MC_lepb_pt");
-      m_MC_lepb_eta = new TTreeReaderArray<float>(m_ttree,"MC_lepb_eta");
-      m_MC_lepb_phi = new TTreeReaderArray<float>(m_ttree,"MC_lepb_phi");
-      m_MC_lepb_e   = new TTreeReaderArray<float>(m_ttree,"MC_lepb_E");
-      m_MC_hadW_pt  = new TTreeReaderArray<float>(m_ttree,"MC_hadW_pt");
-      m_MC_hadW_eta = new TTreeReaderArray<float>(m_ttree,"MC_hadW_eta");
-      m_MC_hadW_phi = new TTreeReaderArray<float>(m_ttree,"MC_hadW_phi");
-      m_MC_hadW_e   = new TTreeReaderArray<float>(m_ttree,"MC_hadW_E");
-      m_MC_hadb_pt  = new TTreeReaderArray<float>(m_ttree,"MC_hadb_pt");
-      m_MC_hadb_eta = new TTreeReaderArray<float>(m_ttree,"MC_hadb_eta");
-      m_MC_hadb_phi = new TTreeReaderArray<float>(m_ttree,"MC_hadb_phi");
-      m_MC_hadb_e = new TTreeReaderArray<float>(m_ttree,"MC_hadb_E");
-      m_MC_cstar  = new TTreeReaderArray<float>(m_ttree,"MC_cstar");
-      m_MC_x_F    = new TTreeReaderArray<float>(m_ttree,"MC_x_F");
-      m_MC_Mtt    = new TTreeReaderArray<float>(m_ttree,"MC_Mtt");
+      m_MC_t_pt  = new TTreeReaderValue<float>(m_ttree,"MC_t_pt");
+      m_MC_t_eta = new TTreeReaderValue<float>(m_ttree,"MC_t_eta");
+      m_MC_t_phi = new TTreeReaderValue<float>(m_ttree,"MC_t_phi");
+      m_MC_t_e   = new TTreeReaderValue<float>(m_ttree,"MC_t_E");
+      m_MC_tbar_pt  = new TTreeReaderValue<float>(m_ttree,"MC_tbar_pt");
+      m_MC_tbar_eta = new TTreeReaderValue<float>(m_ttree,"MC_tbar_eta");
+      m_MC_tbar_phi = new TTreeReaderValue<float>(m_ttree,"MC_tbar_phi");
+      m_MC_tbar_e = new TTreeReaderValue<float>(m_ttree,"MC_tbar_E");
+      m_MC_lep_pt = new TTreeReaderValue<float>(m_ttree,"MC_lep_pt");
+      m_MC_lep_eta = new TTreeReaderValue<float>(m_ttree,"MC_lep_eta");
+      m_MC_lep_phi = new TTreeReaderValue<float>(m_ttree,"MC_lep_phi");
+      m_MC_lep_e  = new TTreeReaderValue<float>(m_ttree,"MC_lep_E");
+      m_MC_lep_ID = new TTreeReaderValue<float>(m_ttree,"MC_lep_ID");
+      m_MC_nu_pt  = new TTreeReaderValue<float>(m_ttree,"MC_nu_pt");
+      m_MC_nu_eta = new TTreeReaderValue<float>(m_ttree,"MC_nu_eta");
+      m_MC_nu_phi = new TTreeReaderValue<float>(m_ttree,"MC_nu_phi");
+      m_MC_nu_e   = new TTreeReaderValue<float>(m_ttree,"MC_nu_E");
+      m_MC_lepb_pt  = new TTreeReaderValue<float>(m_ttree,"MC_lepb_pt");
+      m_MC_lepb_eta = new TTreeReaderValue<float>(m_ttree,"MC_lepb_eta");
+      m_MC_lepb_phi = new TTreeReaderValue<float>(m_ttree,"MC_lepb_phi");
+      m_MC_lepb_e   = new TTreeReaderValue<float>(m_ttree,"MC_lepb_E");
+      m_MC_hadW_pt  = new TTreeReaderValue<float>(m_ttree,"MC_hadW_pt");
+      m_MC_hadW_eta = new TTreeReaderValue<float>(m_ttree,"MC_hadW_eta");
+      m_MC_hadW_phi = new TTreeReaderValue<float>(m_ttree,"MC_hadW_phi");
+      m_MC_hadW_e   = new TTreeReaderValue<float>(m_ttree,"MC_hadW_E");
+      m_MC_hadb_pt  = new TTreeReaderValue<float>(m_ttree,"MC_hadb_pt");
+      m_MC_hadb_eta = new TTreeReaderValue<float>(m_ttree,"MC_hadb_eta");
+      m_MC_hadb_phi = new TTreeReaderValue<float>(m_ttree,"MC_hadb_phi");
+      m_MC_hadb_e = new TTreeReaderValue<float>(m_ttree,"MC_hadb_E");
+      m_MC_cstar  = new TTreeReaderValue<float>(m_ttree,"MC_cstar");
+      m_MC_x_F    = new TTreeReaderValue<float>(m_ttree,"MC_x_F");
+      m_MC_Mtt    = new TTreeReaderValue<float>(m_ttree,"MC_Mtt");
 
-      m_truth_jet_pt  = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_GenJetPt");
-      m_truth_jet_eta = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_GenJetEta");
-      m_truth_jet_phi = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_GenJetPhi");
-      m_truth_jet_e   = new TTreeReaderArray<float>(m_ttree,"jetAK4CHS_GenJetCharge");
+      m_truth_jet_pt  = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_GenJetPt");
+      m_truth_jet_eta = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_GenJetEta");
+      m_truth_jet_phi = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_GenJetPhi");
+      m_truth_jet_e   = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_GenJetCharge");
 
-      m_truth_ljet_pt  = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_GenJetPt");
-      m_truth_ljet_eta = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_GenJetEta");
-      m_truth_ljet_phi = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_GenJetPhi");
-      m_truth_ljet_e   = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_GenJetE");
-      m_truth_ljet_charge     = new TTreeReaderArray<float>(m_ttree,"jetAK8CHS_GenJetCharge");
-      m_truth_ljet_subjet_pt  = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_GenJetPt");
-      m_truth_ljet_subjet_eta = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_GenJetEta");
-      m_truth_ljet_subjet_phi = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_GenJetPhi");
-      m_truth_ljet_subjet_e   = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_GenJetE");
-      m_truth_ljet_subjet_charge = new TTreeReaderArray<float>(m_ttree,"subjetAK8CHS_GenJetCharge");
+      m_truth_ljet_pt  = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_GenJetPt");
+      m_truth_ljet_eta = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_GenJetEta");
+      m_truth_ljet_phi = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_GenJetPhi");
+      m_truth_ljet_e   = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_GenJetE");
+      m_truth_ljet_charge     = new TTreeReaderValue<float>(m_ttree,"jetAK8CHS_GenJetCharge");
+      m_truth_ljet_subjet_pt  = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_GenJetPt");
+      m_truth_ljet_subjet_eta = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_GenJetEta");
+      m_truth_ljet_subjet_phi = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_GenJetPhi");
+      m_truth_ljet_subjet_e   = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_GenJetE");
+      m_truth_ljet_subjet_charge = new TTreeReaderValue<float>(m_ttree,"subjetAK8CHS_GenJetCharge");
 
       if (m_config->useTruth()){
         //TTree* truth_tree = (TTree*)m_ttree.GetTree()->GetCurrentFile()->Get("truth");
@@ -372,13 +279,13 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
         //m_truthRunNumber   = new TTreeReaderValue<unsigned int>(m_truth_tree,"runNumber");
         //m_truth_weight_mc  = new TTreeReaderValue<float>(m_truth_tree,"weight_mc");
 
-        m_truth_ljet_pt  = new TTreeReaderArray<float>(m_ttree,"truth_ljet_pt");
-        m_truth_ljet_eta = new TTreeReaderArray<float>(m_ttree,"truth_ljet_eta");
-        m_truth_ljet_phi = new TTreeReaderArray<float>(m_ttree,"truth_ljet_phi");
-        m_truth_ljet_e   = new TTreeReaderArray<float>(m_ttree,"truth_ljet_e");
-        m_truth_ljet_Qw  = new TTreeReaderArray<float>(m_ttree,"truth_ljet_Qw");
-        m_truth_ljet_tau32_wta = new TTreeReaderArray<float>(m_ttree,"truth_ljet_tau32_wta");
-        m_truth_ljet_split23   = new TTreeReaderArray<float>(m_ttree,"truth_ljet_split23");
+        m_truth_ljet_pt  = new TTreeReaderValue<float>(m_ttree,"truth_ljet_pt");
+        m_truth_ljet_eta = new TTreeReaderValue<float>(m_ttree,"truth_ljet_eta");
+        m_truth_ljet_phi = new TTreeReaderValue<float>(m_ttree,"truth_ljet_phi");
+        m_truth_ljet_e   = new TTreeReaderValue<float>(m_ttree,"truth_ljet_e");
+        m_truth_ljet_Qw  = new TTreeReaderValue<float>(m_ttree,"truth_ljet_Qw");
+        m_truth_ljet_tau32_wta = new TTreeReaderValue<float>(m_ttree,"truth_ljet_tau32_wta");
+        m_truth_ljet_split23   = new TTreeReaderValue<float>(m_ttree,"truth_ljet_split23");
       } // end useTruth
     } // end isMC
 
@@ -387,10 +294,6 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     if (!m_getDNN && useDNN)  // always false for now
         m_dnn_score = new TTreeReaderValue<float>(m_ttree,"dnn_score");
 
-    std::ifstream input_cfg = cma::open_file( m_config->dnnFile() );
-    lwt::JSONConfig cfg     = lwt::parse_json( input_cfg );
-    m_lwnn   = new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs);
-    m_dnnKey = m_config->dnnKey();
 
     // Kinematic reconstruction algorithms
     // m_semileptonTtbar = new semileptonTtbarReco(m_config);  // semi-leptonic ttbar kinematic reco
@@ -423,7 +326,7 @@ void Event::initialize_eventWeights(){
 
     // systematics from the nominal tree that are vectors
     for (const auto& syst : mapWeightSystematics)
-        m_weightSystematicsVectorFloats[syst.first] = new TTreeReaderArray<float>(m_ttree,syst.first.c_str());
+        m_weightSystematicsVectorFloats[syst.first] = new TTreeReaderValue<float>(m_ttree,syst.first.c_str());
 
     return;
 }
@@ -522,12 +425,13 @@ void Event::execute(Long64_t entry){
 
     // kinematic reconstruction -- usually needed for neutrinos!
     if (m_kinematicReco){
-        // if 0/1-lepton:
+        // if 0/1/2-lepton:
         if (m_isTwoLeptonAnalysis){
             getDilepton();
             cma::DEBUG("EVENT : Setup the dilepton struct. ");
         }
     }
+
     // build the ttbar system (depends on analysis!)
     // use the reconstruction, or load from root file; depends on m_kinematicReco value
     buildTtbar();
@@ -566,9 +470,9 @@ void Event::initialize_truth(){
 void Event::initialize_jets(){
     /* Setup struct of jets (small-r) and relevant information 
      * b-tagging: https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco
-        cMVAv2L -0.5884
-        cMVAv2M 0.4432
-        cMVAv2T 0.9432
+        CSVv2L -0.5884
+        CSVv2M 0.4432
+        CSVv2T 0.9432
      */
     m_jets.resize( **m_jet_size );   // (*m_jet_pt)->size());
     for (const auto& btagWP : m_config->btagWkpts() ){
@@ -579,7 +483,7 @@ void Event::initialize_jets(){
         Jet jet;
         jet.p4.SetPtEtaPhiE(m_jet_pt->At(i),m_jet_eta->At(i),m_jet_phi->At(i),m_jet_e->At(i));
 
-        jet.cMVAv2 = m_jet_CMVAv2->At(i);
+        jet.CSVv2 = m_jet_CSVv2->At(i);
         jet.index = i;
 
         getBtaggedJets(jet);
@@ -713,12 +617,12 @@ void Event::initialize_kinematics(){
     }
 
     // set MET
-    m_metmet = m_met_met->At(0);
-    m_metphi = m_met_phi->At(0);
+    m_met.p4.SetPtEtaPhiM(m_met_met,0,m_met_phi,0);
 
     // Get MET and lepton transverse energy
     m_ST += m_HT;
-    m_ST += m_metmet;
+    m_ST += m_met.p4.Pt();
+
     if (m_config->useLeptons()){
         for (const auto& lep : m_leptons)
             m_ST += lep.p4.Pt(); 
@@ -851,13 +755,13 @@ void Event::getBtaggedJets( Jet& jet ){
     jet.isbtagged["M"] = false;
     jet.isbtagged["T"] = false;
 
-    if (jet.cMVAv2 > m_cMVAv2L){
+    if (jet.CSVv2 > m_CSVv2L){
         jet.isbtagged["L"] = true;
         m_btag_jets["L"].push_back(jet.index);  // 0 = index of this jet
-        if (jet.cMVAv2 > m_cMVAv2M){
+        if (jet.CSVv2 > m_CSVv2M){
             jet.isbtagged["M"] = true;
             m_btag_jets["M"].push_back(jet.index);
-            if (jet.cMVAv2 > m_cMVAv2T){
+            if (jet.CSVv2 > m_CSVv2T){
                 jet.isbtagged["T"] = true;
                 m_btag_jets["T"].push_back(jet.index);
             }
@@ -987,19 +891,9 @@ std::vector<int> Event::btag_jets(){
     return m_btag_jets_default;
 }
 
-float Event::met( const std::string& met_name ){
+MET Event::MET(){
     // MET
-    float met_value(0.0);
-    if (met_name.compare("met")==0)
-        met_value = m_metmet;
-    else if (met_name.compare("phi")==0)
-        met_value = m_metphi;
-    else{
-        cma::WARNING("EVENT : Request for MET variable that is neither 'met' nor 'phi'");
-        cma::WARNING("EVENT : Returning 0.0");
-    }
-
-    return met_value;
+    return m_met;
 }
 
 float Event::HT(){
@@ -1140,7 +1034,7 @@ void Event::finalize(){
       delete m_ljet_charge;      // jetAK8CHS_Charge
       delete m_ljet_softDropMass_CHS;  // jetAK8CHS_softDropMassCHS
       delete m_ljet_CSVv2;                   // jetAK8CHS_CSVv2
-      delete m_ljet_CMVAv2;                  // jetAK8CHS_CMVAv2
+      delete m_ljet_CSVv2;                  // jetAK8CHS_CSVv2
       delete m_ljet_CvsL;                    // jetAK8CHS_CvsL
       delete m_ljet_CvsB;                    // jetAK8CHS_CvsB
       delete m_ljet_PartonFlavour;           // jetAK8CHS_PartonFlavour
@@ -1169,7 +1063,7 @@ void Event::finalize(){
       delete m_ljet_subjet_e;                       // subjetAK8CHS_E
       delete m_ljet_subjet_charge;                  // subjetAK8CHS_Charge
       delete m_ljet_subjet_CSVv2;                   // subjetAK8CHS_CSVv2
-      delete m_ljet_subjet_CMVAv2;                  // subjetAK8CHS_CMVAv2
+      delete m_ljet_subjet_CSVv2;                  // subjetAK8CHS_CSVv2
       delete m_ljet_subjet_CvsL;                    // subjetAK8CHS_CvsL
       delete m_ljet_subjet_CvsB;                    // subjetAK8CHS_CvsB
       delete m_ljet_subjet_partonFlavour;           // subjetAK8CHS_PartonFlavour

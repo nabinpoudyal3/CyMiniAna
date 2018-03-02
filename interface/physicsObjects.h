@@ -133,6 +133,10 @@ struct Neutrino : CmaBase{
     // extra neutrino attributes
 };
 
+struct MET : CmaBase{
+    // extra MET attributs
+};
+
 
 
 // Top Quarks

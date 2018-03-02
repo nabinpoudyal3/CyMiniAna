@@ -61,6 +61,7 @@ void dileptonTtbarRecoSolution::Add(const TtbarDilepton& solution) {
     std::vector<size_t>* v_solutionByCategory(0);
     std::map<TtbarDilepton::WeightType, std::vector<size_t>>* m_weightIndexByCategory(0);
     const int numberOfBtags = solution.ntags;
+
     if(numberOfBtags == 2) {
         v_solutionByCategory    = &v_solutionTwoBtags_;
         m_weightIndexByCategory = &m_weightIndexTwoBtags_;
