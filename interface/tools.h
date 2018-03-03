@@ -43,10 +43,7 @@ namespace cma{
 
     /* calculate values for normalizing monte carlo samples */
     void getSampleWeights( std::string metadata_file,
-                           std::map<std::string,float> &m_mapXSection,
-                           std::map<std::string,float> &m_mapKFactor,
-                           std::map<std::string,float> &m_mapAMI,
-                           std::map<std::string,unsigned int>& m_mapNEvents );
+                           std::map<std::string,Sample>& samples);
 
     /* Convert string to boolean */
     bool str2bool( const std::string value );
@@ -59,7 +56,7 @@ namespace cma{
                                       const Jet& jet1, const Jet& jet2);
 
     /* DeltaR matching of TLorentzVectors (default deltaR=0.75) */
-    bool deltaRMatch( TLorentzVector &particle1, TLorentzVector &particle2, double deltaR=0.75 );
+    bool deltaRMatch( const TLorentzVector &particle1, const TLorentzVector &particle2, const double deltaR=0.75 );
 
     /* Calculate the median of a vector */
     template<typename T>

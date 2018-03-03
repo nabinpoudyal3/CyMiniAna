@@ -33,10 +33,10 @@ eventSelection::eventSelection(configuration &cmaConfig, const std::string &leve
   m_cutsfile("SetMe"),
   m_numberOfCuts(0),
   m_dummySelection(false),
-  m_allHadDNNSelection(false),
   m_isZeroLeptonAnalysis(false),
   m_isOneLeptonAnalysis(false),
-  m_isTwoLeptonAnalysis(false){
+  m_isTwoLeptonAnalysis(false),
+  m_allHadDNNSelection(false){
     m_cuts.resize(0);
     m_cutflowNames.clear();
 
@@ -129,7 +129,7 @@ bool eventSelection::applySelection(const Event &event) {
     double cutflow_bin(1.5);          // bin value for subsequent cuts (set below)
 
     // fill cutflow histograms with initial value (before any cuts)
-    m_cutflow.Fill(first_bin,nominal_weight); // event weights
+    m_cutflow.Fill(first_bin,m_nominal_weight); // event weights
     m_cutflow_unw.Fill( first_bin );   // raw event numbers
 
     // FIRST CHECK IF VALID EVENT FROM TREE
@@ -148,14 +148,14 @@ bool eventSelection::applySelection(const Event &event) {
     m_muons = event.muons();
     m_electrons = event.electrons();
     m_neutrinos = event.neutrinos();
-    m_met = event.MET();
+    m_met = event.met();
     m_ht  = event.HT();
     m_st  = event.ST();
     // add more objects as needed
 
 
     // selection for all-hadronic DNN 
-    else if (m_allHadDNNSelection){
+    if (m_allHadDNNSelection){
         passSelection = allHadDNNSelection(cutflow_bin);
     }
 

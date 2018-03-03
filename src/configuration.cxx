@@ -49,7 +49,6 @@ configuration::configuration(const std::string &configFile) :
   m_getDNN(false),
   m_dnnFile("SetMe"),
   m_dnnKey("SetMe"),
-  m_getHME(false),
   m_doRecoEventLoop(false),
   m_doTruthEventLoop(false),
   m_matchTruthToReco(true),
@@ -162,7 +161,6 @@ void configuration::initialize() {
     m_dnnFile          = getConfigOption("dnnFile");
     m_dnnKey           = getConfigOption("dnnKey");
     m_getDNN           = cma::str2bool( getConfigOption("getDNN") );
-    m_getHME           = cma::str2bool( getConfigOption("getHME") );
     m_doRecoEventLoop  = cma::str2bool( getConfigOption("doRecoEventLoop") );
     m_doTruthEventLoop = cma::str2bool( getConfigOption("doTruthEventLoop") );
     m_matchTruthToReco = true;  // not needed in this analysis (so it's not a config option) but here in case we do later
@@ -181,11 +179,8 @@ void configuration::initialize() {
 
     m_isGridFile = (m_input_selection.compare("grid")==0) ? true : false;
 
-    m_XSection.clear();
-    m_KFactor.clear();
-    m_AMI.clear();
-    m_NEvents.clear();
-    cma::getSampleWeights( m_metadataFile,m_XSection,m_KFactor,m_AMI,m_NEvents );
+    m_mapOfSamples.clear();
+    cma::getSampleWeights( m_metadataFile,m_mapOfSamples );
 
     // systematics that are weights in the nominal tree
     m_listOfWeightSystematics.resize(0);
@@ -239,7 +234,7 @@ std::string configuration::getConfigOption( std::string item ){
 }
 
 
-void configuration::checkFileType( TFile& file ){
+void configuration::inspectFile( TFile& file ){
     // -- Check the sum of weights tree DSIDs (to determine Data || MC)
     m_isMC = true; // only MC for now -- need to know how CMS does this!
 /*
@@ -285,10 +280,6 @@ void configuration::setFilename(std::string fileName){
     return;
 }
 
-std::string configuration::filename(){
-    return m_filename;
-}
-
 bool configuration::isNominalTree(){
     return isNominalTree( m_treename );
 }
@@ -310,7 +301,7 @@ bool configuration::isMC(){
 
 bool configuration::isMC( TFile& file ){
     /* Check the sum of weights tree DSIDs (to determine Data || MC) */
-    checkFileType( file );
+    inspectFile( file );
     return m_isMC;
 }
 
@@ -326,7 +317,7 @@ bool configuration::isOneLeptonAnalysis(){
     return m_isOneLeptonAnalysis;
 }
 
-bool configuration::isTwoleptonAnalysis(){
+bool configuration::isTwoLeptonAnalysis(){
     /* Dileptonic */
     return m_isTwoleptonAnalysis;
 }
@@ -354,54 +345,6 @@ std::string configuration::listOfWeightVectorSystematicsFile(){
 
 std::string configuration::metadataFile(){
     return m_metadataFile;
-}
-
-double configuration::XSectionMap( std::string mcChannelNumber ){
-    /* XSection values */
-    double XSectionValue(0.0);
-
-    if (m_XSection.find(mcChannelNumber)==m_XSection.end()){
-        XSectionValue = 1.;
-        cma::WARNING("CONFIG : Request for XSection value that does not exist "+mcChannelNumber);
-        cma::WARNING("CONFIG : -- returning 1.0");
-    }
-    else{
-        XSectionValue = m_XSection.at( mcChannelNumber );
-    }
-
-    return XSectionValue;
-}
-
-double configuration::KFactorMap( std::string mcChannelNumber ){
-    /* KFactor values */
-    double KFactorValue(0.0);
-
-    if (m_KFactor.find(mcChannelNumber)==m_KFactor.end()){
-        KFactorValue = 1.;
-       	cma::WARNING("CONFIG : Request for KFactor value that does not exist "+mcChannelNumber);
-        cma::WARNING("CONFIG : -- returning 1.0");
-    }
-    else{
-        KFactorValue = m_KFactor.at( mcChannelNumber );
-    }
-
-    return KFactorValue;
-}
-
-double configuration::sumWeightsMap( std::string mcChannelNumber ){
-    /* Sum of Weights values */
-    double AMIValue(0.0);
-
-    if (m_AMI.find(mcChannelNumber)==m_AMI.end()){
-        AMIValue = 1.;
-        cma::WARNING("CONFIG : Request for SumOfWeights value that does not exist "+mcChannelNumber);
-        cma::WARNING("CONFIG : -- returning 1.0");
-    }
-    else{
-        AMIValue = m_AMI.at( mcChannelNumber );
-    }
-
-    return AMIValue;
 }
 
 
@@ -513,9 +456,6 @@ bool configuration::useTruth(){
     return m_useTruth;
 }
 
-bool configuration::isGridFile(){
-    return m_isGridFile;
-}
 
 std::vector<std::string> configuration::filesToProcess(){
     return m_filesToProcess;
@@ -552,15 +492,8 @@ std::string configuration::dnnKey(){
 bool configuration::getDNN(){
     return m_getDNN;
 }
-// build the HME
-bool configuration::getHME(){
-    return m_getHME;
-}
 bool configuration::doRecoEventLoop(){
     return m_doRecoEventLoop;
-}
-bool configuration::doTruthEventLoop(){
-    return m_doTruthEventLoop;
 }
 
 bool configuration::matchTruthToReco(){

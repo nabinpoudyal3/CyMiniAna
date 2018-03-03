@@ -4,11 +4,7 @@
 <use   name="rootgraphics"/>
 <use   name="root"/>
 
-<bin   name="runAC" file="runAC.cxx">
-</bin>
 <bin   name="run" file="run.cxx">
-</bin>
-<bin   name="skim" file="skim.cxx">
 </bin>
 
 

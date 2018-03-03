@@ -1,6 +1,6 @@
 /*
 Created:        --
-Last Updated:   22 October    2017
+Last Updated:    2 March 2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
         std::map<std::string, TH1D*>  h_cutflows;            // map of cutflow histograms (weights applied)
         std::map<std::string, TH1D*>  h_cutflows_unweighted; // map of cutflow histograms (raw # of events)
 
-        // -- Loop over treenames
+        // -- Loop over treenames -> usually only one tree
         for (const auto& treename : treenames) {
 
             // check that the ttree exists in this file before proceeding
@@ -162,12 +162,15 @@ int main(int argc, char** argv) {
                 h_cutflows_unweighted[treename]->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
             }
 
+
+            // -- Set cutflow histograms in event selection
+            evtSel.setCutflowHistograms(*h_cutflows.at(treename),*h_cutflows_unweighted.at(treename));
+
             // -- Load TTree to loop over
             cma::INFO("RUN :      TTree "+treename);
             TTreeReader myReader(treename.c_str(), file);
 
             // -- Make new Tree in Root file
-
             miniTree miniTTree(config);          // initialize TTree for new file
             if (makeNewFile)
                 miniTTree.initialize( myReader.GetTree(), *outputFile );
@@ -177,10 +180,7 @@ int main(int argc, char** argv) {
             if (maxEntriesToRun<1) // skip files with no entries
                 continue;
 
-            if (nEvents < 0 || ((unsigned int)nEvents+firstEvent) > maxEntriesToRun)
-                numberOfEventsToRun = maxEntriesToRun - firstEvent;
-            else
-                numberOfEventsToRun = nEvents;
+            numberOfEventsToRun = (nEvents<0 || ((unsigned int)nEvents+firstEvent)>maxEntriesToRun) ? maxEntriesToRun - firstEvent : nEvents;
 
             // -- Event Loop -- //
             Long64_t imod = 1;                     // print to the terminal
@@ -190,11 +190,13 @@ int main(int argc, char** argv) {
             Long64_t entry = firstEvent;  // start at a different event!
             while (myReader.Next()) {
 
+                // Check number of events processed against number of events to run
                 if (eventCounter+1 > numberOfEventsToRun){
                     cma::INFO("RUN : Processed the desired number of events: "+std::to_string(eventCounter)+"/"+std::to_string(numberOfEventsToRun));
                     break;
                 }
 
+                // Update status on the console
                 if (entry%imod==0){
                     cma::INFO("RUN :       Processing event "+std::to_string(entry) );
                     if(imod<2e4) imod *=10;
@@ -207,17 +209,15 @@ int main(int argc, char** argv) {
                 // pass this to the selection tools
 
                 // -- Event Selection -- //
-                // can do separate cutflows for each lepton flavor (just add if statement)
-                // can do separate event selections as well, e.g.,
-                //   evtSel.applySelectionBoosted(...) || evtSel.applySelectionResolved(...)
+                // can do separate cutflows by creating multiple instances of eventSelection()
                 cma::DEBUG("RUN : Apply event selection");
-                passEvent = evtSel.applySelection(event,*h_cutflows.at( treename.c_str() ),*h_cutflows_unweighted.at( treename.c_str() ));
+                passEvent = evtSel.applySelection(event);
 
                 if (passEvent){
                     cma::DEBUG("RUN : Passed selection, now save information");
                     if (makeNewFile)       miniTTree.saveEvent(event);
-                    if (makeHistograms)    histMaker.fill( event );
-                    if (makeEfficiencies)  effMaker.fill( event );
+                    if (makeHistograms)    histMaker.fill(event);
+                    if (makeEfficiencies)  effMaker.fill(event);
                 }
 
                 // iterate the entry and number of events processed

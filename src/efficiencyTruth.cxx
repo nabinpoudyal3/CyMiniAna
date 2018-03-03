@@ -27,7 +27,7 @@ void efficiencyTruth::bookEffs(TFile& outputFile){
 }
 
 
-void efficiencyTruth::fill(Event &event, bool decision){
+void efficiencyTruth::fill(const Event &event, bool decision){
     /* Fill truth efficiencies */
     double truth_deltay(0.0);
     double weight = (event.isValidRecoEntry() ? event.nominal_weight() : 1.0);

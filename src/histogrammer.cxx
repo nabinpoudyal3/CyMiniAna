@@ -27,7 +27,7 @@ histogrammer::histogrammer( configuration& cmaConfig, std::string name ) :
     m_isMC  = m_config->isMC();
 
     m_useJets      = m_config->useJets();
-    m_useLjets     = m_config->useLjets();
+    m_useLjets     = m_config->useLargeRJets();
     m_useLeptons   = m_config->useLeptons();
     m_useNeutrinos = m_config->useNeutrinos();
 
@@ -135,29 +135,29 @@ void histogrammer::bookHists( std::string name ){
         init_hist("n_jets_"+name,   31, -0.5,  30.5);
         init_hist("n_btags_"+name,  11, -0.5,  10.5);
 
-        init_hist("jet_pt_"+cname,     2000,  0.0, 2000.0);
-        init_hist("jet_eta_"+cname,      50, -2.5,    2.5);
-        init_hist("jet_phi_"+cname,      64, -3.2,    3.2);
-        init_hist("jet_bdisc_"+cname,   100,  0.0,    1.0);
+        init_hist("jet_pt_"+name,     2000,  0.0, 2000.0);
+        init_hist("jet_eta_"+name,      50, -2.5,    2.5);
+        init_hist("jet_phi_"+name,      64, -3.2,    3.2);
+        init_hist("jet_bdisc_"+name,   100,  0.0,    1.0);
     }
 
     if (m_useLjets){
-        init_hist("ljet_pt_"+cname,     2000,  0.0, 2000.0);
-        init_hist("ljet_eta_"+cname,      50, -2.5,    2.5);
-        init_hist("ljet_phi_"+cname,      64, -3.2,    3.2);
-        init_hist("ljet_SDmass_"+cname,  500,  0.0,  500.0);
-        init_hist("ljet_tau1_"+cname,    200,  0.0,    2.0);
-        init_hist("ljet_tau2_"+cname,    200,  0.0,    2.0);
-        init_hist("ljet_tau3_"+cname,    200,  0.0,    2.0);
-        init_hist("ljet_tau21_"+cname,   100,  0.0,    1.0);
-        init_hist("ljet_tau32_"+cname,   100,  0.0,    1.0);
-        init_hist("ljet_subjet0_bdisc_"+cname, 100, 0.0, 1.0);
-        init_hist("ljet_subjet1_bdisc_"+cname, 100, 0.0, 1.0);
-        init_hist("ljet_subjet0_charge_"+cname, 100, -5.0, 5.0);
-        init_hist("ljet_subjet1_charge_"+cname, 500, -5.0, 5.0);
+        init_hist("ljet_pt_"+name,     2000,  0.0, 2000.0);
+        init_hist("ljet_eta_"+name,      50, -2.5,    2.5);
+        init_hist("ljet_phi_"+name,      64, -3.2,    3.2);
+        init_hist("ljet_SDmass_"+name,  500,  0.0,  500.0);
+        init_hist("ljet_tau1_"+name,    200,  0.0,    2.0);
+        init_hist("ljet_tau2_"+name,    200,  0.0,    2.0);
+        init_hist("ljet_tau3_"+name,    200,  0.0,    2.0);
+        init_hist("ljet_tau21_"+name,   100,  0.0,    1.0);
+        init_hist("ljet_tau32_"+name,   100,  0.0,    1.0);
+        init_hist("ljet_subjet0_bdisc_"+name, 100, 0.0, 1.0);
+        init_hist("ljet_subjet1_bdisc_"+name, 100, 0.0, 1.0);
+        init_hist("ljet_subjet0_charge_"+name, 100, -5.0, 5.0);
+        init_hist("ljet_subjet1_charge_"+name, 500, -5.0, 5.0);
 
-        init_hist("ljet_pt_eta_"+cname,    200,  0.0, 2000.0,  50, -2.5, 2.5);  // pt vs eta (pt=x-axis)
-        init_hist("ljet_pt_SDmass_"+cname, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
+        init_hist("ljet_pt_eta_"+name,    200,  0.0, 2000.0,  50, -2.5, 2.5);  // pt vs eta (pt=x-axis)
+        init_hist("ljet_pt_SDmass_"+name, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
     }
 
     if (m_useLeptons){
@@ -289,7 +289,7 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     std::vector<Muon> muons = event.muons();
     std::vector<Electron> electrons = event.electrons();
     std::vector<Neutrino> neutrinos = event.neutrinos();
-    MET met = event.MET();
+    MET met = event.met();
 
     // fill histograms!
 
@@ -303,7 +303,7 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
             fill("jet1_pt_"+name,  jet.p4.Pt(),   event_weight);
             fill("jet1_eta_"+name, jet.p4.Eta(),  event_weight);
             fill("jet1_phi_"+name, jet.p4.Phi(),  event_weight);
-            fill("jet1_bdisc_"+name, jet.cMVAv2,  event_weight);
+            fill("jet1_bdisc_"+name, jet.bdisc,  event_weight);
         }
     }
 
@@ -311,24 +311,24 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     if (m_useLeptons){
         cma::DEBUG("HISTOGRAMMER : Fill leptons");
         for (const auto& el : electrons){
-            fill("el_pt_"+name,  electrons.p4.Pt(),  event_weight);
-            fill("el_eta_"+name, electrons.p4.Eta(), event_weight);
-            fill("el_phi_"+name, electrons.p4.Phi(), event_weight);
+            fill("el_pt_"+name,  el.p4.Pt(),  event_weight);
+            fill("el_eta_"+name, el.p4.Eta(), event_weight);
+            fill("el_phi_"+name, el.p4.Phi(), event_weight);
         }
 
         for (const auto& mu : muons){
-            fill("mu_pt_"+name,  muons.p4.Pt(),  event_weight);
-            fill("mu_eta_"+name, muons.p4.Eta(), event_weight);
-            fill("mu_phi_"+name, muons.p4.Phi(), event_weight);
+            fill("mu_pt_"+name,  mu.p4.Pt(),  event_weight);
+            fill("mu_eta_"+name, mu.p4.Eta(), event_weight);
+            fill("mu_phi_"+name, mu.p4.Phi(), event_weight);
         }
     }
 
     if (m_useNeutrinos){
         cma::DEBUG("HISTOGRAMMER : Fill neutrinos");
         for (const auto& nu : neutrinos){
-            fill("nu_pt_"+name,  nuetrinos.p4.Pt(),   event_weight);
-            fill("nu_eta_"+name, nuetrinos.p4.Eta(),  event_weight);
-            fill("nu_phi_"+name, nueutrinos.p4.Phi(), event_weight);
+            fill("nu_pt_"+name,  nu.p4.Pt(),  event_weight);
+            fill("nu_eta_"+name, nu.p4.Eta(), event_weight);
+            fill("nu_phi_"+name, nu.p4.Phi(), event_weight);
         }
     }
 

@@ -33,12 +33,15 @@ class configuration {
     // Type of File(s) being processed
     virtual bool isMC();              // must call "checkFileType(file)" or "isMC(file)" first!
     virtual bool isMC( TFile& file );
-    bool isGridFile();
+    bool isGridFile(){ return m_isGridFile;}
+    bool isTtbar(){ return m_isTtbar;}
+    bool isQCD(){ return m_isQCD;}
+
 
     // Type of analysis (all-hadronic, semi-leptonic, or di-leptonic)
     virtual bool isZeroLeptonAnalysis();
     virtual bool isOneLeptonAnalysis();
-    virtual bool isTwoleptonAnalysis();
+    virtual bool isTwoLeptonAnalysis();
 
     // object declarations
     virtual bool useJets();
@@ -55,6 +58,10 @@ class configuration {
     float cMVAv2L() {return m_cMVAv2L;}
     float cMVAv2M() {return m_cMVAv2M;}
     float cMVAv2T() {return m_cMVAv2T;}
+    float CSVv2L() {return m_CSVv2L;}
+    float CSVv2M() {return m_CSVv2M;}
+    float CSVv2T() {return m_CSVv2T;}
+
 
     // functions about the TTree
     virtual bool isNominalTree();
@@ -64,10 +71,12 @@ class configuration {
     std::string treename();
 
     // functions about the file
-    virtual void checkFileType( TFile& file );
+    virtual void inspectFile( TFile& file );
     std::vector<std::string> filesToProcess();
     void setFilename(std::string fileName);
-    std::string filename();
+    std::string filename(){ return m_filename;}
+    std::string primaryDataset(){ return m_primaryDataset;}
+    unsigned int NTotalEvents(){ return m_NTotalEvents;}
 
     // return some values from config file
     std::string verboseLevel();
@@ -86,9 +95,8 @@ class configuration {
 
     // information for event weights
     std::string metadataFile();
-    double XSectionMap ( std::string mcChannelNumber);
-    double KFactorMap ( std::string mcChannelNumber );
-    double sumWeightsMap ( std::string mcChannelNumber );
+    std::map<std::string,Sample> mapOfSamples(){return m_mapOfSamples;}
+    Sample sample(){return m_mapOfSamples.at(m_primaryDataset);}
     virtual double LUMI();
 
     // weight systematics
@@ -98,19 +106,24 @@ class configuration {
     std::string listOfWeightSystematicsFile();
     std::string listOfWeightVectorSystematicsFile();
 
-    // DNN & HME
+    // DNN
     std::string dnnFile();
     bool getDNN();
     double minDNN();
     double maxDNN();
     std::string dnnKey();   // key for lwtnn
-    bool getHME();
 
     // Reco/Truth event loops
     bool doRecoEventLoop();
     bool doTruthEventLoop();
     bool matchTruthToReco();
     void setMatchTruthToReco(bool truthToReco);
+
+    // truth-reco matching
+    std::map<std::string,int> mapOfPartonContainment() {return m_containmentMap;}
+    std::map<int,std::string> mapOfPartonContainmentRev() {return m_containmentMapRev;}
+    std::map<std::string,int> mapOfTargetValues() {return m_targetMap;}
+
 
     // misc. for dilepton ttbar
     bool kinematicReco();
@@ -141,6 +154,8 @@ class configuration {
     // type of file(s)
     bool m_isMC;
     bool m_isGridFile;
+    bool m_isQCD;
+    bool m_isTtbar;
 
     // type of analysis
     bool m_isZeroLeptonAnalysis;
@@ -168,6 +183,9 @@ class configuration {
     std::string m_cutsfile;
     std::string m_treename;
     std::string m_filename;
+    std::string m_primaryDataset;
+    unsigned int m_NTotalEvents;
+
     std::string m_verboseLevel;
     int m_nEventsToProcess;
     unsigned long long m_firstEvent;
@@ -182,7 +200,6 @@ class configuration {
     bool m_getDNN;
     std::string m_dnnFile;
     std::string m_dnnKey;
-    bool m_getHME;
     bool m_doRecoEventLoop;
     bool m_doTruthEventLoop;
     bool m_matchTruthToReco;
@@ -197,6 +214,9 @@ class configuration {
     float m_cMVAv2L=-0.5884;
     float m_cMVAv2M=0.4432;
     float m_cMVAv2T=0.9432;
+    float m_CSVv2L=0.5426;
+    float m_CSVv2M=0.8484;
+    float m_CSVv2T=0.9535;
 
     std::vector<std::string> m_filesToProcess;
     std::vector<std::string> m_treeNames;
@@ -207,10 +227,11 @@ class configuration {
     std::string m_listOfWeightSystematicsFile;
     std::string m_listOfWeightVectorSystematicsFile;
 
-    std::map<std::string, float> m_XSection; // map file to XSection
-    std::map<std::string, float> m_KFactor;  // map file to KFactor
-    std::map<std::string, float> m_AMI;      // map file to sum of weights
-    std::map<std::string, unsigned int> m_NEvents;   // map file to total number of events
+    std::map<std::string,Sample> m_mapOfSamples;   // map of Sample structs
+    std::map<std::string, float> m_XSection;       // map file to XSection
+    std::map<std::string, float> m_KFactor;        // map file to KFactor
+    std::map<std::string, float> m_AMI;            // map file to sum of weights
+    std::map<std::string, unsigned int> m_NEvents; // map file to total number of events
 
     std::vector<std::string> m_qcdSelections = {"0b0t","0b1t","0b2t","1b0t",
                                                 "1b1t","1b2t","2b0t","2b1t", "2b2t"};
@@ -234,6 +255,35 @@ class configuration {
     unsigned int m_NMassPoints;  // 500
     unsigned int m_massMin;      // 100
     unsigned int m_massMax;      // 300
+
+
+    // Primary dataset names for different samples in analysis
+    std::vector<std::string> m_ttbarFiles = {};
+    std::vector<std::string> m_qcdFiles = {};
+
+    // Degrees of 'containment' for parton matching to jets
+    std::map<std::string,int> m_containmentMap = {
+                    {"NONE",  0},
+                    {"BONLY", 1},
+                    {"QONLY", 2},
+                    {"BQ",    3},   // B+Q
+                    {"W",     4},   // Q+Q
+                    {"FULL",  5}};  // (BQ)+Q || (W+B) || Q+Q+B
+    std::map<int,std::string> m_containmentMapRev = {
+                    {0,"NONE"},
+                    {1,"BONLY"},
+                    {2,"QONLY"},
+                    {3,"BQ"},     // B+Q
+                    {4,"W"},      // Q+Q
+                    {5,"FULL"}};  // (BQ)+Q || (W+B) || Q+Q+B
+    // map of target values used in training ML of large-R jets
+    std::map<std::string,int> m_targetMap = {
+      {"none",0},    // :: NONE = QCD (background)
+      {"QB",1},      // :: QB-Q = Signal AK8(QB) + AK4(Q)
+      {"W",2},       // :: QQ-B = Signal AK8(W)  + AK4(B)
+      {"full",3},    // :: FULL = Signal AK8
+      {"other",4} }; // :: Other = placeholder (resolved/Q-only/B-only/etc.)
+
 
     std::map<std::string,std::string> m_defaultConfigs = {
              {"isZeroLeptonAnalysis",  "false"},
@@ -267,9 +317,7 @@ class configuration {
              {"dnnFile",               "config/keras_ttbar_DNN.json"},
              {"dnnKey",                "dnn"},
              {"getDNN",                "false"},
-             {"getHME",                "false"},
              {"doRecoEventLoop",       "true"},
-             {"doTruthEventLoop",      "false"},
              {"kinematicReco",        "true"},
              {"NJetSmear",             "500"},
              {"NMassPoints",           "1"},

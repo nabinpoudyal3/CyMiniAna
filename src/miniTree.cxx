@@ -49,7 +49,9 @@ void miniTree::saveEvent(Event& event) {
                                             // otherwise only the branches accessed in Event are copied (!?)
 
     // set the new values
-    m_dnn = event.DNN();
+//    std::vector<Ljet> ljets = event.ljets();
+//    for (const auto& ljet : ljets)
+//        m_dnn = ljet.dnn;
 
     cma::DEBUG("MINITREE : Fill the tree");
     m_ttree->Fill();

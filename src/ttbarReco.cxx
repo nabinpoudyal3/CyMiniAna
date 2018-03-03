@@ -59,7 +59,7 @@ void ttbarReco::execute(const std::vector<Jet>& jets, const std::vector<Ljet>& l
     unsigned int target(4);
     if (isQCD) target = 0;
 
-    Top top_cand;  // reconstructed top candidates
+    HadTop top_cand;  // reconstructed top candidates
 
     cma::DEBUG("TTBARRECO : building ttbar with "+std::to_string(m_ljets.size())+" ak8 candidates");
     for (const auto& ljet : ljets){

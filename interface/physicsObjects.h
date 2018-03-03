@@ -17,51 +17,88 @@ struct CmaBase {
 };
 
 
-// Struct for particle flow jets
+// Truth information
+struct Parton : CmaBase {
+    int pdgId;
+    int index;       // index in vector of truth partons
+    int decayIdx;    // index in truth record
+    int parent_ref;  // index in truth vector of parent
+    int parent_idx;  // index in truth record of parent
+    int containment;
+
+    // Heavy Object Booleans
+    bool isTop;
+    bool isW;
+    // Lepton Booleans
+    bool isLepton;
+    bool isTau;
+    bool isElectron;
+    bool isMuon;
+    bool isNeutrino;
+    // Quark Booleans
+    bool isQuark;
+    bool isBottom;
+    bool isLight;
+};
+
+
+struct TruthTop {
+    // collect indices in truth_partons vector of top parton info
+    bool isTop;
+    bool isAntiTop;
+    int Top;                    // access the truth top in vector of partons
+    int W;                      // access the truth W in vector of partons
+    int bottom;                 // access the truth b in vector of partons
+    std::vector<int> Wdecays;   // for storing W daughters
+    std::vector<int> daughters; // for storing non-W/bottom daughters
+
+    bool isHadronic;  // W decays to quarks
+    bool isLeptonic;  // W decays to leptons
+};
+
+
+
+// Struct for jets
 // -- common to all types of jets
 struct Jet : CmaBase{
-    float cMVAv2;
-    float CSVv2;
-    float CvsL;
-    float CvsB;
+    float bdisc;
     std::map<std::string, bool> isbtagged;
-
-    float partonFlavour;
-    float hadronFlavour;
-    float neutralMultiplicity;
-    float neutralHadronEnergyFrac;
-    float neutralEmEnergyFrac;
-    float chargedHadronEnergyFrac;
-    float chargedEmEnergyFrac;
-    float chargedMultiplicity;
-
-    float jecFactor0;
-    float jetArea;
-    float ptResolution;
-    float smearedPt;
-    std::vector<int> keys;
-
     float charge;
-    int index;    // index in vector of jets
+    int index;       // index in vector of jets
+    float radius;    // radius of jet (for truth-matching in DeltaR)
+
+    int truth_jet;   // index in vector of truth jets that is matched to this jet
+    int containment; // level of containment for partons matched to jet
+    int matchId;     // keep track if jet is matched to top or anti-top
+    std::vector<int> truth_partons;  // vector containing partons that are truth-matched to jet
 };
 
 struct Ljet : Jet{
     // extra ljet attributes
     int isGood;
-    float tau1_CHS;
-    float tau2_CHS;
-    float tau3_CHS;
-    float tau21_CHS;
-    float tau32_CHS;
-    float softDropMass_CHS;
-    float vSubjetIndex0;
-    float vSubjetIndex1;
-    float charge;
-};
+    float tau1;
+    float tau2;
+    float tau3;
+    float tau21;
+    float tau32;
+    float softDropMass;
 
-struct Tjet : Jet{
-    // Track Jets not used in CMS -- here as a placeholder
-    int numConstituents;
+    float BEST_t;
+    float BEST_w;
+    float BEST_z;
+    float BEST_h;
+    float BEST_class;
+
+    float charge;
+    std::vector<Jet> subjets;
+    float subjet0_charge;
+    float subjet0_bdisc;
+    float subjet1_charge;
+    float subjet1_bdisc;
+
+    int target;
+    std::map<std::string, double> features;  // store features in map to easily access later
+    std::map<std::string, double> dnn;       // store full dnn results
 };
 
 
@@ -74,8 +111,8 @@ struct Lepton : CmaBase{
     bool isMuon;
     int index;       // index in vector of leptons
 
-    float key;
-    float miniIso;
+    float iso;
+    float id;
     float loose;
     float medium;
     float tight;
@@ -87,34 +124,6 @@ struct Electron : Lepton{
         isElectron = true;
         isMuon     = false;
     }
-
-    float iso03;
-    float iso03db;
-    float SCEta;
-    float SCPhi;
-    float vidVeto;
-    float vidLoose;
-    float vidMedium;
-    float vidTight;
-    float vidHEEP;
-    float vidVetonoiso;
-    float vidLoosenoiso;
-    float vidMediumnoiso;
-    float vidTightnoiso;
-    float vidHEEPnoiso;
-    float vidMvaGPvalue;
-    float vidMvaGPcateg;
-    float vidMvaHZZvalue;
-    float vidMvaHZZcateg;
-    int veto_NoIsoID;
-    int loose_NoIsoID;
-    int medium_NoIsoID;
-    int tight_NoIsoID;
-    int isoVeto;
-    int isoLoose;
-    int isoMedium;
-    int isoTight;
-    int vetoID;
 };
 struct Muon : Lepton{
     // extra muon attributes
@@ -122,11 +131,6 @@ struct Muon : Lepton{
         isElectron = false;
         isMuon     = true;
     }
-
-    float iso04;
-    float soft;
-    float medium2016;
-    float hightPt;
 };
 
 struct Neutrino : CmaBase{
@@ -139,64 +143,46 @@ struct MET : CmaBase{
 
 
 
-// Top Quarks
+// Top Quark Definitions
 struct Top : CmaBase{
-    // only used for truth tops (parton-level) right now (no extra information, yet)
+    // Define a top quark
+    unsigned int target;               // for ML training
+    std::map<std::string,double> dnn;  // ML results (from lwtnn)
+
+    bool isTop;
+    bool isAntiTop;
+
+    // contains all associated jets (hadronic or leptonic)
+    std::vector<int> jets;  
 };
 
-struct LepTop : CmaBase{
+struct HadTop : Top {
+    // Hadronically-decay top quark
+    int ljet;            // Associated AK8 jet (if boosted)
+};
+
+struct LepTop : Top {
     // Leptonically-decaying top quark aspects
-    Lepton lepton;
     Jet jet;
+    Lepton lepton;
     Neutrino neutrino;
+
     float weight;        // reconstruction weight
     float weight_ES;     // reconstruction weight (EventShape)
     float weight_tt;     // reconstruction weight (ttbar XS method)
-
-    void set_p4(){
-        p4 = lepton.p4 + jet.p4 + neutrino.p4;
-    }
 };
-
-struct HadTop : CmaBase{
-    // Resolved hadronically-decaying top quark
-    std::vector<Jet> jets; // contains all associated jets
-    Jet bjet; // if b-jet is identified
-    Jet q1;   // if quark from W is identified
-    Jet q2;   // if quark from W is identified
-
-    void set_p4(){
-        p4 = TLorentzVector(0,0,0,0);
-        for (const auto& jet : jets)
-            p4 += jet.p4;
-    }
-};
-
-struct BoostedTop : CmaBase{
-    // Boosted hadronically-decaying top quark
-    Ljet jet;
-    float dnn;
-
-    void set_p4(){
-        p4 = jet.p4;
-    }
-};
-
 
 
 // ************************************ //
 // ttbar System
 
-//struct TtbarOneLepton{};
-//struct TtbarAllHad{};
-
 struct DileptonReco {
     // struct of information needed for neutrino reconstruction (AMWT)
-    Lepton lepton_pos;// positively charged lepton
-    Lepton lepton_neg;// negatively charged lepton
-    TVector2 met;// MET (stored as TVector2 for convenience)
-    std::vector<Jet> jets;// jets in event
-    std::vector<Jet> bjets;// two 'b'-jets in ttbar decay
+    Lepton lepton_pos;      // positively charged lepton
+    Lepton lepton_neg;      // negatively charged lepton
+    TVector2 met;           // MET (stored as TVector2 for convenience)
+    std::vector<Jet> jets;  // jets in event
+    std::vector<Jet> bjets; // two 'b'-jets in ttbar decay
     Jet bJet;
     Jet bbarJet;
     size_t bJet_index, bbarJet_index;
@@ -241,5 +227,18 @@ struct TtbarDilepton : DileptonReco {
     }
 };
 
-#endif
 
+
+
+// ------------------------ // 
+struct Sample {
+    // Struct to contain sample information (processing the input file)
+    std::string primaryDataset;
+    float XSection;
+    float KFactor;
+    float sumOfWeights;
+    unsigned int NEvents;
+};
+
+
+#endif

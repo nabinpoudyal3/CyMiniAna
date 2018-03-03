@@ -20,7 +20,6 @@
 
 #include "Analysis/CyMiniAna/interface/Event.h"
 #include "Analysis/CyMiniAna/interface/physicsObjects.h"
-#include "Analysis/CyMiniAna/interface/eventSelection.h"
 #include "Analysis/CyMiniAna/interface/configuration.h"
 
 
@@ -68,19 +67,13 @@ class flatTree4ML {
     float m_ljet_tau3;
     float m_ljet_tau21;
     float m_ljet_tau32;
-
+    float m_ljet_charge;
     float m_ljet_subjet0_bdisc;
     float m_ljet_subjet0_pTrel;
     float m_ljet_subjet0_charge;
     float m_ljet_subjet1_bdisc;
     float m_ljet_subjet1_pTrel;
     float m_ljet_subjet1_charge;
-
-    float m_jet_bdisc;
-    float m_jet_charge;
-
-    float m_ljet_jet_m;
-    float m_ljet_jet_deltaR;
 
     /**** Metadata ****/
     // which sample has which target value

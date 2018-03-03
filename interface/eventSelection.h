@@ -37,10 +37,10 @@ class eventSelection{
     virtual void identifySelection();
 
     // Run for every tree (before the event loop)
-    void setCutflowHistograms(TH1D &cutflow, TH1D &cutflow_unweighted) {
+    void setCutflowHistograms(TH1D &cutflow, TH1D &cutflow_unweighted);
 
     // Run for every event (in every systematic) that needs saving
-    virtual bool applySelection(Event &event);
+    virtual bool applySelection(const Event& event);
 
     // Selections put into functions (easily reference them in other cuts)
     bool allHadDNNSelection(double cutflow_bin);
@@ -81,6 +81,7 @@ class eventSelection{
     TH1D m_cutflow_unw;
 
     // booleans for each selection
+    bool m_dummySelection;
     bool m_isZeroLeptonAnalysis;
     bool m_isOneLeptonAnalysis;
     bool m_isTwoLeptonAnalysis;

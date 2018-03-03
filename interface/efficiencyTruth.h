@@ -10,7 +10,7 @@ class efficiencyTruth : efficiency {
 
     /* fill efficiencies */
     using efficiency::fill;
-    void fill( Event &event, bool decision );
+    void fill( const Event &event, bool decision );
 
     /* Book efficiencies */
     void bookEffs( TFile& outputFile );

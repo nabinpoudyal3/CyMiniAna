@@ -78,6 +78,11 @@ class histogrammer {
 
     bool m_putOverflowInLastBin;
     bool m_putUnderflowInFirstBin;
+
+    bool m_useJets;
+    bool m_useLjets;
+    bool m_useLeptons;
+    bool m_useNeutrinos;
 };
 
 #endif

@@ -109,65 +109,47 @@ void getListOfKeys( TFile* file, std::vector<std::string> &fileKeys ){
 
 
 void getSampleWeights( std::string metadata_file,
-                       std::map<std::string,float>& m_mapXSection,
-                       std::map<std::string,float>& m_mapKFactor,
-                       std::map<std::string,float>& m_mapAMI,
-                       std::map<std::string,unsigned int>& m_mapNEvents ){
-    /* Calculate XSection, KFactor, and sum of weights (AMI) */
+                       std::map<std::string,Sample>& samples){
+    /* Calculate XSection, KFactor, NEvents, and sum of weights (AMI) */
     cma::INFO("TOOLS : Get sample weights (including sum of weights)");
 
     // get the absolute path (in case of batch job)
     char* cma_path = getenv("CYMINIANADIR");
     std::string cma_absPath("");
     if (cma_path==NULL){
-        cma::WARNING("TOOLS : environment variable " );
-        cma::WARNING("TOOLS :    'CYMINIANADIR' " );
-        cma::WARNING("TOOLS : is not set.  Relative paths will be used " );
-        cma::WARNING("TOOLS : This may cause problems submitting batch jobs." );
+        cma::WARNING("TOOLS : environment variable 'CYMINIANADIR' is not set." );
+        cma::WARNING("TOOLS : Relative paths will be used " );
         cma_absPath = "./";
-        cma::WARNING("TOOLS : path set to: "+cma_absPath );
     }
-    else{
-        cma_absPath = cma_path;
-    }
+    else cma_absPath = cma_path;
 
 
-    std::string weightsFile(metadata_file);
-    std::string weightsFileFull(cma_absPath+"/"+metadata_file);
-
-    std::ifstream in( weightsFile.c_str());
-    if (!in){
-        cma::WARNING("TOOLS : File does not exist: "+weightsFile);
-        cma::WARNING("TOOLS : -> Checking "+weightsFileFull);
-        in.open(weightsFileFull);
-        if (!in){
-            cma::WARNING("TOOLS : File does not exist: "+weightsFileFull);
-            cma::WARNING("TOOLS : Please check the metadatafile! ");
-        }
-    }
+    std::ifstream in( (cma_absPath+"/"+metadata_file).c_str());
+    if (!in) cma::WARNING("TOOLS : File does not exist: "+cma_absPath+"/"+metadata_file);
 
     std::string line;
+    samples.clear();
     while( std::getline(in,line) ) {
+
         if (!line.empty() && line[0]!='#') {
             std::string dsid("");
+            unsigned int NEvents;
             float xSect,kFact,sumWeights;
-            unsigned int nEvents;
 
             std::istringstream istr(line);
-            istr >> dsid >> xSect >> sumWeights >> kFact >> nEvents;
+            istr >> dsid >> xSect >> sumWeights >> kFact >> NEvents;
 
-            m_mapXSection[dsid]  = xSect;
-            m_mapKFactor[dsid]   = kFact;
-            m_mapAMI[dsid]       = sumWeights;
-            m_mapNEvents[dsid]   = nEvents;
+            Sample s;
+            s.primaryDataset = dsid;
+            s.XSection       = xSect;
+            s.KFactor        = kFact;
+            s.NEvents        = NEvents;
+            s.sumOfWeights   = sumWeights;
+
+            samples[dsid] = s;
         }
     }
     in.close();
-
-    m_mapXSection["data"]  = 1.0; // protection for Data
-    m_mapKFactor["data"]   = 1.0;
-    m_mapAMI["data"]       = 1.0;
-    m_mapNEvents["data"]   = 1;
 
     return;
 }
@@ -211,15 +193,9 @@ unsigned int setRandomNumberSeeds(const Lepton& lepton, const Lepton& antiLepton
 }
 
 
-bool deltaRMatch( TLorentzVector &particle1, TLorentzVector &particle2, double deltaR ){
+bool deltaRMatch( const TLorentzVector &particle1, const TLorentzVector &particle2, const double deltaR ){
     /* Do the deltaR calculation (in one place) */
-    bool isMatched(false);
-
-    if (particle1.DeltaR( particle2 ) < deltaR){
-        isMatched=true;
-    }
-
-    return isMatched;
+    return (particle1.DeltaR(particle2)<deltaR);
 }
 
 

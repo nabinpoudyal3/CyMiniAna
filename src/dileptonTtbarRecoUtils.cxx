@@ -262,13 +262,13 @@ void dileptonTtbarRecoUtils::topRec(const double& px_neutrino) {
     // Define the ttbar quark system
     m_top.lepton   = m_al;
     m_top.neutrino = m_neutrino;
-    m_top.jet      = m_b;
-    m_top.set_p4();
+    m_top.jet = m_b;
+    m_top.p4  = m_b.p4 + m_neutrino.p4 + m_al.p4;
 
     m_topbar.lepton   = m_l;
     m_topbar.neutrino = m_neutrinobar;
-    m_topbar.jet      = m_bbar;
-    m_topbar.set_p4();
+    m_topbar.jet = m_bbar;
+    m_topbar.p4  = m_bbar.p4 + m_neutrinobar.p4 + m_l.p4;
 
     m_tt = m_top.p4 + m_topbar.p4;
 
