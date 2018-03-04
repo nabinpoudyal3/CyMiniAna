@@ -1,0 +1,10 @@
+date today
+output_dir eos
+eos_path /store/user/lpctop/ttbarAC/flatNtuples/test/${DATE}
+files config/listOfBatchFiles.txt
+username demarley
+executable run
+test False
+submit True
+verbose True
+config config/cmaConfig.txt

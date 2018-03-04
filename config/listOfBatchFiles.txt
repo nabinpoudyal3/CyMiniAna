@@ -1,0 +1,1 @@
+root://cmseos.fnal.gov//store/group/lpctlbsm/pilot/ttbarACFiles/ttbarAC_ttbarGOOD_merged.root
