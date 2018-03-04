@@ -48,7 +48,6 @@ batch.executable = cfg['executable']       # executable to run for the program
 batch.test       = cfg['test']             # just submit one job if testing
 batch.submit     = cfg['submit']           # do/don't submit jobs, just testing code
 batch.verbose    = cfg['verbose']          # lots of print statements
-batch.queue      = cfg['queue']            # batch system queue ('condor_submit')
 batch.config     = cfg['config']           # configuration file to use
 batch.file       = cfg['files']            # individual root files to process
 

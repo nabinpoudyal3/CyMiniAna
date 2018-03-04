@@ -14,6 +14,7 @@ Setup for condor system at the LPC
 import os
 import sys
 import commands
+from collections import OrderedDict
 import Analysis.CyMiniAna.util as util
 import batchScripts as bs
 
@@ -48,20 +49,18 @@ class BatchSubmission(object):
         self.unique_id_base = [self.tmp_ntuple]
         self.unique_id_name = "_".join(self.unique_id_base)
         self.unique_id_path = "/".join(self.unique_id_base)
-        self.unique_id_batch_path = "{0}/batch/{1}".format(self.baseDir,self.unique_id_path)
+        self.unique_id_batch_path = "batch/{0}".format(self.unique_id_path)
 
         self.vb = util.VERBOSE()
         self.vb.level = self.verbose_level
         self.vb.initialize()
 
         # Setup options for CyMiniAna
-        self.config_options = {}
+        self.config_options = OrderedDict()
         config = open(self.config,'r').readlines()
         for i in config:
             j = i.rstrip('\n').split(' ')
             key,item = j
-            if item.startswith('config/'):
-                item = self.baseDir+item
             self.config_options[key] = item
 
         return
@@ -103,6 +102,7 @@ class BatchSubmission(object):
         self.vb.DEBUG("BATCH SUBMISSION : Write batch scripts ")
 
         # Write the shell script executed in condor job
+        condorExecFileName = "{0}/run_condor.sh".format(self.unique_id_batch_path)
         condor_executable  = bs.condor_bash_template() % {'outputDir':self.output_dir,
             'executable':self.executable,'eos_path':self.eos_path,'cmsRelease':self.cmsRelease,
             'cfg_filename':self.cfg_filename,'executable':self.executable,'eos_path_to_tarball':self.eos_tarball_path,
@@ -110,10 +110,10 @@ class BatchSubmission(object):
 
         # Write the condor submission script
         template = bs.condor_script_template() % {'baseDir':self.baseDir,
-            'condorExec':condorExecFileName,'unique_id':self.unique_id_path}
+            'condorExec':condorExecFileName,'unique_id_batch_path':self.unique_id_batch_path}
 
         # need executable that sets up the environment properly
-        condorExecFile = open("{0}/run_condor.sh".format(self.unique_id_batch_path),'w')
+        condorExecFile = open(condorExecFileName,'w')
         condorExecFile.write(condor_executable)
         commands.getoutput("chmod +x {0}".format(condorExecFileName))
 
