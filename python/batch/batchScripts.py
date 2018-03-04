@@ -71,7 +71,7 @@ Executable = %(condorExec)s
 
 Should_Transfer_Files = YES
 WhenToTransferOutput  = ON_EXIT
-Transfer_Input_Files  = %(unique_id_batch_path)s/cmaConfig.txt,%(unique_id_batch_path)s/listOfFiles.txt,%(unique_id_batch_path)s/run_condor.sh
+Transfer_Input_Files  = %(unique_id_batch_path)s
 notify_user   = ${LOGNAME}@FNAL.GOV
 x509userproxy = $ENV(X509_USER_PROXY)
 
