@@ -4,8 +4,9 @@ Last Updated:    3 September 2016
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
+Texas A&M University
 -----
+
 Steering script for making simple histograms.
 Primarily want to do this from root histograms (faster to make those in c++)
 
@@ -69,8 +70,8 @@ for hi,histogram in enumerate(histograms):
     hist.lumi          = 'XY.Z'   # in /fb
     hist.format        = 'png'       # file format for saving image
     hist.saveAs        = outpath+"/hist_"+histogram # save figure with name
-    hist.ATLASlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
-    hist.ATLASlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
+    hist.CMSlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
+    hist.CMSlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
 #    hist.extra_text.Add("text here",coords=[x,y]) # see hepPlotter for exact use of extra_text (PlotText() objects)
 
     hist.initialize()
@@ -118,8 +119,8 @@ for hi,histogram in enumerate(histograms):
     hist.format        = 'png'       # file format for saving image
     hist.saveAs        = outpath+"/hist_"+histogram # save figure with name
     hist.colormap      = 'default'
-    hist.ATLASlabel       = 'outer'     # 'outer' for 2D plots
-    hist.ATLASlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary'
+    hist.CMSlabel       = 'outer'     # 'outer' for 2D plots
+    hist.CMSlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary'
 
     hist.initialize()
 
