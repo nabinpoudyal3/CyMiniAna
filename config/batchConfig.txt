@@ -5,6 +5,6 @@ files config/listOfBatchFiles.txt
 username demarley
 executable run
 test True
-submit True
+submit False
 verbose True
 config config/cmaConfig.txt
