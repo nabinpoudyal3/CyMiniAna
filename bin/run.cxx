@@ -25,6 +25,7 @@ Basic steering macro for running CyMiniAna
 
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 #include <stdio.h>
 #include <map>
 #include <fstream>
@@ -72,9 +73,9 @@ int main(int argc, char** argv) {
     bool makeEfficiencies = config.makeEfficiencies();
     bool doSystWeights    = config.calcWeightSystematics(); // systemaics associated with scale factors
 
-    std::string customFileEnding( config.customFileEnding() );
-    if (customFileEnding.length()>0  && customFileEnding.substr(0,1).compare("_")!=0){
-        customFileEnding = "_"+customFileEnding; // add '_' to beginning of string, if needed
+    std::string customDirectory( config.customDirectory() );
+    if (customDirectory.length()>0  && customDirectory.substr(0,1).compare("_")!=0){
+        customDirectory = "_"+customDirectory; // add '_' to beginning of string, if needed
     }
 
     // event selection
@@ -105,14 +106,13 @@ int main(int argc, char** argv) {
 
 
         // -- Output file -- //
-        // CMS doesn't use something like 'mcChannelNumber', need to keep the same file names
-        // therefore, make new directories for the different selections
         struct stat dirBuffer;
-        std::string outpath = outpathBase+"/"+selection+customFileEnding;
+        std::string outpath = outpathBase+"/"+selection+customDirectory;
         if ( !(stat((outpath).c_str(),&dirBuffer)==0 && S_ISDIR(dirBuffer.st_mode)) ){
             cma::DEBUG("RUN : Creating directory for storing output: "+outpath);
             system( ("mkdir "+outpath).c_str() );  // make the directory so the files are grouped together
         }
+        setenv( "CMA_OUTPUTDIR",(outpath).c_str(),1 ); // set environment variable for output directory (access elsewhere)
 
         std::size_t pos   = filename.find_last_of(".");     // the last ".", i.e., ".root"
         std::size_t found = filename.find_last_of("/");     // the last "/"

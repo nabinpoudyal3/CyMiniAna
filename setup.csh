@@ -1,6 +1,7 @@
 ## Some software is readily available on cvmfs / cmssw
 
 setenv CERN_USER ${USER} # put your CERN username if different from environment name
+setenv CYMINIANADIR ${PWD}
 
 echo ""
 echo " * ------------------------------------------------- * "

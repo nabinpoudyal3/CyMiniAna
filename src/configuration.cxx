@@ -27,7 +27,6 @@ configuration::configuration(const std::string &configFile) :
   m_useJets(false),
   m_useLeptons(false),
   m_useLargeRJets(false),
-  m_useRCJets(false),
   m_useNeutrinos(false),
   m_useFlags(false),
   m_useTtbar(false),
@@ -40,7 +39,7 @@ configuration::configuration(const std::string &configFile) :
   m_nEventsToProcess(0),
   m_firstEvent(0),
   m_outputFilePath("SetMe"),
-  m_customFileEnding("SetMe"),
+  m_customDirectory("SetMe"),
   m_makeNewFile(false),
   m_makeHistograms(false),
   m_sumWeightsFiles("SetMe"),
@@ -144,14 +143,13 @@ void configuration::initialize() {
 
     m_jet_btag_wkpt    = getConfigOption("jet_btag_wkpt");
     m_outputFilePath   = getConfigOption("output_path");
-    m_customFileEnding = getConfigOption("customFileEnding");
+    m_customDirectory  = getConfigOption("customDirectory");
     m_cutsfile         = getConfigOption("cutsfile");
     m_sumWeightsFiles  = getConfigOption("sumWeightsFiles");
     m_useTruth         = cma::str2bool( getConfigOption("useTruth") );
     m_useJets          = cma::str2bool( getConfigOption("useJets") );
     m_useLeptons       = cma::str2bool( getConfigOption("useLeptons") );
     m_useLargeRJets    = cma::str2bool( getConfigOption("useLargeRJets") );
-    m_useRCJets        = cma::str2bool( getConfigOption("useRCJets") );
     m_useNeutrinos     = cma::str2bool( getConfigOption("useNeutrinos") );
     m_useFlags         = cma::str2bool( getConfigOption("useFlags") );
     m_useTtbar         = cma::str2bool( getConfigOption("useTtbar") );
@@ -396,10 +394,6 @@ bool configuration::useLargeRJets(){
     return m_useLargeRJets;
 }
 
-bool configuration::useRCJets(){
-    return m_useRCJets;
-}
-
 bool configuration::useNeutrinos(){
     return m_useNeutrinos;
 }
@@ -444,8 +438,8 @@ std::string configuration::outputFilePath(){
     return m_outputFilePath;
 }
 
-std::string configuration::customFileEnding(){
-    return m_customFileEnding;
+std::string configuration::customDirectory(){
+    return m_customDirectory;
 }
 
 double configuration::LUMI(){

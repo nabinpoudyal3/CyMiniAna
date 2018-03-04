@@ -48,7 +48,6 @@ class configuration {
     virtual bool useNeutrinos();
     virtual bool useLeptons();
     virtual bool useLargeRJets();
-    virtual bool useRCJets();
     virtual bool useTruth();
     virtual bool useFlags();
     virtual bool useTtbar();
@@ -84,7 +83,7 @@ class configuration {
     std::vector<std::string> qcdSelections();
     std::string cutsfile();
     std::string outputFilePath();
-    std::string customFileEnding();
+    std::string customDirectory();
     std::string configFileName();
     std::string getAbsolutePath();
     int nEventsToProcess();
@@ -167,7 +166,6 @@ class configuration {
     bool m_useJets;
     bool m_useLeptons;
     bool m_useLargeRJets;
-    bool m_useRCJets;
     bool m_useNeutrinos;
     bool m_useFlags;
     bool m_useTtbar;
@@ -190,7 +188,7 @@ class configuration {
     int m_nEventsToProcess;
     unsigned long long m_firstEvent;
     std::string m_outputFilePath;
-    std::string m_customFileEnding;
+    std::string m_customDirectory;
     bool m_makeNewFile;
     bool m_makeHistograms;
     bool m_makeEfficiencies;
@@ -292,7 +290,6 @@ class configuration {
              {"useJets",               "false"},
              {"useLeptons",            "false"},
              {"useLargeRJets",         "false"},
-             {"useRCJets",             "false"},
              {"useNeutrinos",          "false"},
              {"useTruth",              "false"},
              {"useFlags",              "false"},
@@ -305,7 +302,7 @@ class configuration {
              {"input_selection",       "grid"},
              {"selection",             "example"},
              {"output_path",           "./"},
-             {"customFileEnding",      ""},
+             {"customDirectory",      ""},
              {"calcWeightSystematics", "false"},
              {"weightSystematicsFile",       "config/weightSystematics.txt"},
              {"weightVectorSystematicsFile", "config/weightVectorSystematics.txt"},
