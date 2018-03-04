@@ -53,9 +53,9 @@ batch.config     = cfg['config']           # configuration file to use
 batch.file       = cfg['files']            # individual root files to process
 
 ## Setup output
-eos_path       = cfg['eos_path'].replace("${DATE}",date)   # '/store/user/demarley/'+date
+eos_path       = cfg['eos_path'].replace("$TODAY",date)   # '/store/user/demarley/'+date
 batch.eos_path = eos_path
-batch.eos_tarball_path = eos_path.replace("${DATE}","")
+batch.eos_tarball_path = eos_path.replace("$TODAY","")
 
 
 ## -- mimic the code in bin/run.cxx and bin/runML.cxx for setting output directory

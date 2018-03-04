@@ -1,10 +1,10 @@
 date today
 output_dir eos
-eos_path /store/user/lpctop/ttbarAC/flatNtuples/test/${DATE}
+eos_path /store/user/lpctop/ttbarAC/flatNtuples/test/$TODAY
 files config/listOfBatchFiles.txt
 username demarley
 executable run
-test False
-submit True
+test True
+submit False
 verbose True
 config config/cmaConfig.txt
