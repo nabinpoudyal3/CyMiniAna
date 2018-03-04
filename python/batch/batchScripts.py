@@ -22,6 +22,8 @@ xrdcp -s root://cmseos.fnal.gov/%(eos_path_to_tarball)s/%(cmsRelease)s.tgz .
 tar -xf %(cmsRelease)s.tgz
 rm %(cmsRelease)s.tgz
 
+## copy transferred data
+mv batch %(cmsRelease)s/src/Analysis/CyMiniAna/
 
 ## Setup CMSSW environment
 setenv SCRAM_ARCH slc6_amd64_gcc530
@@ -32,8 +34,9 @@ scram b -j8
 
 
 ## Execute CyMiniAna
-echo " > Run the program "
 cd Analysis/CyMiniAna
+
+echo " > Run the program "
 %(executable)s %(cfg_filename)s
 
 
@@ -71,7 +74,7 @@ Executable = %(condorExec)s
 
 Should_Transfer_Files = YES
 WhenToTransferOutput  = ON_EXIT
-Transfer_Input_Files  = %(unique_id_batch_path)s
+Transfer_Input_Files  = %(baseDir)s/batch
 notify_user   = ${LOGNAME}@FNAL.GOV
 x509userproxy = $ENV(X509_USER_PROXY)
 
