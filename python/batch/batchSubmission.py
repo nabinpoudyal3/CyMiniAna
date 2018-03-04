@@ -176,7 +176,7 @@ class BatchSubmission(object):
 
         # only submit the jobs if you want to (True by default)
         if self.submit:
-            batch_cmd_str = "condor_submit {1}".format(self.batchFileName)
+            batch_cmd_str = "condor_submit {0}".format(self.batchFileName)
             batch_command = commands.getoutput( batch_cmd_str )
 
             self.vb.INFO("BATCH SUBMISSION : {0}".format(batch_cmd_str))
