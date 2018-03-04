@@ -59,11 +59,14 @@ batch.eos_tarball_path = eos_path.replace("${DATE}","")
 
 
 ## -- mimic the code in bin/run.cxx and bin/runML.cxx for setting output directory
-customFileEnding = cmaConfig["customFileEnding"]
-if customFileEnding and not customFileEnding.startswith("_"):
-    customFileEnding = "_{0}".format(customFileEnding)
+try:
+    customDirectory = cmaConfig["customDirectory"]
+except KeyError:
+    customDirectory = ''
+if customDirectory and not customDirectory.startswith("_"):
+    customDirectory = "_{0}".format(customDirectory)
 
-local_output_path = "{0}{1}".format(cmaConfig["selection"],customFileEnding)
+local_output_path = "{0}{1}".format(cmaConfig["selection"],customDirectory)
 batch.local_output_path = local_output_path          # where to store output 
 
 eos_path_full = eos_path+"/"+local_output_path       # files saved in a directory named after the selection
