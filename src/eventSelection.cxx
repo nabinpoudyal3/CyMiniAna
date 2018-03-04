@@ -93,10 +93,10 @@ void eventSelection::identifySelection(){
     // DNN cuts -- for preparing DNN ntuples/histograms/etc.
     m_allHadDNNSelection   = m_selection.compare("allHadDNN")==0;     // setup for all-had DNN
 
-    // Analysis cuts
-    m_isZeroLeptonAnalysis = m_selection.compare("allhad")==0;        // all-had
-    m_isOneLeptonAnalysis  = m_selection.compare("singlelepton")==0;  // single lepton
-    m_isTwoLeptonAnalysis  = m_selection.compare("dilepton")==0;      // dilepton
+    // Analysis cuts :: all-had, l+jets, dilepton
+    m_isZeroLeptonAnalysis = m_selection.compare("allhad")==0;
+    m_isOneLeptonAnalysis  = (m_selection.compare("ejets")==0 || m_selection.compare("mujets")==0 || m_selection.compare("ljets")==0);
+    m_isTwoLeptonAnalysis  = m_selection.compare("dilepton")==0;
 
     return;
 }
@@ -126,7 +126,6 @@ bool eventSelection::applySelection(const Event &event) {
 
     m_nominal_weight = event.nominal_weight();
     double first_bin(0.5);            // first bin value in cutflow histogram ("INITIAL")
-    double cutflow_bin(1.5);          // bin value for subsequent cuts (set below)
 
     // fill cutflow histograms with initial value (before any cuts)
     m_cutflow.Fill(first_bin,m_nominal_weight); // event weights
@@ -154,29 +153,30 @@ bool eventSelection::applySelection(const Event &event) {
     // add more objects as needed
 
 
-    // selection for all-hadronic DNN 
-    if (m_allHadDNNSelection){
-        passSelection = allHadDNNSelection(cutflow_bin);
-    }
+    // Perform selections
+    // -- use if/else if statements to maintain orthogonality
 
-    // selection for all-hadronic analysis
-    else if (m_isZeroLeptonAnalysis){
-        passSelection = zeroLeptonSelection(cutflow_bin);
-    }
+    // -- All-hadronic DNN 
+    if (m_allHadDNNSelection)
+        passSelection = allHadDNNSelection(first_bin+1);
 
-    // selection for single lepton analysis
-    else if (m_isOneLeptonAnalysis){
-        passSelection = oneLeptonSelection(cutflow_bin);
-    }
+    // -- All-hadronic analysis
+    else if (m_isZeroLeptonAnalysis)
+        passSelection = zeroLeptonSelection(first_bin+1);
 
-    // selection for dilepton analysis
-    else if (m_isTwoLeptonAnalysis){
-        passSelection = twoLeptonSelection(cutflow_bin);
-    }
+    // -- Single lepton analysis
+    else if (m_isOneLeptonAnalysis)
+        passSelection = oneLeptonSelection(first_bin+1);
+
+    // -- Dilepton analysis
+    else if (m_isTwoLeptonAnalysis)
+        passSelection = twoLeptonSelection(first_bin+1);
 
     return passSelection;
 }
 
+
+// ******************************************************* //
 
 // Put selections in functions (allow other selections to call them!)
 bool eventSelection::allHadDNNSelection(double cutflow_bin){
@@ -195,6 +195,10 @@ bool eventSelection::allHadDNNSelection(double cutflow_bin){
 
     return pass;
 }
+
+
+
+// ******************************************************* //
 
 bool eventSelection::zeroLeptonSelection(double cutflow_bin){
     /* Check if event passes selection */
@@ -216,8 +220,71 @@ bool eventSelection::zeroLeptonSelection(double cutflow_bin){
     return pass;
 }
 
+
+
+// ******************************************************* //
+
+bool eventSelection::ejetsSelection(double cutflow_bin){
+    /* Check if event passes selection; called from 1-lepton selection
+       -- Following CMS AN-2016/174
+    */
+    bool pass(false);
+
+    // cut5 :: MET > 50 GeV
+    if ( m_met.p4.Pt() < 50 )
+        return false;
+    else{
+        fillCutflows(cutflow_bin);
+        pass = true;
+    }
+
+    Electron lep = m_electrons.at(0);
+    float met_triangle = 1.5*m_met.p4.Pt() / 110.;
+
+    // cut6 :: DeltaPhi(e,MET)
+    if ( std::abs(lep.p4.DeltaPhi(m_met.p4)-1.5) > met_triangle )
+        return false;
+    else{
+        fillCutflows(cutflow_bin);
+        pass = true;
+    }
+
+    // cut7 :: DeltaPhi(leading AK4,MET)
+    if ( std::abs(m_jets.at(0).p4.DeltaPhi(m_met.p4)-1.5) > met_triangle )
+        return false;
+    else{
+        fillCutflows(cutflow_bin);
+        pass = true;
+    }
+
+    return pass;
+}
+
+
+bool eventSelection::mujetsSelection(double cutflow_bin){
+    /* Check if event passes selection; called from 1-lepton selection
+       -- Following CMS AN-2016/174
+    */
+    bool pass(false);
+
+    // cut5 :: MET > 35 GeV
+    if ( m_met.p4.Pt() < 35 )
+        return false;
+    else{
+        fillCutflows(cutflow_bin);
+        pass = true;
+    }
+
+    return pass;
+}
+
+
 bool eventSelection::oneLeptonSelection(double cutflow_bin){
-    /* Check if event passes selection */
+    /* Check if event passes selection 
+       -- Following CMS AN-2016/174
+       -- add b-tagging, others?
+       -- separate boosted (AK8) & resolved (4 AK4)?
+    */
     bool pass(false);
 
     // cut0 :: One lepton
@@ -230,8 +297,7 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
         pass = true;
     }
 
-    // Assuming boosted final state
-    // cut1 :: >=1 ljets
+    // cut1 :: >=1 ljets -- Assuming boosted final state
     if ( m_ljets.size() < 1 )
         return false;  // exit the function now; no need to test other cuts!
     else{
@@ -247,18 +313,71 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
         pass = true;
     }
 
-    // b-tagging/MET/DeltaPhi(MET,jets)/AK4 cuts? others?
-    // boosted (AK8) vs resolved (4 AK4)?
+
+    // ** The following cuts are slightly different for e+jets and mu+jets ** //
+    Lepton lep;
+    bool ejets(false);
+
+    if (nMuons == 1)
+        lep.p4 = m_muons.at(0).p4;
+    else{
+        ejets  = false;
+        lep.p4 = m_electrons.at(0).p4;
+    }
+
+    // cut3 :: DeltaR(AK4,lepton)
+    //         >=1 AK4 jet in the same hemisphere as the electron, 0.3 < R(l,jet) < pi/2
+    bool DR_ak4_lep(false);
+    for (const auto& jet : m_jets){
+        float dr = jet.p4.DeltaR(lep.p4);
+        if (0.3 < dr && dr < M_PI*0.5) DR_ak4_lep = true;
+    }
+
+    if (!DR_ak4_lep)
+        return false;
+    else{
+        fillCutflows(cutflow_bin+3);
+        pass = true;
+    }
+
+    // cut4 :: DeltaR(AK8,lepton)
+    //         >=1 AK8 jet in the opposite hemisphere from the electron, R(l,jet) > pi/2
+    bool DR_ak8_lep(false);
+    for (const auto& ljet : m_ljets){
+        float dr = ljet.p4.DeltaR(lep.p4);
+        if (dr > M_PI*0.5) DR_ak8_lep = true;
+    }
+
+    if (!DR_ak8_lep)
+        return false;
+    else{
+        fillCutflows(cutflow_bin+4);
+        pass = true;
+    }
+
+    // selection based on lepton -- e+jets or mu+jets
+    // only do selection if the user requested a specific
+    // lepton flavor or any lepton flavor ("ljets"), 
+    // e.g., if user selected "ejets", don't do mu+jets selection!
+    bool ljets = m_selection.compare("ljets")==0;
+
+    if (ejets && (ljets || m_selection.compare("ejets")==0))
+        pass = ejetsSelection(cutflow_bin+5);
+    else if (!ejets && (ljets || m_selection.compare("mujets")==0))
+        pass = mujetsSelection(cutflow_bin+5);
 
     return pass;
 }
 
 
+
+// ******************************************************* //
+
 bool eventSelection::twoLeptonSelection(double cutflow_bin){
     /* Check if event passes selection */
     bool pass(false);
 
-    // cut0 :: One lepton
+    // cut0 :: Two leptons
     unsigned int nElectrons( m_electrons.size() );
     unsigned int nMuons( m_muons.size() );
     if ( nElectrons+nMuons != 2 )
@@ -268,7 +387,7 @@ bool eventSelection::twoLeptonSelection(double cutflow_bin){
         pass = true;
     }
 
-    // cut1 :: >=2 jets (should have 1 AK4 near lepton & 1 AK4 inside the AK8)
+    // cut1 :: >=2 jets (2 b-jets)
     if ( m_jets.size() < 2 )
         return false;  // exit the function now; no need to test other cuts!
     else{

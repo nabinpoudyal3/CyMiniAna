@@ -46,6 +46,8 @@ class eventSelection{
     bool allHadDNNSelection(double cutflow_bin);
     bool zeroLeptonSelection(double cutflow_bin);
     bool oneLeptonSelection(double cutflow_bin);
+    bool ejetsSelection(double cutflow_bin);
+    bool mujetsSelection(double cutflow_bin);
     bool twoLeptonSelection(double cutflow_bin);
 
     // Helper functions: Provide external access to information in this class

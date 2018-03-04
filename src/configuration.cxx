@@ -22,7 +22,7 @@ configuration::configuration(const std::string &configFile) :
   m_isGridFile(false),
   m_isZeroLeptonAnalysis(false),
   m_isOneLeptonAnalysis(false),
-  m_isTwoleptonAnalysis(false),
+  m_isTwoLeptonAnalysis(false),
   m_useTruth(false),
   m_useJets(false),
   m_useLeptons(false),
@@ -131,9 +131,9 @@ void configuration::initialize() {
 
     m_isZeroLeptonAnalysis = cma::str2bool( getConfigOption("isZeroLeptonAnalysis") );
     m_isOneLeptonAnalysis  = cma::str2bool( getConfigOption("isOneLeptonAnalysis") );
-    m_isTwoleptonAnalysis  = cma::str2bool( getConfigOption("isTwoleptonAnalysis") );
+    m_isTwoLeptonAnalysis  = cma::str2bool( getConfigOption("isTwoLeptonAnalysis") );
 
-    if ( (m_isZeroLeptonAnalysis + m_isOneLeptonAnalysis + m_isTwoleptonAnalysis) != 1 ){
+    if ( (m_isZeroLeptonAnalysis + m_isOneLeptonAnalysis + m_isTwoLeptonAnalysis) != 1 ){
         cma::ERROR("CONFIG : Must choose only one of 'isZeroLeptonAnalysis', 'isOneLeptonAnalysis', 'isTwoLeptonAnalysis'");
         exit(1);
     }
@@ -319,7 +319,7 @@ bool configuration::isOneLeptonAnalysis(){
 
 bool configuration::isTwoLeptonAnalysis(){
     /* Dileptonic */
-    return m_isTwoleptonAnalysis;
+    return m_isTwoLeptonAnalysis;
 }
 
 // weights + systematics

@@ -6,6 +6,8 @@
 
 <bin   name="run" file="run.cxx">
 </bin>
+<bin   name="runML" file="runML.cxx">
+</bin>
 
 
 <Flags CXXFLAGS="-lLHAPDF -lMinuit -lTreePlayer -fopenmp -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=maybe-uninitialized"/>

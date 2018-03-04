@@ -1,6 +1,0 @@
-/lustre/umt3/user/demarley/TopAC/AT2.4.19/skims/rsg_400.root
-/lustre/umt3/user/demarley/TopAC/AT2.4.19/skims/rsg_500.root
-/lustre/umt3/user/demarley/TopAC/AT2.4.19/skims/rsg_750.root
-/lustre/umt3/user/demarley/TopAC/AT2.4.19/skims/rsg_1000.root
-/lustre/umt3/user/demarley/TopAC/AT2.4.19/skims/rsg_2000.root
-/lustre/umt3/user/demarley/TopAC/AT2.4.19/skims/rsg_3000.root

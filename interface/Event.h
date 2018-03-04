@@ -95,9 +95,9 @@ class Event {
 //    virtual unsigned long long eventNumber();
 //    virtual unsigned int runNumber();
     long long entry() const { return m_entry; }
-    virtual int eventNumber() const {return **m_eventNumber;}
-    virtual int runNumber() const {return **m_runNumber;}
-    virtual int lumiblock() const {return **m_lumiblock;}
+    virtual unsigned int eventNumber() const {return **m_eventNumber;}
+    virtual unsigned int runNumber() const {return **m_runNumber;}
+    virtual unsigned int lumiblock() const {return **m_lumiblock;}
     virtual std::string treeName() const {return m_treeName;}
     virtual float xsection() const {return m_xsection;}
     virtual float kfactor() const {return m_kfactor;}
@@ -213,9 +213,9 @@ class Event {
     // TTree variables [all possible ones]
     // ***********************************
     // Event info 
-    TTreeReaderValue<int> * m_eventNumber;
-    TTreeReaderValue<int> * m_runNumber;
-    TTreeReaderValue<int> * m_lumiblock;
+    TTreeReaderValue<unsigned int> * m_eventNumber;
+    TTreeReaderValue<unsigned int> * m_runNumber;
+    TTreeReaderValue<unsigned int> * m_lumiblock;
     TTreeReaderValue<float> * m_treeXSection;
     TTreeReaderValue<float> * m_treeKFactor;
     TTreeReaderValue<float> * m_treeSumOfWeights;

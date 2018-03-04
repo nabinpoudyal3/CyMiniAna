@@ -300,10 +300,10 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
         fill("n_jets_"+name, jets.size(), event_weight );  // reflects the "nJetsL" variables, not 2
 
         for (const auto& jet : jets){
-            fill("jet1_pt_"+name,  jet.p4.Pt(),   event_weight);
-            fill("jet1_eta_"+name, jet.p4.Eta(),  event_weight);
-            fill("jet1_phi_"+name, jet.p4.Phi(),  event_weight);
-            fill("jet1_bdisc_"+name, jet.bdisc,  event_weight);
+            fill("jet_pt_"+name,  jet.p4.Pt(),   event_weight);
+            fill("jet_eta_"+name, jet.p4.Eta(),  event_weight);
+            fill("jet_phi_"+name, jet.p4.Phi(),  event_weight);
+            fill("jet_bdisc_"+name, jet.bdisc,  event_weight);
         }
     }
 

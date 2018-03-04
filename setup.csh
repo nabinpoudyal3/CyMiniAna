@@ -13,8 +13,6 @@ cmsenv
 
 echo " > Setup CRAB "
 source /cvmfs/cms.cern.ch/crab3/crab.csh
-alias merged 'source crab3_B2GTTreeNtuples_Merged.csh \!*'
-setenv CRABDIR $CMSSW_BASE/src/Analysis/B2GTTrees/test/crab3
 
 # Set grid proxy if not provided
 echo ""

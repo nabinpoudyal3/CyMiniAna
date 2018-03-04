@@ -40,9 +40,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
 
     //** Access branches from Tree **//
-    m_eventNumber  = new TTreeReaderValue<int>(m_ttree,"eventNum");
-    m_runNumber    = new TTreeReaderValue<int>(m_ttree,"runNum");
-    m_lumiblock    = new TTreeReaderValue<int>(m_ttree,"lumiNum");
+    m_eventNumber  = new TTreeReaderValue<unsigned int>(m_ttree,"eventNum");
+    m_runNumber    = new TTreeReaderValue<unsigned int>(m_ttree,"runNum");
+    m_lumiblock    = new TTreeReaderValue<unsigned int>(m_ttree,"lumiNum");
 
 /*
     m_HLT_Ele45_WPLoose_Gsf          = new TTreeReaderValue<int>(m_ttree,"HLT_Ele45_WPLoose_Gsf");
@@ -165,7 +165,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_ttbarRecoTool = new ttbarReco(cmaConfig);
     // m_semileptonTtbar = new semileptonTtbarReco(m_config);  // semi-leptonic ttbar kinematic reco
     // m_allhadTtbar = new allhadTtbarReco(m_config);          // all-hadronic ttbar kinematic reco
-    m_dileptonTtbar = new dileptonTtbarReco(cmaConfig, configuration::run2_13tev_2016_25ns, 2, true);
+    //m_dileptonTtbar = new dileptonTtbarReco(cmaConfig, configuration::run2_13tev_2016_25ns, 2, true);
 } // end constructor
 
 
@@ -390,7 +390,7 @@ void Event::initialize_ljets(){
         ljet.BEST_h = (*m_ljet_BEST_h)->at(i);
         ljet.BEST_class = (*m_ljet_BEST_class)->at(i);
 
-        ljet.isGood = (ljet.p4.Pt()>200000. && fabs(ljet.p4.Eta())<2.4);
+        ljet.isGood = (ljet.p4.Pt()>200. && fabs(ljet.p4.Eta())<2.4);
         ljet.index  = i;
 
         m_ljets[i] = ljet;
@@ -584,8 +584,10 @@ void Event::getDilepton(){
 void Event::buildTtbar(){
     /* Build ttbar system */
     if (m_kinematicReco){
-        getDilepton();
-        m_ttbar = m_dileptonTtbar->execute(m_dilepton);
+        if (m_isTwoLeptonAnalysis){
+            getDilepton();
+            m_ttbar = m_dileptonTtbar->execute(m_dilepton);
+        }
     }
     else{
         m_ttbar = {};
@@ -632,16 +634,7 @@ double Event::getSystEventWeight( const std::string &syst, const int weightIndex
         // nominal event weight
         syst_event_weight  = m_nominal_weight;
     }
-    else if (syst.find("jvt")!=std::string::npos){
-        // pileup event weight
-        syst_event_weight  = (**m_weight_pileup) * (**m_weight_mc);
-        syst_event_weight *= m_weight_btag_default;
-        syst_event_weight *= (m_xsection) * (m_kfactor) * (m_LUMI);
-        syst_event_weight /= (m_sumOfWeights);
-
-        syst_event_weight *= **m_weightSystematicsFloats.at(syst);
-    }
-    else if (syst.find("leptonSF")!=std::string::npos){
+/*    else if (syst.find("leptonSF")!=std::string::npos){
         // leptonSF event weight
         syst_event_weight  = (**m_weight_pileup) * (**m_weight_mc);
         syst_event_weight *= m_weight_btag_default;
@@ -664,7 +657,7 @@ double Event::getSystEventWeight( const std::string &syst, const int weightIndex
         cma::WARNING("EVENT : Returning a weight of 1.0. ");
         syst_event_weight = 1.0;
     }
-
+*/
     return syst_event_weight;
 }
 
@@ -701,10 +694,10 @@ void Event::deepLearningPrediction(){
 
 /*** RETURN WEIGHTS ***/
 float Event::weight_mc(){
-    return **m_weight_mc;
+    return 1.0; //**m_weight_mc;
 }
 float Event::weight_pileup(){
-    return **m_weight_pileup;
+    return 1.0; //**m_weight_pileup;
 }
 
 float Event::weight_btag(const std::string &wkpt){
@@ -757,7 +750,7 @@ void Event::truth(){
 void Event::finalize(){
     // delete variables
     cma::DEBUG("EVENT : Finalize() ");
-    delete m_dileptonTtbar;
+    //delete m_dileptonTtbar;
     delete m_eventNumber;
     delete m_runNumber;
     delete m_lumiblock;
@@ -808,28 +801,24 @@ void Event::finalize(){
     delete m_met_met;          // met_Pt
     delete m_met_phi;          // met_Phi
 
-    // Event info 
-    delete m_eventNumber;
-    delete m_runNumber;
-    delete m_lumiblock;
-
+/*
     delete m_HLT_Ele45_WPLoose_Gsf;
     delete m_HLT_Mu50;
     delete m_HLT_TkMu50;
-
+*/
     if (m_isMC){
-      delete m_weight_mc;
-      delete m_weight_pileup;
-      delete m_weight_pileup_UP;
-      delete m_weight_pileup_DOWN;
+      //delete m_weight_mc;
+      //delete m_weight_pileup;
+      //delete m_weight_pileup_UP;
+      //delete m_weight_pileup_DOWN;
 
       if (m_config->useTruth()){
-        delete m_mc_ht;
+/*        delete m_mc_ht;
 
-        delete m_truth_jet_pt;           // jetAK4CHS_GenJetPt
-        delete m_truth_jet_eta;          // jetAK4CHS_GenJetEta
-        delete m_truth_jet_phi;          // jetAK4CHS_GenJetPhi
-        delete m_truth_jet_e;            // jetAK4CHS_GenJetCharge
+        delete m_truth_jet_pt;
+        delete m_truth_jet_eta;
+        delete m_truth_jet_phi;
+        delete m_truth_jet_e;
 
         delete m_truth_ljet_pt;
         delete m_truth_ljet_eta;
@@ -840,7 +829,7 @@ void Event::finalize(){
         delete m_truth_ljet_subjet0_bdisc;
         delete m_truth_ljet_subjet1_charge;
         delete m_truth_ljet_subjet1_bdisc;
-      } // end useTruth
+*/      } // end useTruth
     } // end isMC
 
     return;

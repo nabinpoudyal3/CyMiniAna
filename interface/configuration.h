@@ -160,7 +160,7 @@ class configuration {
     // type of analysis
     bool m_isZeroLeptonAnalysis;
     bool m_isOneLeptonAnalysis;
-    bool m_isTwoleptonAnalysis;
+    bool m_isTwoLeptonAnalysis;
 
     // object declarations
     bool m_useTruth;

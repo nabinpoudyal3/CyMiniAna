@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
 
             // check that the ttree exists in this file before proceeding
             if (std::find(fileKeys.begin(), fileKeys.end(), treename) == fileKeys.end()){
-                cma::INFO("SKIM : TTree "+treename+" is not present in this file, continuing to next TTree");
+                cma::INFO("RUN : TTree "+treename+" is not present in this file, continuing to next TTree");
                 continue;
             }
 
