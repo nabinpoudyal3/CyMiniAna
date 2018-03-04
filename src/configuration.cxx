@@ -28,8 +28,6 @@ configuration::configuration(const std::string &configFile) :
   m_useLeptons(false),
   m_useLargeRJets(false),
   m_useNeutrinos(false),
-  m_useFlags(false),
-  m_useTtbar(false),
   m_input_selection("SetMe"),
   m_selection("SetMe"),
   m_cutsfile("SetMe"),
@@ -49,7 +47,6 @@ configuration::configuration(const std::string &configFile) :
   m_dnnFile("SetMe"),
   m_dnnKey("SetMe"),
   m_doRecoEventLoop(false),
-  m_doTruthEventLoop(false),
   m_matchTruthToReco(true),
   m_jet_btag_wkpt("SetMe"),
   m_calcWeightSystematics(false),
@@ -151,8 +148,6 @@ void configuration::initialize() {
     m_useLeptons       = cma::str2bool( getConfigOption("useLeptons") );
     m_useLargeRJets    = cma::str2bool( getConfigOption("useLargeRJets") );
     m_useNeutrinos     = cma::str2bool( getConfigOption("useNeutrinos") );
-    m_useFlags         = cma::str2bool( getConfigOption("useFlags") );
-    m_useTtbar         = cma::str2bool( getConfigOption("useTtbar") );
     m_makeNewFile      = cma::str2bool( getConfigOption("makeNewFile") );
     m_makeHistograms   = cma::str2bool( getConfigOption("makeHistograms") );
     m_makeEfficiencies = cma::str2bool( getConfigOption("makeEfficiencies") );
@@ -160,7 +155,6 @@ void configuration::initialize() {
     m_dnnKey           = getConfigOption("dnnKey");
     m_getDNN           = cma::str2bool( getConfigOption("getDNN") );
     m_doRecoEventLoop  = cma::str2bool( getConfigOption("doRecoEventLoop") );
-    m_doTruthEventLoop = cma::str2bool( getConfigOption("doTruthEventLoop") );
     m_matchTruthToReco = true;  // not needed in this analysis (so it's not a config option) but here in case we do later
     m_kinematicReco   = cma::str2bool( getConfigOption("kinematicReco") );
     m_NJetSmear        = std::stoi( getConfigOption("NJetSmear") );
@@ -396,14 +390,6 @@ bool configuration::useLargeRJets(){
 
 bool configuration::useNeutrinos(){
     return m_useNeutrinos;
-}
-
-bool configuration::useFlags(){
-    return m_useFlags;
-}
-
-bool configuration::useTtbar(){
-    return m_useTtbar;
 }
 
 std::string configuration::configFileName(){

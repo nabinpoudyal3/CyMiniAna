@@ -49,8 +49,6 @@ class configuration {
     virtual bool useLeptons();
     virtual bool useLargeRJets();
     virtual bool useTruth();
-    virtual bool useFlags();
-    virtual bool useTtbar();
 
     std::string jet_btagWkpt();
     std::vector<std::string> btagWkpts();
@@ -114,7 +112,6 @@ class configuration {
 
     // Reco/Truth event loops
     bool doRecoEventLoop();
-    bool doTruthEventLoop();
     bool matchTruthToReco();
     void setMatchTruthToReco(bool truthToReco);
 
@@ -167,8 +164,6 @@ class configuration {
     bool m_useLeptons;
     bool m_useLargeRJets;
     bool m_useNeutrinos;
-    bool m_useFlags;
-    bool m_useTtbar;
 
     // luminosity
     double m_LUMI      = 36074.56; // 2015+2016 luminosity
@@ -199,7 +194,6 @@ class configuration {
     std::string m_dnnFile;
     std::string m_dnnKey;
     bool m_doRecoEventLoop;
-    bool m_doTruthEventLoop;
     bool m_matchTruthToReco;
 
     std::string m_jet_btag_wkpt;   // "L","M","T"
@@ -292,7 +286,6 @@ class configuration {
              {"useLargeRJets",         "false"},
              {"useNeutrinos",          "false"},
              {"useTruth",              "false"},
-             {"useFlags",              "false"},
              {"jet_btag_wkpt",         "M"},
              {"makeNewFile",           "false"},
              {"makeHistograms",        "false"},
@@ -309,6 +302,7 @@ class configuration {
              {"cutsfile",              "examples/config/cuts_example.txt"},
              {"inputfile",             "examples/config/miniSL_ALLfiles.txt"},
              {"treenames",             "examples/config/treenames_nominal"},
+             {"metadataFile",          "config/sampleMetaData.txt"},
              {"sumWeightsFiles",       "examples/config/miniSL_ALLMCFiles.txt"},
              {"verboseLevel",          "INFO"},
              {"dnnFile",               "config/keras_ttbar_DNN.json"},

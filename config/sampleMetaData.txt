@@ -1,0 +1,2 @@
+# Primary Dataset XSection sumWeights KFactor NEvents
+TT_TuneCUETP8M1_13TeV-powheg-pythia8 87.310 79092400.000 1.000
