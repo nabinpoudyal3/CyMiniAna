@@ -4,7 +4,7 @@ eos_path /store/user/lpctop/ttbarAC/flatNtuples/test/$TODAY
 files config/listOfBatchFiles.txt
 username demarley
 executable run
-test True
+test False
 submit True
 verbose True
 config config/cmaConfig.txt

@@ -23,7 +23,10 @@ tar -xf %(cmsRelease)s.tgz
 rm %(cmsRelease)s.tgz
 
 ## copy transferred data
-mv batch %(cmsRelease)s/src/Analysis/CyMiniAna/
+if (! -d %(cmsRelease)s/src/Analysis/CyMiniAna/batch/ ) then
+    mkdir %(cmsRelease)s/src/Analysis/CyMiniAna/batch/
+endif
+mv batch/* %(cmsRelease)s/src/Analysis/CyMiniAna/batch/
 
 ## Setup CMSSW environment
 setenv SCRAM_ARCH slc6_amd64_gcc530
