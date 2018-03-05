@@ -153,8 +153,11 @@ void histogrammer::bookHists( std::string name ){
         init_hist("ljet_tau32_"+name,   100,  0.0,    1.0);
         init_hist("ljet_subjet0_bdisc_"+name, 100, 0.0, 1.0);
         init_hist("ljet_subjet1_bdisc_"+name, 100, 0.0, 1.0);
-        init_hist("ljet_subjet0_charge_"+name, 100, -5.0, 5.0);
+        init_hist("ljet_subjet0_charge_"+name, 500, -5.0, 5.0);
         init_hist("ljet_subjet1_charge_"+name, 500, -5.0, 5.0);
+
+        init_hist("ljet_subjet0_charge_bdisc_"+name, 500,-5.0,5.0, 100,0.0,1.0);  // charge vs bdisc (charge=x-axis)
+        init_hist("ljet_subjet1_charge_bdisc_"+name, 500,-5.0,5.0, 100,0.0,1.0);  // charge vs bdisc (charge=x-axis)
 
         init_hist("ljet_pt_eta_"+name,    200,  0.0, 2000.0,  50, -2.5, 2.5);  // pt vs eta (pt=x-axis)
         init_hist("ljet_pt_SDmass_"+name, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
@@ -307,6 +310,30 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
         }
     }
 
+
+    if (m_useLjets){
+        for (const auto& ljet : ljets){
+            fill("ljet_pt_"+name,    ljet.p4.Pt(),  event_weight);
+            fill("ljet_eta_"+name,   ljet.p4.Eta(), event_weight);
+            fill("ljet_phi_"+name,   ljet.p4.Phi(), event_weight);
+            fill("ljet_SDmass_"+name,ljet.softDropMass, event_weight);
+            fill("ljet_tau1_"+name,  ljet.tau1,  event_weight);
+            fill("ljet_tau2_"+name,  ljet.tau2,  event_weight);
+            fill("ljet_tau3_"+name,  ljet.tau3,  event_weight);
+            fill("ljet_tau21_"+name, ljet.tau21, event_weight);
+            fill("ljet_tau32_"+name, ljet.tau32, event_weight);
+            fill("ljet_subjet0_bdisc_"+name, ljet.subjet0_bdisc, event_weight);
+            fill("ljet_subjet1_bdisc_"+name, ljet.subjet1_bdisc, event_weight);
+            fill("ljet_subjet0_charge_"+name,ljet.subjet0_charge,event_weight);
+            fill("ljet_subjet1_charge_"+name,ljet.subjet1_charge,event_weight);
+
+            fill("ljet_subjet0_charge_bdisc_"+name, ljet.subjet0_charge, ljet.subjet0_bdisc, event_weight);
+            fill("ljet_subjet1_charge_bdisc_"+name, ljet.subjet1_charge, ljet.subjet1_bdisc, event_weight);
+
+            fill("ljet_pt_eta_"+name,   ljet.p4.Pt(), ljet.p4.Eta(), event_weight);
+            fill("ljet_pt_SDmass_"+name,ljet.p4.Pt(), ljet.softDropMass, event_weight);
+        }
+    }
 
     if (m_useLeptons){
         cma::DEBUG("HISTOGRAMMER : Fill leptons");

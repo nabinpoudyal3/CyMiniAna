@@ -73,10 +73,10 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau1");
       m_ljet_tau2   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau2");
       m_ljet_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau3");
-      m_ljet_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8Charge");
-      m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8chargeSubjet1");
+      m_ljet_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge");
+      m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8ChargeSubjet1");
       m_ljet_subjet0_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8bDiscSubjet1");
-      m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8chargeSubjet2");
+      m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8ChargeSubjet2");
       m_ljet_subjet1_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8bDiscSubjet2");
 
       m_ljet_BEST_class = new TTreeReaderValue<std::vector<float>>(m_ttree,"BESTclass");
@@ -311,12 +311,7 @@ void Event::execute(Long64_t entry){
     // ------------- //
 
     // Ttbar Reconstruction
-    std::vector<Jet> ttbar_jets;
-    for (const auto& i : m_jets) ttbar_jets.push_back(i);
-    std::vector<Ljet> ttbar_ljets;
-    for (const auto& i : m_ljets) ttbar_ljets.push_back(i);
-
-    m_ttbarRecoTool->execute(ttbar_jets,ttbar_ljets);
+    m_ttbarRecoTool->execute(m_jets,m_ljets);
 //    m_ttbar = m_ttbarRecoTool->tops();
 
     cma::DEBUG("EVENT : Setup Event ");
@@ -773,7 +768,6 @@ void Event::finalize(){
       delete m_ljet_tau3;
       delete m_ljet_charge;
       delete m_ljet_SDmass;
-      delete m_ljet_bdisc;
       delete m_ljet_subjet0_charge;
       delete m_ljet_subjet0_bdisc;
       delete m_ljet_subjet1_charge;

@@ -1,1 +1,1 @@
-root://cmseos.fnal.gov//store/group/lpctlbsm/pilot/ttbarACFiles/ttbarAC_tree_ttbarGOOD_0.root
+root://cmseos.fnal.gov//store/group/lpctlbsm/pilot/ttbarACFiles/ttbarAC_tree_ttbar_80.root
