@@ -4,7 +4,7 @@ Last Updated:    5 November  2016
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
+Texas A&M University
 
 Bennett Magy
 bmagy@umichSPAMNOT.edu
@@ -24,6 +24,7 @@ import ROOT
 from math import fabs
 from copy import deepcopy
 from collections import OrderedDict
+
 os.environ['PATH'] = os.environ['PATH']+':/usr/texbin'+':/Library/TeX/texbin' # LaTeX support
 
 ## Setup Matplotlib Configuration ##

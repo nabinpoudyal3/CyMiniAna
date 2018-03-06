@@ -183,8 +183,13 @@ bool eventSelection::allHadDNNSelection(double cutflow_bin){
     /* Check if event passes selection */
     bool pass(false);
 
-    // cut0 :: >=2 jets 
-    if ( m_ljets.size()<2 )
+    // cut0 :: >=2 jets pT>400 GeV -- trim down the files
+    unsigned int nLjets = 0;
+    for (const auto& jet : m_ljets){
+        if (jet.p4.Pt()>400) nLjets++;
+    }
+
+    if ( nLjets<2 )     // m_ljets.size()<2
         pass = false;
     else{
         fillCutflows(cutflow_bin);
