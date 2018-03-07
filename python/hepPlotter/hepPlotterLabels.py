@@ -95,6 +95,15 @@ def variable_labels():
     variables['ljet_jet_m']      = Variable(binning=hist1d(50,0.,5000.), label=r'Large-R Jet + Small-R Jet '+_mass)
     variables['ljet_jet_deltaR'] = Variable(binning=hist1d(10,0.,5.),    label=r'$\Delta$R(Large-R Jet,Small-R Jet)')
 
+    variables['ljet_subjet_0_charge_Qpos'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 0 charge')
+    variables['ljet_subjet_0_bdisc_Qpos']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 0 b-disc.')
+    variables['ljet_subjet_1_charge_Qpos'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 1 charge')
+    variables['ljet_subjet_1_bdisc_Qpos']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 1 b-disc.')
+    variables['ljet_subjet_0_charge_Qneg'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 0 charge')
+    variables['ljet_subjet_0_bdisc_Qneg']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 0 b-disc.')
+    variables['ljet_subjet_1_charge_Qneg'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 1 charge')
+    variables['ljet_subjet_1_bdisc_Qneg']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 1 b-disc.')
+
     variables['jet_pt']  =   Variable(binning=hist1d(10,25., 500.),  label=r'Small-R Jet p'+_T)
     variables['jet_eta'] =   Variable(binning=hist1d(10,-2.5,  2.5), label=r'Small-R Jet '+_eta)
     variables['btags_n'] =   Variable(binning=hist1d(4, -0.5,  3.5), label=r'Number of b-tags')

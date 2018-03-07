@@ -527,7 +527,7 @@ class HepPlotter(object):
 
                 if self.ratio_type=="ratio":
                     residual     = deepcopy( num_hist / den_hist )
-                    residual_err = deepcopy( np.sqrt(num_hist) / den_hist )
+                    residual_err = deepcopy( self.hists2plot[histName]['error'] / den_hist ) # proper uncertainties even for "normalized" plots
                 elif self.ratio_type == "significance":
                     residual     = deepcopy( num_hist / np.sqrt(den_hist) )
                     residual_err = [0 for _ in residual] # don't know how to estimate this
@@ -695,10 +695,12 @@ class HepPlotter(object):
 
         # modify defaults
         if self.CMSlabel == 'top right':
-            cms_stamp.ha = 'right'
+            cms_stamp.ha    = 'right'    # move text labels appropriately
+            lumi_stamp.ha   = 'right'
+            energy_stamp.ha = 'right'
         if self.dimensions==2:
-            cms_stamp.va  = 'bottom'   # change alignment for 2d labels
-            lumi_stamp.ha = 'right'
+            cms_stamp.va    = 'bottom'   # change alignment for 2d labels
+            lumi_stamp.ha   = 'right'
             energy_stamp.ha = 'right'
 
 

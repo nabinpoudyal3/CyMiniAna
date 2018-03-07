@@ -16,7 +16,9 @@ import numpy as np
 
 
 def getHistSeparation( S, B ):
-    """Compare TH1* S and B -- need same dimensions"""
+    """Compare TH1* S and B -- need same dimensions
+       Copied from : https://root.cern.ch/doc/master/MethodBase_8cxx_source.html#l02740
+    """
     separation = 0
 
     nstep  = S.GetNbinsX()
@@ -27,7 +29,7 @@ def getHistSeparation( S, B ):
     for bin in range(nstep):
         s = S.GetBinContent( bin+1 )/nS
         b = B.GetBinContent( bin+1 )/nB
-        separation += (s - b)*(s - b)/(s + b)
+        if (s+b)>0: separation += (s - b)*(s - b)/(s + b)
 
     separation *= 0.5
 
@@ -52,8 +54,7 @@ def GetSeparation2D( S, B ):
             s = S.GetBinContent( x+1,y+1 )/integral_s
             b = B.GetBinContent( x+1,y+1 )/integral_b
 
-            if (s+b) > 0:
-                separation += (s - b)*(s - b)/(s + b)
+            if (s+b) > 0: separation += (s - b)*(s - b)/(s + b)
 
     separation *= 0.5
 
@@ -71,8 +72,7 @@ def getSeparation(sig,bkg):
         s = ss/nS
         b = bb/nB
         
-        if (s+b) > 0:
-            separation += (s - b)*(s - b)/(s + b)
+        if (s+b) > 0: separation += (s - b)*(s - b)/(s + b)
 
     separation *= 0.5
 
