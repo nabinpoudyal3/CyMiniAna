@@ -14,6 +14,7 @@
 // base object (consistent reference to TLorentzVector)
 struct CmaBase {
     TLorentzVector p4;
+    int isGood;
 };
 
 
@@ -64,6 +65,7 @@ struct Jet : CmaBase{
     float bdisc;
     std::map<std::string, bool> isbtagged;
     float charge;
+
     int index;       // index in vector of jets
     float radius;    // radius of jet (for truth-matching in DeltaR)
 
@@ -75,7 +77,6 @@ struct Jet : CmaBase{
 
 struct Ljet : Jet{
     // extra ljet attributes
-    int isGood;
     float tau1;
     float tau2;
     float tau3;

@@ -5,7 +5,7 @@ buildNeutrinos false
 useLargeRJets true
 useTruth false
 jet_btag_wkpt M
-makeNewFile true
+makeNewFile false
 makeHistograms true
 makeEfficiencies false
 input_selection grid

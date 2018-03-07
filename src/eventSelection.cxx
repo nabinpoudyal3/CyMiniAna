@@ -153,6 +153,23 @@ bool eventSelection::applySelection(const Event &event) {
     // add more objects as needed
 
 
+    m_NLjets = 0;
+    for (const auto& jet : m_ljets)
+        if (jet.isGood) m_NLjets++;
+
+    m_NJets = 0;
+    for (const auto& jet : m_jets)
+        if (jet.isGood) m_NJets++;
+
+    m_NElectrons = 0;
+    for (const auto& el : m_electrons)
+        if (el.isGood) m_NElectrons++;
+
+    m_NMuons = 0;
+    for (const auto& mu : m_muons)
+        if (mu.isGood) m_NMuons++;
+
+
     // Perform selections
     // -- use if/else if statements to maintain orthogonality
 
@@ -184,12 +201,7 @@ bool eventSelection::allHadDNNSelection(double cutflow_bin){
     bool pass(false);
 
     // cut0 :: >=2 jets pT>400 GeV -- trim down the files
-    unsigned int nLjets = 0;
-    for (const auto& jet : m_ljets){
-        if (jet.p4.Pt()>400) nLjets++;
-    }
-
-    if ( nLjets<2 )     // m_ljets.size()<2
+    if ( m_NLjets<2 )     // m_ljets.size()<2
         pass = false;
     else{
         fillCutflows(cutflow_bin);
@@ -210,7 +222,7 @@ bool eventSelection::zeroLeptonSelection(double cutflow_bin){
     bool pass(false);
 
     // cut0 :: No leptons
-    if ( m_electrons.size()>0 || m_muons.size()>0 )
+    if ( m_NElectrons>0 || m_NMuons>0 )
         return false;  // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin);
@@ -243,7 +255,13 @@ bool eventSelection::ejetsSelection(double cutflow_bin){
         pass = true;
     }
 
-    Electron lep = m_electrons.at(0);
+    Electron lep;
+    for (const auto& el : m_electrons) {
+        if (el.isGood){
+            lep = el;
+            break;
+        }
+    }
     float met_triangle = 1.5*m_met.p4.Pt() / 110.;
 
     // cut6 :: DeltaPhi(e,MET)
@@ -293,9 +311,7 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     bool pass(false);
 
     // cut0 :: One lepton
-    unsigned int nElectrons( m_electrons.size() );
-    unsigned int nMuons( m_muons.size() );
-    if ( nElectrons+nMuons != 1 )
+    if ( m_NElectrons+m_NMuons != 1 )
         return false;  // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin);
@@ -303,7 +319,7 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     }
 
     // cut1 :: >=1 ljets -- Assuming boosted final state
-    if ( m_ljets.size() < 1 )
+    if ( m_NLjets < 1 )
         return false;  // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin+1);
@@ -311,7 +327,7 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     }
 
     // cut2 :: >=2 jets (should have 1 AK4 near lepton & 1 AK4 inside the AK8)
-    if ( m_jets.size() < 2 )
+    if ( m_NJets < 2 )
         return false;  // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin+2);
@@ -323,11 +339,22 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     Lepton lep;
     bool ejets(false);
 
-    if (nMuons == 1)
-        lep.p4 = m_muons.at(0).p4;
+    if (m_NMuons == 1){
+        for (const auto& mu : m_muons) {
+            if (mu.isGood){
+                lep.p4 = mu.p4;
+                break;
+            }
+        }
+    }
     else{
         ejets  = false;
-        lep.p4 = m_electrons.at(0).p4;
+        for (const auto& el : m_electrons) {
+            if (el.isGood){
+                lep.p4 = el.p4;
+                break;
+            }
+        }
     }
 
     // cut3 :: DeltaR(AK4,lepton)

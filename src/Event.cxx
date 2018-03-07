@@ -345,6 +345,7 @@ void Event::initialize_jets(){
 
         jet.bdisc = (*m_jet_bdisc)->at(i);
         jet.index = i;
+        jet.isGood = (jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
 
         getBtaggedJets(jet);
 
@@ -385,7 +386,7 @@ void Event::initialize_ljets(){
         ljet.BEST_h = (*m_ljet_BEST_h)->at(i);
         ljet.BEST_class = (*m_ljet_BEST_class)->at(i);
 
-        ljet.isGood = (ljet.p4.Pt()>200. && fabs(ljet.p4.Eta())<2.4);
+        ljet.isGood = (ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && ljet.softDropMass>10.);
         ljet.index  = i;
 
         m_ljets[i] = ljet;
@@ -414,8 +415,10 @@ void Event::initialize_leptons(){
         Muon mu;
         mu.p4.SetPtEtaPhiE( (*m_mu_pt)->at(i),(*m_mu_eta)->at(i),(*m_mu_phi)->at(i),(*m_mu_e)->at(i));
 
+        mu.charge = (*m_mu_charge)->at(i);
         mu.id  = (*m_mu_id)->at(i);
         mu.iso = (*m_mu_iso)->at(i);
+        mu.isGood = (mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.1);
 
         m_muons[i] = mu;
     }
@@ -427,8 +430,10 @@ void Event::initialize_leptons(){
         Electron el;
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
 
+        el.charge = (*m_el_charge)->at(i);
         el.id  = (*m_el_id)->at(i);
         el.iso = (*m_el_iso)->at(i);
+        el.isGood = (el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1);
 
         m_electrons[i] = el;
     }
