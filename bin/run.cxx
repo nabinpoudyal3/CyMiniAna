@@ -181,6 +181,7 @@ int main(int argc, char** argv) {
                 continue;
 
             numberOfEventsToRun = (nEvents<0 || ((unsigned int)nEvents+firstEvent)>maxEntriesToRun) ? maxEntriesToRun - firstEvent : nEvents;
+            cma::INFO("RUN :      Processing "+std::to_string(numberOfEventsToRun)+" events ");
 
             // -- Event Loop -- //
             Long64_t imod = 1;                     // print to the terminal
@@ -192,7 +193,7 @@ int main(int argc, char** argv) {
 
                 // Check number of events processed against number of events to run
                 if (eventCounter+1 > numberOfEventsToRun){
-                    cma::INFO("RUN : Processed the desired number of events: "+std::to_string(eventCounter)+"/"+std::to_string(numberOfEventsToRun));
+                    cma::INFO("RUN :      Processed the desired number of events: "+std::to_string(eventCounter)+"/"+std::to_string(numberOfEventsToRun));
                     break;
                 }
 

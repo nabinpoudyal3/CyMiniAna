@@ -148,6 +148,11 @@ void histogrammer::bookHists( std::string name ){
         init_hist("ljet_phi_"+name,      64, -3.2,    3.2);
         init_hist("ljet_SDmass_"+name,  500,  0.0,  500.0);
         init_hist("ljet_charge_"+name, 1000, -5.0,    5.0);
+        init_hist("ljet_BEST_t_"+name,  100,  0.0,    1.0);
+        init_hist("ljet_BEST_w_"+name,  100,  0.0,    1.0);
+        init_hist("ljet_BEST_z_"+name,  100,  0.0,    1.0);
+        init_hist("ljet_BEST_h_"+name,  100,  0.0,    1.0);
+        init_hist("ljet_BEST_j_"+name,  100,  0.0,    1.0);
         init_hist("ljet_tau1_"+name,    200,  0.0,    2.0);
         init_hist("ljet_tau2_"+name,    200,  0.0,    2.0);
         init_hist("ljet_tau3_"+name,    200,  0.0,    2.0);
@@ -341,7 +346,13 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
             fill("ljet_phi_"+name,   ljet.p4.Phi(), event_weight);
             fill("ljet_SDmass_"+name,ljet.softDropMass, event_weight);
             fill("ljet_charge_"+name,ljet.charge,event_weight);
-            fill("ljet_tau1_"+name,  ljet.tau1,  event_weight);
+
+            fill("ljet_BEST_t_"+name,  ljet.BEST_t,  event_weight);
+            fill("ljet_BEST_w_"+name,  ljet.BEST_w,  event_weight);
+            fill("ljet_BEST_z_"+name,  ljet.BEST_z,  event_weight);
+            fill("ljet_BEST_h_"+name,  ljet.BEST_h,  event_weight);
+            fill("ljet_BEST_j_"+name,  ljet.BEST_j,  event_weight);
+
             fill("ljet_tau2_"+name,  ljet.tau2,  event_weight);
             fill("ljet_tau3_"+name,  ljet.tau3,  event_weight);
             fill("ljet_tau21_"+name, ljet.tau21, event_weight);

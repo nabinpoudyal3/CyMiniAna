@@ -88,6 +88,7 @@ struct Ljet : Jet{
     float BEST_w;
     float BEST_z;
     float BEST_h;
+    float BEST_j;
     float BEST_class;
 
     float charge;

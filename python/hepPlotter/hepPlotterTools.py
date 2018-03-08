@@ -94,7 +94,7 @@ def hist1d(nbins,bin_low,bin_high):
     @param bin_high   Upper bin edge
     """
     binsize = float(bin_high-bin_low)/nbins
-    arr     = array( [i*binsize+bin_low for i in xrange(nbins+1)] )
+    arr     = array('d', [i*binsize+bin_low for i in xrange(nbins+1)] )
     return arr
 
 

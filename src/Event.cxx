@@ -384,6 +384,7 @@ void Event::initialize_ljets(){
         ljet.BEST_w = (*m_ljet_BEST_w)->at(i);
         ljet.BEST_z = (*m_ljet_BEST_z)->at(i);
         ljet.BEST_h = (*m_ljet_BEST_h)->at(i);
+        ljet.BEST_j = (*m_ljet_BEST_j)->at(i);
         ljet.BEST_class = (*m_ljet_BEST_class)->at(i);
 
         ljet.isGood = (ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && ljet.softDropMass>10.);
