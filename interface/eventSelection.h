@@ -100,6 +100,11 @@ class eventSelection{
     MET m_met;
     float m_ht;
     float m_st;
+
+    unsigned int m_NElectrons;
+    unsigned int m_NMuons;
+    unsigned int m_NJets;
+    unsigned int m_NLjets;
 };
 
 #endif

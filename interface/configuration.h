@@ -48,10 +48,7 @@ class configuration {
     virtual bool useNeutrinos();
     virtual bool useLeptons();
     virtual bool useLargeRJets();
-    virtual bool useRCJets();
     virtual bool useTruth();
-    virtual bool useFlags();
-    virtual bool useTtbar();
 
     std::string jet_btagWkpt();
     std::vector<std::string> btagWkpts();
@@ -84,7 +81,7 @@ class configuration {
     std::vector<std::string> qcdSelections();
     std::string cutsfile();
     std::string outputFilePath();
-    std::string customFileEnding();
+    std::string customDirectory();
     std::string configFileName();
     std::string getAbsolutePath();
     int nEventsToProcess();
@@ -115,7 +112,6 @@ class configuration {
 
     // Reco/Truth event loops
     bool doRecoEventLoop();
-    bool doTruthEventLoop();
     bool matchTruthToReco();
     void setMatchTruthToReco(bool truthToReco);
 
@@ -167,10 +163,7 @@ class configuration {
     bool m_useJets;
     bool m_useLeptons;
     bool m_useLargeRJets;
-    bool m_useRCJets;
     bool m_useNeutrinos;
-    bool m_useFlags;
-    bool m_useTtbar;
 
     // luminosity
     double m_LUMI      = 36074.56; // 2015+2016 luminosity
@@ -190,7 +183,7 @@ class configuration {
     int m_nEventsToProcess;
     unsigned long long m_firstEvent;
     std::string m_outputFilePath;
-    std::string m_customFileEnding;
+    std::string m_customDirectory;
     bool m_makeNewFile;
     bool m_makeHistograms;
     bool m_makeEfficiencies;
@@ -201,7 +194,6 @@ class configuration {
     std::string m_dnnFile;
     std::string m_dnnKey;
     bool m_doRecoEventLoop;
-    bool m_doTruthEventLoop;
     bool m_matchTruthToReco;
 
     std::string m_jet_btag_wkpt;   // "L","M","T"
@@ -292,10 +284,8 @@ class configuration {
              {"useJets",               "false"},
              {"useLeptons",            "false"},
              {"useLargeRJets",         "false"},
-             {"useRCJets",             "false"},
              {"useNeutrinos",          "false"},
              {"useTruth",              "false"},
-             {"useFlags",              "false"},
              {"jet_btag_wkpt",         "M"},
              {"makeNewFile",           "false"},
              {"makeHistograms",        "false"},
@@ -305,13 +295,14 @@ class configuration {
              {"input_selection",       "grid"},
              {"selection",             "example"},
              {"output_path",           "./"},
-             {"customFileEnding",      ""},
+             {"customDirectory",      ""},
              {"calcWeightSystematics", "false"},
              {"weightSystematicsFile",       "config/weightSystematics.txt"},
              {"weightVectorSystematicsFile", "config/weightVectorSystematics.txt"},
              {"cutsfile",              "examples/config/cuts_example.txt"},
              {"inputfile",             "examples/config/miniSL_ALLfiles.txt"},
              {"treenames",             "examples/config/treenames_nominal"},
+             {"metadataFile",          "config/sampleMetaData.txt"},
              {"sumWeightsFiles",       "examples/config/miniSL_ALLMCFiles.txt"},
              {"verboseLevel",          "INFO"},
              {"dnnFile",               "config/keras_ttbar_DNN.json"},

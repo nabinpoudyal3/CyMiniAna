@@ -4,8 +4,9 @@ Last Updated:   21 September 2016
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
+Texas A&M University
 -----
+
 Steering script for making Data/MC plots.
 Primarily want to do this from histograms (faster to make those in C++ & 
 we feed histograms into the limit-setting framework).
@@ -13,16 +14,17 @@ we feed histograms into the limit-setting framework).
 This can be modified or extended by whomever.
 
 To run:
-python python/runDataMC.py --files <files.txt> --hists <histogramNames.txt> -o <output_path>
+ python python/runDataMC.py --files <files.txt> --hists <histogramNames.txt> -o <output_path>
 """
 import sys
 import ROOT
 from argparse import ArgumentParser
 
-from hepPlotterDataMC import HepPlotterDataMC
-from hepPlotterSystematics import HepPlotterSystematics
-import hepPlotterTools as hpt
-import hepPlotterLabels as hpl
+from Analysis.CyMiniAna.hepPlotter.hepPlotterDataMC import HepPlotterDataMC
+from Analysis.CyMiniAna.hepPlotter.hepPlotterSystematics import HepPlotterSystematics
+import Analysis.CyMiniAna.hepPlotter.hepPlotterTools as hpt
+import Analysis.CyMiniAna.hepPlotter.hepPlotterLabels as hpl
+
 
 parser = ArgumentParser(description="DataMC Plotter")
 
@@ -49,8 +51,9 @@ files      = open(listOfFiles,"r").readlines()
 histograms = open(listOfHists,"r").readlines()
 detectorSystematics = open(listOfDetectorSysts,"r").readlines()
 
+
 # setup for examples choices
-x_labels = hpl.text_dicts()['variables']
+x_labels = hpl.variable_labels()
 rebins   = {"leptonicT_m":40,"ST":200}
 
 # For DataMC plots, one histogram with each sample goes on a single plot
@@ -77,16 +80,17 @@ for histogram in histograms:
     hist.binning     = 20
     hist.rebin       = rebins[histogramName] # rebin per histogram
     hist.logplot     = False       # plot on log scale
-    hist.x_label     = x_labels[histogramName]["label"]
+    hist.x_label     = x_labels[histogramName].label
     hist.y_label     = "Events"
     hist.y_ratio_label = "Data/Pred."
-    hist.lumi          = '14.7'   # in /fb
-    hist.ATLASlabel    = 'top left'  # 'top left', 'top right'; hack code for something else
+    hist.lumi         = '1'           # in /fb
+    hist.CMSlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
+    hist.CMSlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
     hist.numLegendColumns = 1
-    hist.ATLASlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
     hist.format           = 'png'       # file format for saving image
     hist.saveAs           = outpath+"datamc_"+histogramName # save figure with name
-#    hist.extra_text.Add("text here",coords=[x,y]) # see hepPlotter for exact use of extra_text (PlotText() objects)
+
+    hist.extra_text.Add("Extra text",coords=[0.5,0.5]) # see hepPlotterLabels.py for exact use of extra_text (PlotText() objects)
 
     hist.initialize()
 

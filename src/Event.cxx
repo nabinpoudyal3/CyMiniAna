@@ -73,10 +73,10 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau1");
       m_ljet_tau2   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau2");
       m_ljet_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau3");
-      m_ljet_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8Charge");
-      m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8chargeSubjet1");
+      m_ljet_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge");
+      m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8ChargeSubjet1");
       m_ljet_subjet0_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8bDiscSubjet1");
-      m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8chargeSubjet2");
+      m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8ChargeSubjet2");
       m_ljet_subjet1_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8bDiscSubjet2");
 
       m_ljet_BEST_class = new TTreeReaderValue<std::vector<float>>(m_ttree,"BESTclass");
@@ -311,12 +311,7 @@ void Event::execute(Long64_t entry){
     // ------------- //
 
     // Ttbar Reconstruction
-    std::vector<Jet> ttbar_jets;
-    for (const auto& i : m_jets) ttbar_jets.push_back(i);
-    std::vector<Ljet> ttbar_ljets;
-    for (const auto& i : m_ljets) ttbar_ljets.push_back(i);
-
-    m_ttbarRecoTool->execute(ttbar_jets,ttbar_ljets);
+    m_ttbarRecoTool->execute(m_jets,m_ljets);
 //    m_ttbar = m_ttbarRecoTool->tops();
 
     cma::DEBUG("EVENT : Setup Event ");
@@ -350,6 +345,7 @@ void Event::initialize_jets(){
 
         jet.bdisc = (*m_jet_bdisc)->at(i);
         jet.index = i;
+        jet.isGood = (jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
 
         getBtaggedJets(jet);
 
@@ -388,9 +384,10 @@ void Event::initialize_ljets(){
         ljet.BEST_w = (*m_ljet_BEST_w)->at(i);
         ljet.BEST_z = (*m_ljet_BEST_z)->at(i);
         ljet.BEST_h = (*m_ljet_BEST_h)->at(i);
+        ljet.BEST_j = (*m_ljet_BEST_j)->at(i);
         ljet.BEST_class = (*m_ljet_BEST_class)->at(i);
 
-        ljet.isGood = (ljet.p4.Pt()>200. && fabs(ljet.p4.Eta())<2.4);
+        ljet.isGood = (ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && ljet.softDropMass>10.);
         ljet.index  = i;
 
         m_ljets[i] = ljet;
@@ -419,8 +416,10 @@ void Event::initialize_leptons(){
         Muon mu;
         mu.p4.SetPtEtaPhiE( (*m_mu_pt)->at(i),(*m_mu_eta)->at(i),(*m_mu_phi)->at(i),(*m_mu_e)->at(i));
 
+        mu.charge = (*m_mu_charge)->at(i);
         mu.id  = (*m_mu_id)->at(i);
         mu.iso = (*m_mu_iso)->at(i);
+        mu.isGood = (mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.1);
 
         m_muons[i] = mu;
     }
@@ -432,8 +431,10 @@ void Event::initialize_leptons(){
         Electron el;
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
 
+        el.charge = (*m_el_charge)->at(i);
         el.id  = (*m_el_id)->at(i);
         el.iso = (*m_el_iso)->at(i);
+        el.isGood = (el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1);
 
         m_electrons[i] = el;
     }
@@ -773,7 +774,6 @@ void Event::finalize(){
       delete m_ljet_tau3;
       delete m_ljet_charge;
       delete m_ljet_SDmass;
-      delete m_ljet_bdisc;
       delete m_ljet_subjet0_charge;
       delete m_ljet_subjet0_bdisc;
       delete m_ljet_subjet1_charge;

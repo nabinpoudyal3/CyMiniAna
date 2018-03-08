@@ -27,10 +27,7 @@ configuration::configuration(const std::string &configFile) :
   m_useJets(false),
   m_useLeptons(false),
   m_useLargeRJets(false),
-  m_useRCJets(false),
   m_useNeutrinos(false),
-  m_useFlags(false),
-  m_useTtbar(false),
   m_input_selection("SetMe"),
   m_selection("SetMe"),
   m_cutsfile("SetMe"),
@@ -40,7 +37,7 @@ configuration::configuration(const std::string &configFile) :
   m_nEventsToProcess(0),
   m_firstEvent(0),
   m_outputFilePath("SetMe"),
-  m_customFileEnding("SetMe"),
+  m_customDirectory("SetMe"),
   m_makeNewFile(false),
   m_makeHistograms(false),
   m_sumWeightsFiles("SetMe"),
@@ -50,7 +47,6 @@ configuration::configuration(const std::string &configFile) :
   m_dnnFile("SetMe"),
   m_dnnKey("SetMe"),
   m_doRecoEventLoop(false),
-  m_doTruthEventLoop(false),
   m_matchTruthToReco(true),
   m_jet_btag_wkpt("SetMe"),
   m_calcWeightSystematics(false),
@@ -144,17 +140,14 @@ void configuration::initialize() {
 
     m_jet_btag_wkpt    = getConfigOption("jet_btag_wkpt");
     m_outputFilePath   = getConfigOption("output_path");
-    m_customFileEnding = getConfigOption("customFileEnding");
+    m_customDirectory  = getConfigOption("customDirectory");
     m_cutsfile         = getConfigOption("cutsfile");
     m_sumWeightsFiles  = getConfigOption("sumWeightsFiles");
     m_useTruth         = cma::str2bool( getConfigOption("useTruth") );
     m_useJets          = cma::str2bool( getConfigOption("useJets") );
     m_useLeptons       = cma::str2bool( getConfigOption("useLeptons") );
     m_useLargeRJets    = cma::str2bool( getConfigOption("useLargeRJets") );
-    m_useRCJets        = cma::str2bool( getConfigOption("useRCJets") );
     m_useNeutrinos     = cma::str2bool( getConfigOption("useNeutrinos") );
-    m_useFlags         = cma::str2bool( getConfigOption("useFlags") );
-    m_useTtbar         = cma::str2bool( getConfigOption("useTtbar") );
     m_makeNewFile      = cma::str2bool( getConfigOption("makeNewFile") );
     m_makeHistograms   = cma::str2bool( getConfigOption("makeHistograms") );
     m_makeEfficiencies = cma::str2bool( getConfigOption("makeEfficiencies") );
@@ -162,7 +155,6 @@ void configuration::initialize() {
     m_dnnKey           = getConfigOption("dnnKey");
     m_getDNN           = cma::str2bool( getConfigOption("getDNN") );
     m_doRecoEventLoop  = cma::str2bool( getConfigOption("doRecoEventLoop") );
-    m_doTruthEventLoop = cma::str2bool( getConfigOption("doTruthEventLoop") );
     m_matchTruthToReco = true;  // not needed in this analysis (so it's not a config option) but here in case we do later
     m_kinematicReco   = cma::str2bool( getConfigOption("kinematicReco") );
     m_NJetSmear        = std::stoi( getConfigOption("NJetSmear") );
@@ -396,20 +388,8 @@ bool configuration::useLargeRJets(){
     return m_useLargeRJets;
 }
 
-bool configuration::useRCJets(){
-    return m_useRCJets;
-}
-
 bool configuration::useNeutrinos(){
     return m_useNeutrinos;
-}
-
-bool configuration::useFlags(){
-    return m_useFlags;
-}
-
-bool configuration::useTtbar(){
-    return m_useTtbar;
 }
 
 std::string configuration::configFileName(){
@@ -444,8 +424,8 @@ std::string configuration::outputFilePath(){
     return m_outputFilePath;
 }
 
-std::string configuration::customFileEnding(){
-    return m_customFileEnding;
+std::string configuration::customDirectory(){
+    return m_customDirectory;
 }
 
 double configuration::LUMI(){

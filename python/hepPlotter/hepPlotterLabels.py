@@ -56,6 +56,7 @@ def sample_labels():
     samples['data']      = Sample(label=r'Data',color='black')
 
     # Signal
+    samples['signal']      = Sample(label='Signal',color='Reds')
     samples['zprime_1000'] = Sample(label=r'm$_{\text{Z}^\prime}$=1.0 TeV',color='r')
 
     # Generic
@@ -70,7 +71,7 @@ def variable_labels():
     """Dictionaries that contain Variables objects."""
     _phi  = r'$\phi$'
     _eta  = r'$\eta$'
-    _T    = r'$_{\text{T}}$ [GeV]'
+    _T    = r'$_\text{T}$ [GeV]'
     _mass = 'Mass [GeV]'
 
     variables = {}
@@ -94,6 +95,15 @@ def variable_labels():
     variables['ljet_jet_m']      = Variable(binning=hist1d(50,0.,5000.), label=r'Large-R Jet + Small-R Jet '+_mass)
     variables['ljet_jet_deltaR'] = Variable(binning=hist1d(10,0.,5.),    label=r'$\Delta$R(Large-R Jet,Small-R Jet)')
 
+    variables['ljet_subjet_0_charge_Qpos'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 0 charge')
+    variables['ljet_subjet_0_bdisc_Qpos']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 0 b-disc.')
+    variables['ljet_subjet_1_charge_Qpos'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 1 charge')
+    variables['ljet_subjet_1_bdisc_Qpos']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 1 b-disc.')
+    variables['ljet_subjet_0_charge_Qneg'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 0 charge')
+    variables['ljet_subjet_0_bdisc_Qneg']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 0 b-disc.')
+    variables['ljet_subjet_1_charge_Qneg'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 1 charge')
+    variables['ljet_subjet_1_bdisc_Qneg']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 1 b-disc.')
+
     variables['jet_pt']  =   Variable(binning=hist1d(10,25., 500.),  label=r'Small-R Jet p'+_T)
     variables['jet_eta'] =   Variable(binning=hist1d(10,-2.5,  2.5), label=r'Small-R Jet '+_eta)
     variables['btags_n'] =   Variable(binning=hist1d(4, -0.5,  3.5), label=r'Number of b-tags')
@@ -107,7 +117,7 @@ def variable_labels():
     variables['nu_pt']   = Variable(binning=hist1d(20, 25.,  600.),  label=r'$\nu$ p'+_T)
 
     variables['HT']      = Variable(binning=hist1d(50,0.,5000.), label=r'H'+_T)
-    variables['mtw']     = Variable(binning=hist1d(12,  0.,  120.),    label=r'$\mathsf{m_T^W}$ [GeV]')
+    variables['mtw']     = Variable(binning=hist1d(12,  0.,  120.),    label=r'$\text{m_T^W}$ [GeV]')
     variables['mass_lb'] = Variable(binning=hist1d(32,  0.,  800.),label=r'm$_{\ell\text{b}}$')
     variables['met_met'] = Variable(binning=hist1d(29, 20.,  500.),label=r'E$_{\text{T}}^{\text{miss}}$ [GeV]')
     variables['met_phi'] = Variable(binning=hist1d(29, 20.,  500.),label=r'$\phi^{\text{miss}}$ [GeV]')
@@ -197,7 +207,7 @@ class CMSStamp(Text):
     """Class for writing official CMS name & plot type (Simulation, Internal, etc.) on plot"""
     def __init__(self,label_status="Internal"):
         Text.__init__(self)
-        self.text = r"\textbf{CMS} {\Large \textit{%s}}"%(label_status)    # CMS style
+        self.text = r"\textbf{CMS} {\Large \textit{%s}}"%(label_status)
         self.fontsize = 18
         self.ha = 'left'
         self.va = 'top'

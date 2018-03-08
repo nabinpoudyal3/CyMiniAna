@@ -4,8 +4,9 @@ Last Updated:    3 September 2016
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
+Texas A&M University
 -----
+
 Steering script for making simple efficiency plots.
 Primarily want to do this from root histograms/tefficiencies (faster to make those in c++).
 I don't recommend passing efficiency-type data from non-TEfficiency objects, but
@@ -77,8 +78,8 @@ for file in files:
 #    hist.extra_text.Add(extraText[key],coords=[x,y]) # see hepPlotter for exact use of extra_text (PlotText() objects)
     hist.format      = 'png'       # file format for saving image
     hist.saveAs      = outpath+"eff_"+filename # save figure with name
-    hist.ATLASlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
-    hist.ATLASlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
+    hist.CMSlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
+    hist.CMSlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
 
     hist.initialize()
 
