@@ -50,6 +50,7 @@ class miniTree {
 
     // new branches defined here 
     float m_dnn;
+    std::vector<float> m_BEST_t_j;
     std::vector<unsigned int> m_passSelection;
 };
 

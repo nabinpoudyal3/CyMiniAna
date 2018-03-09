@@ -366,10 +366,12 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
 
     // cut4 :: DeltaR(AK8,lepton)
     //         >=1 AK8 jet in the opposite hemisphere from the electron, R(l,jet) > pi/2
+    //         mark any AK8 jets that don't meet this requirement as "isGood=false"
     bool DR_ak8_lep(false);
-    for (const auto& ljet : m_ljets){
+    for (auto& ljet : m_ljets){
         float dr = ljet.p4.DeltaR(lep.p4);
         if (dr > M_PI*0.5) DR_ak8_lep = true;
+        else ljet.isGood = false;               // AK8 is not "good" and can't be the "top candidate"
     }
 
     if (!DR_ak8_lep)

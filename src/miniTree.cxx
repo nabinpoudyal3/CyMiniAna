@@ -42,6 +42,7 @@ void miniTree::initialize(TTree* t, TFile& outputFile) {
         ss++;
     }
 
+    m_ttree->Branch( "BESTProb_t_j", &m_BEST_t_j );
     if ( m_config->getDNN() )
         m_ttree->Branch( "DNN", &m_dnn, "DNN/F" );
 
@@ -59,10 +60,16 @@ void miniTree::saveEvent(Event& event, const std::vector<unsigned int>& evtsel_d
     m_oldTTree->GetEntry( event.entry() );  // make sure the original values are loaded for this event
                                             // otherwise only the branches accessed in Event are copied (!?)
 
-    // set the new values
-//    std::vector<Ljet> ljets = event.ljets();
-//    for (const auto& ljet : ljets)
-//        m_dnn = ljet.dnn;
+    // load physics information
+    std::vector<Ljet> ljets = event.ljets();
+
+    // AK8 -- BEST value comparing top and qcd
+    m_BEST_t_j.clear();
+    for (const auto& ljet : ljets){
+        m_BEST_t_j.push_back( ljet.BEST_t / (ljet.BEST_t+ljet.BEST_j) );
+        //m_dnn = ljet.dnn;
+    }
+
 
     // set all decisions to false if they aren't passed here
     unsigned int n_sels = m_selections.size();

@@ -237,13 +237,14 @@ int main(int argc, char** argv) {
                 // can do separate cutflows by creating multiple instances of eventSelection()
                 cma::DEBUG("RUN : Apply event selection");
                 std::vector<unsigned int> passEvents;
+                unsigned int passedEvents(0);
                 for (unsigned int ss=0,size=selections.size();ss<size;ss++){
                     passEvent = evtSels.at(ss).applySelection(event);
-                    if (selections.at(ss).compare("mujets")==0 && passEvent) cma::INFO("RUN : Selection "+selections.at(ss)+" decision = "+std::to_string(passEvent));
                     passEvents.push_back( passEvent );
+                    passedEvents += passEvent;
                 }
 
-                if (passEvent){
+                if (passedEvents>0){
                     // at least 1 selection passed
                     // share information on which selection passed in case these classes
                     // want to use that information, e.g., special branch or histogram name

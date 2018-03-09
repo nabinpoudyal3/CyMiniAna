@@ -153,6 +153,7 @@ void histogrammer::bookHists( std::string name ){
         init_hist("ljet_BEST_z_"+name,  100,  0.0,    1.0);
         init_hist("ljet_BEST_h_"+name,  100,  0.0,    1.0);
         init_hist("ljet_BEST_j_"+name,  100,  0.0,    1.0);
+        init_hist("ljet_BEST_t_j_"+name,100,  0.0,    1.0);
         init_hist("ljet_tau1_"+name,    200,  0.0,    2.0);
         init_hist("ljet_tau2_"+name,    200,  0.0,    2.0);
         init_hist("ljet_tau3_"+name,    200,  0.0,    2.0);
@@ -272,8 +273,8 @@ void histogrammer::fill( Event& event, const std::vector<unsigned int>& evtsel_d
 
     std::vector<std::string> selections = m_config->selections();
     for (unsigned int ss=0, size=selections.size(); ss<size; ss++){
-        if (!evtsel_decisions.at(ss)) continue;
         std::string sel( selections.at(ss) );
+        if (!evtsel_decisions.at(ss)) continue;
         fill( m_name+sel, event, event_weight );
     }
 
@@ -355,7 +356,9 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
             fill("ljet_BEST_z_"+name,  ljet.BEST_z,  event_weight);
             fill("ljet_BEST_h_"+name,  ljet.BEST_h,  event_weight);
             fill("ljet_BEST_j_"+name,  ljet.BEST_j,  event_weight);
+            fill("ljet_BEST_t_j_"+name,  ljet.BEST_t / (ljet.BEST_t+ljet.BEST_j),  event_weight);
 
+            fill("ljet_tau1_"+name,  ljet.tau1,  event_weight);
             fill("ljet_tau2_"+name,  ljet.tau2,  event_weight);
             fill("ljet_tau3_"+name,  ljet.tau3,  event_weight);
             fill("ljet_tau21_"+name, ljet.tau21, event_weight);
