@@ -48,7 +48,7 @@ class histogrammer {
                               const unsigned int nBinsZ, const double *zbins );
 
     /* fill histograms */
-    virtual void fill( Event& event );
+    virtual void fill( Event& event, const std::vector<unsigned int>& evtsel_decisions=std::vector<unsigned int>() );
     virtual void fill( const std::string& name, Event& event, double event_weight );
     virtual void fill( const std::string& name, const double& value, const double& weight );
     virtual void fill( const std::string& name, const double& xvalue, const double& yvalue, const double& weight );

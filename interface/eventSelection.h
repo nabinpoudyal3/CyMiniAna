@@ -32,22 +32,29 @@ class eventSelection{
     virtual ~eventSelection();
 
     // Run once at the start of the job to setup the cuts
-    virtual void initialize();                            // use cut file defined in configuration
-    virtual void initialize(const std::string &cutsfile); // use any cut file desired
+    virtual void initialize(const std::string& selection, const std::string& cutsfile);
+    virtual void initialize(const std::string &cutsfile);
     virtual void identifySelection();
 
     // Run for every tree (before the event loop)
-    void setCutflowHistograms(TH1D &cutflow, TH1D &cutflow_unweighted);
+    void setCutflowHistograms(TH1D& cutflow, TH1D& cutflow_unweighted);
 
     // Run for every event (in every systematic) that needs saving
     virtual bool applySelection(const Event& event);
 
-    // Selections put into functions (easily reference them in other cuts)
+    // -- Selections put into functions (easily reference them in other cuts)
+    // DNN selection
     bool allHadDNNSelection(double cutflow_bin);
+
+    // Allhadronic selection
     bool zeroLeptonSelection(double cutflow_bin);
+
+    // Single lepton selections
     bool oneLeptonSelection(double cutflow_bin);
-    bool ejetsSelection(double cutflow_bin);
+    bool ejetsSelection(double cutflow_bin, const Lepton& lep);
     bool mujetsSelection(double cutflow_bin);
+
+    // Dilepton selections
     bool twoLeptonSelection(double cutflow_bin);
 
     // Helper functions: Provide external access to information in this class

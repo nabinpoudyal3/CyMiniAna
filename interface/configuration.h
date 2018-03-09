@@ -77,16 +77,16 @@ class configuration {
 
     // return some values from config file
     std::string verboseLevel();
-    std::string selection();
+    std::vector<std::string> selections();
     std::vector<std::string> qcdSelections();
-    std::string cutsfile();
+    std::vector<std::string> cutsfiles();
     std::string outputFilePath();
     std::string customDirectory();
     std::string configFileName();
     std::string getAbsolutePath();
     int nEventsToProcess();
     unsigned long long firstEvent();
-    bool makeNewFile();
+    bool makeTTree();
     bool makeHistograms();
     bool makeEfficiencies();
 
@@ -172,8 +172,8 @@ class configuration {
 
     // return some values from config file
     std::string m_input_selection;
-    std::string m_selection;
-    std::string m_cutsfile;
+    std::vector<std::string> m_selections;
+    std::vector<std::string> m_cutsfiles;
     std::string m_treename;
     std::string m_filename;
     std::string m_primaryDataset;
@@ -184,7 +184,7 @@ class configuration {
     unsigned long long m_firstEvent;
     std::string m_outputFilePath;
     std::string m_customDirectory;
-    bool m_makeNewFile;
+    bool m_makeTTree;
     bool m_makeHistograms;
     bool m_makeEfficiencies;
     std::string m_sumWeightsFiles;
@@ -287,7 +287,7 @@ class configuration {
              {"useNeutrinos",          "false"},
              {"useTruth",              "false"},
              {"jet_btag_wkpt",         "M"},
-             {"makeNewFile",           "false"},
+             {"makeTTree",             "false"},
              {"makeHistograms",        "false"},
              {"makeEfficiencies",      "false"},
              {"NEvents",               "-1"},

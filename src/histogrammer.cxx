@@ -103,9 +103,9 @@ void histogrammer::initialize( TFile& outputFile, bool doSystWeights ){
     outputFile.cd();
 
 
-    // loop over treenames (typically systematic uncertainties)
-    for (const auto& treename : m_config->treeNames() )
-        bookHists( m_name+treename );
+    // loop over selections (typically only one treename)
+    for (const auto& sel : m_config->selections() )
+        bookHists( m_name+sel );
 
     // weight systematics
     if (m_isMC && m_doSystWeights){
@@ -153,6 +153,7 @@ void histogrammer::bookHists( std::string name ){
         init_hist("ljet_BEST_z_"+name,  100,  0.0,    1.0);
         init_hist("ljet_BEST_h_"+name,  100,  0.0,    1.0);
         init_hist("ljet_BEST_j_"+name,  100,  0.0,    1.0);
+        init_hist("ljet_BEST_t_j_"+name,100,  0.0,    1.0);
         init_hist("ljet_tau1_"+name,    200,  0.0,    2.0);
         init_hist("ljet_tau2_"+name,    200,  0.0,    2.0);
         init_hist("ljet_tau3_"+name,    200,  0.0,    2.0);
@@ -264,20 +265,23 @@ void histogrammer::fill( const std::string& name,
 }
 
 
-void histogrammer::fill( Event& event ){
-    /* Fill histograms -- fill histograms based on treename or systematic weights ("nominal" but different weight)
+void histogrammer::fill( Event& event, const std::vector<unsigned int>& evtsel_decisions ){
+    /* Fill histograms -- fill histograms based on selection, tree, or systematic weights ("nominal" but different weight)
        This is the function to modify / inherit for analysis-specific purposes
     */
-    std::string treeName = event.treeName();
-    double event_weight  = event.nominal_weight();
+    double event_weight = event.nominal_weight();
 
-    fill( m_name+treeName, event, event_weight );
-
+    std::vector<std::string> selections = m_config->selections();
+    for (unsigned int ss=0, size=selections.size(); ss<size; ss++){
+        std::string sel( selections.at(ss) );
+        if (!evtsel_decisions.at(ss)) continue;
+        fill( m_name+sel, event, event_weight );
+    }
 
     // if there are systematics stored as weights (e.g., b-tagging, pileup, etc.)
     // the following calls the fill() function with different event weights
     // to make histograms
-    bool isNominal = m_config->isNominalTree( treeName );
+    bool isNominal = m_config->isNominalTree( event.treeName() );
     if (m_isMC && isNominal && m_doSystWeights){
         // weight systematics
         event_weight = 1.0;
@@ -352,7 +356,9 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
             fill("ljet_BEST_z_"+name,  ljet.BEST_z,  event_weight);
             fill("ljet_BEST_h_"+name,  ljet.BEST_h,  event_weight);
             fill("ljet_BEST_j_"+name,  ljet.BEST_j,  event_weight);
+            fill("ljet_BEST_t_j_"+name,  ljet.BEST_t / (ljet.BEST_t+ljet.BEST_j),  event_weight);
 
+            fill("ljet_tau1_"+name,  ljet.tau1,  event_weight);
             fill("ljet_tau2_"+name,  ljet.tau2,  event_weight);
             fill("ljet_tau3_"+name,  ljet.tau3,  event_weight);
             fill("ljet_tau21_"+name, ljet.tau21, event_weight);

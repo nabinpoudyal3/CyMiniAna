@@ -34,6 +34,7 @@ Basic steering macro for running CyMiniAna
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <boost/algorithm/string/join.hpp>
 
 #include "Analysis/CyMiniAna/interface/configuration.h"
 #include "Analysis/CyMiniAna/interface/Event.h"
@@ -51,38 +52,51 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    unsigned long long maxEntriesToRun(0);     // maximum number of entries in TTree
-    unsigned int numberOfEventsToRun(0); // number of events to run
-    bool passEvent(false);   // event passed selection
-    //bool isMC(false);      // Running over MC file
+    unsigned long long maxEntriesToRun(0);                           // maximum number of entries in TTree
+    unsigned int numberOfEventsToRun(0);                             // number of events to run
+    bool passEvent(false);                                           // event passed selection
 
     // configuration
-    configuration config(argv[1]);                         // configuration file
+    configuration config(argv[1]);                                   // configuration file
     config.initialize();
 
-    int nEvents         = config.nEventsToProcess(); // requested number of events to run
-    std::string outpathBase = config.outputFilePath();   // directory for output files
-    std::string outpath = config.outputFilePath();   // directory for output files
-    unsigned long long firstEvent      = config.firstEvent();       // first event to begin running over
-    std::vector<std::string> filenames = config.filesToProcess();
-    std::vector<std::string> treenames = config.treeNames();
-    std::string selection(config.selection());
+    int nEvents         = config.nEventsToProcess();                 // requested number of events to run
+    std::string outpathBase = config.outputFilePath();               // directory for output files
+    std::string outpath = config.outputFilePath();                   // directory for output files
+    unsigned long long firstEvent       = config.firstEvent();       // first event to begin running over
+    std::vector<std::string> filenames  = config.filesToProcess();
+    std::vector<std::string> treenames  = config.treeNames();
+    std::vector<std::string> selections = config.selections();
+    std::vector<std::string> cutfiles   = config.cutsfiles();
+    std::string selection = boost::algorithm::join(selections, "-");
 
-    bool makeNewFile      = config.makeNewFile();
+    bool generateCutsFiles = (cutfiles.size()!=selections.size());   // user did not provide different cuts files
+
+    bool makeTTree        = config.makeTTree();
     bool makeHistograms   = config.makeHistograms();
     bool makeEfficiencies = config.makeEfficiencies();
-    bool doSystWeights    = config.calcWeightSystematics(); // systemaics associated with scale factors
+    bool doSystWeights    = config.calcWeightSystematics();          // systemaics associated with scale factors
 
     std::string customDirectory( config.customDirectory() );
     if (customDirectory.length()>0  && customDirectory.substr(0,1).compare("_")!=0){
         customDirectory = "_"+customDirectory; // add '_' to beginning of string, if needed
     }
 
-    // event selection
-    eventSelection evtSel( config );
-    evtSel.initialize();
-    unsigned int ncuts = evtSel.numberOfCuts();            // number of cuts in selection
-    std::vector<std::string> cutNames = evtSel.cutNames(); // names of cuts
+    // event selection(s) -- support for multiple event selections simulataneously
+    std::vector<eventSelection> evtSels;
+    std::vector<unsigned int> ncuts;                         // number of cuts in selection
+    std::vector< std::vector<std::string> > namesOfCuts;     // names of cuts in selection
+    for (unsigned int ss=0, size=selections.size(); ss<size; ss++) {
+        std::string sel      = selections.at(ss);
+        std::string cutsfile = (generateCutsFiles) ? "config/cuts_"+sel+".txt" : cutfiles.at(ss);
+
+        eventSelection evtSel_tmp( config );
+        evtSel_tmp.initialize( sel, cutsfile );
+
+        evtSels.push_back(evtSel_tmp);
+        ncuts.push_back(evtSel_tmp.numberOfCuts());
+        namesOfCuts.push_back( evtSel_tmp.cutNames() );
+    }
 
 
     // --------------- //
@@ -112,23 +126,21 @@ int main(int argc, char** argv) {
             cma::DEBUG("RUN : Creating directory for storing output: "+outpath);
             system( ("mkdir "+outpath).c_str() );  // make the directory so the files are grouped together
         }
-        setenv( "CMA_OUTPUTDIR",(outpath).c_str(),1 ); // set environment variable for output directory (access elsewhere)
 
         std::size_t pos   = filename.find_last_of(".");     // the last ".", i.e., ".root"
         std::size_t found = filename.find_last_of("/");     // the last "/"
-        std::string outputFilename = filename.substr(found+1,pos-1-found); // betwee "/" and "."
-        // hopefully this returns: "diboson_WW_361082" given something like:
-        // "/some/path/to/file/diboson_WW_361082.root"
+        std::string outputFilename = filename.substr(found+1,pos-1-found); // between "/" and "."
+        // hopefully this returns: "diboson_WW" given something like:  "/some/path/to/file/diboson_WW.root"
 
         std::string fullOutputFilename = outpath+"/"+outputFilename+".root";
         std::unique_ptr<TFile> outputFile(TFile::Open( fullOutputFilename.c_str(), "RECREATE"));
         cma::INFO("RUN :   >> Saving to "+fullOutputFilename);
 
         // check the file type
-        //isMC = config.isMC( *file );  // not need at the moment
+        config.inspectFile( *file );         // check the type of file this is
 
         std::vector<std::string> fileKeys;
-        cma::getListOfKeys(file,fileKeys); // keep track of ttrees in file
+        cma::getListOfKeys(file,fileKeys);   // keep track of ttrees in file
 
         histogrammer histMaker(config);      // initialize histogrammer
         efficiency effMaker(config);         // initialize efficiency class
@@ -137,9 +149,9 @@ int main(int argc, char** argv) {
         if (makeEfficiencies)
             effMaker.bookEffs( *outputFile );
 
-        // -- Cutflow histograms
-        std::map<std::string, TH1D*>  h_cutflows;            // map of cutflow histograms (weights applied)
-        std::map<std::string, TH1D*>  h_cutflows_unweighted; // map of cutflow histograms (raw # of events)
+        // -- Cutflow histograms (vector to store one for each selection)
+        std::map<std::string, std::vector<TH1D*>>  h_cutflows;            // map of cutflow histograms (weights applied)
+        std::map<std::string, std::vector<TH1D*>>  h_cutflows_unw;        // map of cutflow histograms (raw # of events)
 
         // -- Loop over treenames -> usually only one tree
         for (const auto& treename : treenames) {
@@ -150,21 +162,33 @@ int main(int argc, char** argv) {
                 continue;
             }
 
+
             // -- Cutflow histogram [initialize and label bins]
-            h_cutflows[treename] = new TH1D( (treename+"_cutflow").c_str(),(treename+"_cutflow").c_str(),ncuts+1,0,ncuts+1);
-            h_cutflows_unweighted[treename] = new TH1D( (treename+"_cutflow_unweighted").c_str(),(treename+"_cutflow_unweighted").c_str(),ncuts+1,0,ncuts+1);
+            for (unsigned int ss=0, size=selections.size(); ss<size; ss++){
+                std::string sel = selections.at(ss);
+                unsigned int cuts = ncuts.at(ss);
+                std::vector<std::string> cutNames = namesOfCuts.at(ss);
 
-            h_cutflows[treename]->GetXaxis()->SetBinLabel(1,"INITIAL");
-            h_cutflows_unweighted[treename]->GetXaxis()->SetBinLabel(1,"INITIAL");
+                cma::DEBUG("RUN :     Number of cuts for selection "+sel+" = "+std::to_string(cuts));
 
-            for (unsigned int c=1;c<=ncuts;++c){
-                h_cutflows[treename]->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
-                h_cutflows_unweighted[treename]->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
+                TH1D* h_cutflows_tmp     = new TH1D( (treename+"_"+sel+"_cutflow").c_str(),(treename+"_"+sel+"_cutflow").c_str(),cuts+1,0,cuts+1);
+                TH1D* h_cutflows_unw_tmp = new TH1D( (treename+"_"+sel+"_cutflow_unweighted").c_str(),(treename+"_"+sel+"_cutflow_unweighted").c_str(),cuts+1,0,cuts+1);
+
+                h_cutflows_tmp->GetXaxis()->SetBinLabel(1,"INITIAL");
+                h_cutflows_unw_tmp->GetXaxis()->SetBinLabel(1,"INITIAL");
+
+                for (unsigned int c=1;c<=cuts;++c){
+                    h_cutflows_tmp->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
+                    h_cutflows_unw_tmp->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
+                }
+
+                h_cutflows[treename].push_back( h_cutflows_tmp );
+                h_cutflows_unw[treename].push_back( h_cutflows_unw_tmp );
+
+                // -- Set cutflow histograms in event selection
+                evtSels.at(ss).setCutflowHistograms(*h_cutflows_tmp,*h_cutflows_unw_tmp);
             }
 
-
-            // -- Set cutflow histograms in event selection
-            evtSel.setCutflowHistograms(*h_cutflows.at(treename),*h_cutflows_unweighted.at(treename));
 
             // -- Load TTree to loop over
             cma::INFO("RUN :      TTree "+treename);
@@ -172,7 +196,7 @@ int main(int argc, char** argv) {
 
             // -- Make new Tree in Root file
             miniTree miniTTree(config);          // initialize TTree for new file
-            if (makeNewFile)
+            if (makeTTree)
                 miniTTree.initialize( myReader.GetTree(), *outputFile );
 
             // -- Number of Entries to Process -- //
@@ -212,13 +236,22 @@ int main(int argc, char** argv) {
                 // -- Event Selection -- //
                 // can do separate cutflows by creating multiple instances of eventSelection()
                 cma::DEBUG("RUN : Apply event selection");
-                passEvent = evtSel.applySelection(event);
+                std::vector<unsigned int> passEvents;
+                unsigned int passedEvents(0);
+                for (unsigned int ss=0,size=selections.size();ss<size;ss++){
+                    passEvent = evtSels.at(ss).applySelection(event);
+                    passEvents.push_back( passEvent );
+                    passedEvents += passEvent;
+                }
 
-                if (passEvent){
+                if (passedEvents>0){
+                    // at least 1 selection passed
+                    // share information on which selection passed in case these classes
+                    // want to use that information, e.g., special branch or histogram name
                     cma::DEBUG("RUN : Passed selection, now save information");
-                    if (makeNewFile)       miniTTree.saveEvent(event);
-                    if (makeHistograms)    histMaker.fill(event);
-                    if (makeEfficiencies)  effMaker.fill(event);
+                    if (makeTTree)        miniTTree.saveEvent(event,passEvents);
+                    if (makeHistograms)   histMaker.fill(event,passEvents);
+                    if (makeEfficiencies) effMaker.fill(event,passEvents);
                 }
 
                 // iterate the entry and number of events processed

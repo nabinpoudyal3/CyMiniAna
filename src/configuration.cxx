@@ -29,8 +29,6 @@ configuration::configuration(const std::string &configFile) :
   m_useLargeRJets(false),
   m_useNeutrinos(false),
   m_input_selection("SetMe"),
-  m_selection("SetMe"),
-  m_cutsfile("SetMe"),
   m_treename("SetMe"),
   m_filename("SetMe"),
   m_verboseLevel("SetMe"),
@@ -38,7 +36,7 @@ configuration::configuration(const std::string &configFile) :
   m_firstEvent(0),
   m_outputFilePath("SetMe"),
   m_customDirectory("SetMe"),
-  m_makeNewFile(false),
+  m_makeTTree(false),
   m_makeHistograms(false),
   m_sumWeightsFiles("SetMe"),
   m_cma_absPath("SetMe"),
@@ -53,6 +51,9 @@ configuration::configuration(const std::string &configFile) :
   m_listOfWeightSystematicsFile("SetMe"),
   m_listOfWeightVectorSystematicsFile("SetMe"),
   m_kinematicReco(true){
+    m_selections.clear();
+    m_cutsfiles.clear();
+
     m_XSection.clear();
     m_KFactor.clear();
     m_AMI.clear();
@@ -123,7 +124,8 @@ void configuration::initialize() {
     m_nEventsToProcess = std::stoi(getConfigOption("NEvents"));
     m_firstEvent       = std::stoi(getConfigOption("firstEvent"));
     m_input_selection  = getConfigOption("input_selection"); // "grid", "pre", etc.
-    m_selection        = getConfigOption("selection");
+    cma::split( m_map_config.at("selection"), ',', m_selections );  // different event selections
+    cma::split( m_map_config.at("cutsfile"), ',', m_cutsfiles );  // different event selections
 
     m_isZeroLeptonAnalysis = cma::str2bool( getConfigOption("isZeroLeptonAnalysis") );
     m_isOneLeptonAnalysis  = cma::str2bool( getConfigOption("isOneLeptonAnalysis") );
@@ -141,14 +143,13 @@ void configuration::initialize() {
     m_jet_btag_wkpt    = getConfigOption("jet_btag_wkpt");
     m_outputFilePath   = getConfigOption("output_path");
     m_customDirectory  = getConfigOption("customDirectory");
-    m_cutsfile         = getConfigOption("cutsfile");
     m_sumWeightsFiles  = getConfigOption("sumWeightsFiles");
     m_useTruth         = cma::str2bool( getConfigOption("useTruth") );
     m_useJets          = cma::str2bool( getConfigOption("useJets") );
     m_useLeptons       = cma::str2bool( getConfigOption("useLeptons") );
     m_useLargeRJets    = cma::str2bool( getConfigOption("useLargeRJets") );
     m_useNeutrinos     = cma::str2bool( getConfigOption("useNeutrinos") );
-    m_makeNewFile      = cma::str2bool( getConfigOption("makeNewFile") );
+    m_makeTTree        = cma::str2bool( getConfigOption("makeTTree") );
     m_makeHistograms   = cma::str2bool( getConfigOption("makeHistograms") );
     m_makeEfficiencies = cma::str2bool( getConfigOption("makeEfficiencies") );
     m_dnnFile          = getConfigOption("dnnFile");
@@ -396,12 +397,12 @@ std::string configuration::configFileName(){
     return m_configFile;
 }
 
-std::string configuration::selection(){
-    return m_selection;
+std::vector<std::string> configuration::selections(){
+    return m_selections;
 }
 
-std::string configuration::cutsfile(){
-    return m_cutsfile;
+std::vector<std::string> configuration::cutsfiles(){
+    return m_cutsfiles;
 }
 
 std::string configuration::jet_btagWkpt(){
@@ -445,8 +446,8 @@ std::vector<std::string> configuration::treeNames(){
     return m_treeNames;
 }
 
-bool configuration::makeNewFile(){
-    return m_makeNewFile;
+bool configuration::makeTTree(){
+    return m_makeTTree;
 }
 
 bool configuration::makeHistograms(){

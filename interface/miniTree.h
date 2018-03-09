@@ -34,7 +34,7 @@ class miniTree {
     virtual void initialize(TTree * t, TFile& outputFile);
 
     // Run for every event (in every systematic) that needs saving;
-    virtual void saveEvent(Event &event);
+    virtual void saveEvent(Event &event, const std::vector<unsigned int>& evtsel_decisions=std::vector<unsigned int>());
 
     // Clear stuff;
     virtual void finalize();
@@ -46,8 +46,12 @@ class miniTree {
     TTree * m_oldTTree;
     configuration * m_config;
 
+    std::vector<std::string> m_selections;
+
     // new branches defined here 
     float m_dnn;
+    std::vector<float> m_BEST_t_j;
+    std::vector<unsigned int> m_passSelection;
 };
 
 #endif
