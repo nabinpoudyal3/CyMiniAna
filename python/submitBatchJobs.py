@@ -65,8 +65,8 @@ except KeyError:
 if customDirectory and not customDirectory.startswith("_"):
     customDirectory = "_{0}".format(customDirectory)
 
-local_output_path = "{0}{1}".format(cmaConfig["selection"],customDirectory)
-batch.local_output_path = local_output_path          # where to store output 
+local_output_path = "{0}{1}".format(cmaConfig["selection"].replace(",","-"),customDirectory)
+batch.local_output_path = local_output_path          # where to store output
 
 eos_path_full = eos_path+"/"+local_output_path       # files saved in a directory named after the selection
                                                      # as defined in run.cxx/runML.cxx -- update if changed
