@@ -39,16 +39,16 @@ eventSelection::eventSelection(configuration &cmaConfig, const std::string &leve
   m_allHadDNNSelection(false){
     m_cuts.resize(0);
     m_cutflowNames.clear();
-
-    m_selection = m_config->selection();
-    m_cutsfile  = m_config->cutsfile();
   }
 
 eventSelection::~eventSelection() {}
 
 
-void eventSelection::initialize() {
+void eventSelection::initialize(const std::string& selection, const std::string& cutsfile) {
     /* Build the cuts using the cut file from configuration */
+    m_selection = selection;
+    m_cutsfile  = cutsfile;
+
     initialize( m_cutsfile );
     return;
 }
@@ -241,7 +241,7 @@ bool eventSelection::zeroLeptonSelection(double cutflow_bin){
 
 // ******************************************************* //
 
-bool eventSelection::ejetsSelection(double cutflow_bin){
+bool eventSelection::ejetsSelection(double cutflow_bin, const Lepton& lep){
     /* Check if event passes selection; called from 1-lepton selection
        -- Following CMS AN-2016/174
     */
@@ -255,20 +255,12 @@ bool eventSelection::ejetsSelection(double cutflow_bin){
         pass = true;
     }
 
-    Electron lep;
-    for (const auto& el : m_electrons) {
-        if (el.isGood){
-            lep = el;
-            break;
-        }
-    }
-    float met_triangle = 1.5*m_met.p4.Pt() / 110.;
-
     // cut6 :: DeltaPhi(e,MET)
+    float met_triangle = 1.5*m_met.p4.Pt() / 110.;
     if ( std::abs(lep.p4.DeltaPhi(m_met.p4)-1.5) > met_triangle )
         return false;
     else{
-        fillCutflows(cutflow_bin);
+        fillCutflows(cutflow_bin+1);
         pass = true;
     }
 
@@ -276,7 +268,7 @@ bool eventSelection::ejetsSelection(double cutflow_bin){
     if ( std::abs(m_jets.at(0).p4.DeltaPhi(m_met.p4)-1.5) > met_triangle )
         return false;
     else{
-        fillCutflows(cutflow_bin);
+        fillCutflows(cutflow_bin+2);
         pass = true;
     }
 
@@ -318,6 +310,8 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
         pass = true;
     }
 
+
+
     // cut1 :: >=1 ljets -- Assuming boosted final state
     if ( m_NLjets < 1 )
         return false;  // exit the function now; no need to test other cuts!
@@ -337,8 +331,7 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
 
     // ** The following cuts are slightly different for e+jets and mu+jets ** //
     Lepton lep;
-    bool ejets(false);
-
+    // Only use the 'good' lepton
     if (m_NMuons == 1){
         for (const auto& mu : m_muons) {
             if (mu.isGood){
@@ -348,7 +341,6 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
         }
     }
     else{
-        ejets  = false;
         for (const auto& el : m_electrons) {
             if (el.isGood){
                 lep.p4 = el.p4;
@@ -391,12 +383,22 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     // only do selection if the user requested a specific
     // lepton flavor or any lepton flavor ("ljets"), 
     // e.g., if user selected "ejets", don't do mu+jets selection!
-    bool ljets = m_selection.compare("ljets")==0;
+    bool ljets  = m_selection.compare("ljets")==0;
+    bool ejets  = m_selection.compare("ejets")==0;
+    bool mujets = m_selection.compare("mujets")==0;
 
-    if (ejets && (ljets || m_selection.compare("ejets")==0))
-        pass = ejetsSelection(cutflow_bin+5);
-    else if (!ejets && (ljets || m_selection.compare("mujets")==0))
-        pass = mujetsSelection(cutflow_bin+5);
+    if (ljets){
+        // Do the selection based on which lepton flavor we have
+        if (m_NElectrons==1) pass = ejetsSelection(cutflow_bin+5,lep);
+        else pass = mujetsSelection(cutflow_bin+5);
+    }
+    else{
+        // Only do the el (mu) selection if the user request e+jets (mu+jets)
+        if (m_NElectrons==1)
+            pass = (ejets) ? ejetsSelection(cutflow_bin+5,lep) : false;
+        else  // m_NMuons==1
+            pass = (mujets) ? mujetsSelection(cutflow_bin+5) : false;
+    }
 
     return pass;
 }
@@ -410,9 +412,7 @@ bool eventSelection::twoLeptonSelection(double cutflow_bin){
     bool pass(false);
 
     // cut0 :: Two leptons
-    unsigned int nElectrons( m_electrons.size() );
-    unsigned int nMuons( m_muons.size() );
-    if ( nElectrons+nMuons != 2 )
+    if ( m_NElectrons+m_NMuons != 2 )
         return false;  // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin);
@@ -420,7 +420,7 @@ bool eventSelection::twoLeptonSelection(double cutflow_bin){
     }
 
     // cut1 :: >=2 jets (2 b-jets)
-    if ( m_jets.size() < 2 )
+    if ( m_NJets < 2 )
         return false;  // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin+1);

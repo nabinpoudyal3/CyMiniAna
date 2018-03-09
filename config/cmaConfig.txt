@@ -5,7 +5,7 @@ buildNeutrinos false
 useLargeRJets true
 useTruth false
 jet_btag_wkpt M
-makeNewFile true
+makeTTree true
 makeHistograms true
 makeEfficiencies false
 input_selection grid
@@ -13,12 +13,12 @@ output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt
 calcWeightSystematics false
-selection mujets
-cutsfile config/cuts_mujets.txt
+selection mujets,ejets
+cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt
 treenames config/treenames.txt
 inputfile config/listOfMCSamples.txt
 getDNN false
-NEvents 1001
+NEvents -1
 verboseLevel INFO
 isZeroLeptonAnalysis false
 isOneLeptonAnalysis true

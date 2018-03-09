@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     std::string outpathBase = config.outputFilePath();            // directory for output files
     unsigned long long firstEvent      = config.firstEvent();     // first event to begin running over
     std::vector<std::string> filenames = config.filesToProcess(); // list of files to process
-    std::string selection(config.selection());                    // selection to apply
+    std::string selection(config.selections().at(0));             // selection to apply (only assuming 1 at the moment)
     std::string treename(config.treename());
 
     std::string customDirectory( config.customDirectory() );
@@ -72,9 +72,9 @@ int main(int argc, char** argv) {
 
     // event selection
     eventSelection evtSel( config );
-    evtSel.initialize();
-    unsigned int ncuts = evtSel.numberOfCuts();            // number of cuts in selection
-    std::vector<std::string> cutNames = evtSel.cutNames(); // names of cuts
+    evtSel.initialize( selection, config.cutsfiles().at(0) ); // need event selection and cutsfiles names
+    unsigned int ncuts = evtSel.numberOfCuts();               // number of cuts in selection
+    std::vector<std::string> cutNames = evtSel.cutNames();    // names of cuts
 
 
     // --------------- //

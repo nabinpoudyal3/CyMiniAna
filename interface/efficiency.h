@@ -43,7 +43,7 @@ class efficiency {
                                   const unsigned int nBinsY, const double *ybins );
 
     /* fill efficiencies */
-    virtual void fill( Event &event );
+    virtual void fill( Event &event, const std::vector<unsigned int>& evtsel_decisions=std::vector<unsigned int>());
     virtual void fill( const std::string &name, const double &value, const bool &decision, const double &weight );
     virtual void fill( const std::string &name, const double &xvalue, const double &yvalue, const bool &decision, const double &weight );
 

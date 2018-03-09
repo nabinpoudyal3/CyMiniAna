@@ -83,7 +83,7 @@ void efficiency::init_eff( const std::string &name, const unsigned int nBinsX, c
 
 
 
-void efficiency::fill( Event &event ){
+void efficiency::fill( Event &event, const std::vector<unsigned int>& evtsel_decisions ){
     /* Fill efficiencies -- just use information from the event 
        This is the function to modify / inherit for analysis-specific purposes
        Example
