@@ -1,6 +1,6 @@
 """
-Created:         6 April     2016
-Last Updated:    5 November  2016
+Created:        6  April     2016
+Last Updated:   9  March     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -10,13 +10,13 @@ Bennett Magy
 bmagy@umichSPAMNOT.edu
 University of Michigan, Ann Arbor, MI 48109
 -----
+
 Class to make a simple instance each time we want some basic plots!
 
 This does not include an interface to load/access data.
 Here we just plot the data we're given.
-See "python/runHistogram.py" and "python/runEfficiency.py" as an example setup script.
 
-template for making histograms or efficiency curves
+Base class for turning histograms or efficiency curves into plots
 """
 import os
 import sys
@@ -30,7 +30,7 @@ os.environ['PATH'] = os.environ['PATH']+':/usr/texbin'+':/Library/TeX/texbin' # 
 ## Setup Matplotlib Configuration ##
 import matplotlib
 mpl_version = matplotlib.__version__
-matplotlib.use('Agg') # Force matplotlib to not use any Xwindows backend.
+matplotlib.use('PDF')                  # No 'dvipng' support at the LPC yet, need PDFs instead
 from matplotlib import rc
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
@@ -53,6 +53,7 @@ else:
     plt.register_cmap(name='inferno', cmap=cmaps.inferno)
     plt.register_cmap(name='plasma',  cmap=cmaps.plasma)
 ## ------------------------------ ##
+
 import hepPlotterTools as hpt
 import hepPlotterLabels as hpl
 
@@ -99,7 +100,7 @@ class HepPlotter(object):
         self.plotLUMI       = False
         self.CMSlabel       = 'top left'     # 'top left', 'top right' & 'outer' for 2D
         self.CMSlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary'
-        self.format         = 'png'          # file format for saving image
+        self.format         = 'pdf'          # file format for saving image
         self.saveAs         = "plot_{0}d_{1}".format(self.dimensions,self.CMSlabelStatus) # save figure with name
         self.numLegendColumns = 2
         self.legendLoc        = 1

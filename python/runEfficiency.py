@@ -1,17 +1,13 @@
 """
-Created:         3 September 2016
-Last Updated:    3 September 2016
+Created:        3  September 2016
+Last Updated:   9  March     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
+Texas A&M University
 -----
-Steering script for making simple efficiency plots.
-Primarily want to do this from root histograms/tefficiencies (faster to make those in c++).
-I don't recommend passing efficiency-type data from non-TEfficiency objects, but
-if you pass a list / array, it should be okay.
-You can also pass simple root histograms if you want to plot the underlying physics
-distribution for reference with the efficiency.
+
+Steering script for making simple efficiency plots from TEfficiency objects.
 
 This can be modified or extended by whomever.
 
@@ -22,9 +18,10 @@ import sys
 import ROOT
 from argparse import ArgumentParser
 
-from hepPlotter import HepPlotter
-import hepPlotterTools as hpt
-import hepPlotterLabels as hpl
+from Analysis.CyMiniAna.hepPlotter.hepPlotter import HepPlotter
+import Analysis.CyMiniAna.hepPlotter.hepPlotterTools as hpt
+import Analysis.CyMiniAna.hepPlotter.hepPlotterLabels as hpl
+
 
 parser = ArgumentParser(description="Efficiency Plotter")
 
@@ -45,7 +42,6 @@ outpath     = results.outpath
 
 files      = open(listOfFiles,"r").readlines()  # root files to access
 histograms = open(listOfHists,"r").readlines()  # TEfficiencies/Histograms to plot
-
 
 betterColors = hpt.betterColors()['linecolors']
 labels    = {"_":r"\_"} # change histogram names into something better for legend
@@ -77,8 +73,8 @@ for file in files:
     hist.extra_text  = extraText[filename]
     hist.format      = 'png'       # file format for saving image
     hist.saveAs      = outpath+"eff_"+filename # save figure with name
-    hist.ATLASlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
-    hist.ATLASlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
+    hist.CMSlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
+    hist.CMSlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
 
     hist.initialize()
 

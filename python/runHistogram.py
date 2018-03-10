@@ -18,9 +18,9 @@ import sys
 import ROOT
 from argparse import ArgumentParser
 
-from hepPlotter import HepPlotter
-import hepPlotterTools as hpt
-import hepPlotterLabels as hpl
+from Analysis.CyMiniAna.hepPlotter.hepPlotter import HepPlotter
+import Analysis.CyMiniAna.hepPlotter.hepPlotterTools as hpt
+import .CyMiniAna.hepPlotter.hepPlotterLabels as hpl
 
 parser = ArgumentParser(description="Histogram Plotter")
 
@@ -68,8 +68,8 @@ for hi,histogram in enumerate(histograms):
     hist.lumi          = 'XY.Z'   # in /fb
     hist.format        = 'png'       # file format for saving image
     hist.saveAs        = outpath+"_hist_"+histogram # save figure with name
-    hist.ATLASlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
-    hist.ATLASlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
+    hist.CMSlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
+    hist.CMSlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
 
     hist.initialize()
 
