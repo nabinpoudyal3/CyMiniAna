@@ -34,7 +34,7 @@ bin/       | steering macros
 config/    | text files and generic information
 examples/  | Example scripts demonstrating how to use framework or general coding
 interface/ | `*.h` files
-python/    | plotting, neural network, and running scripts
+python/    | plotting, neural network, batch, and running scripts
 src/       | `*.cxx` files
 BuildFile.xml | File used by `scram` to compile software in CMSSW
 Makefile   | compiles c++ code -- not needed in CMSSW framework!
