@@ -1,6 +1,6 @@
 """
 Created:        12 November  2016
-Last Updated:    2 April     2017
+Last Updated:   25 February  2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -8,16 +8,19 @@ Texas A&M University
 -----
 
 Script for running the deep learning implementation
-Top vs Anti-top identification
 
 To run:
-$ python python/runDeepLearning.py share/mlconfig.txt
+$ python python/runDeepLearning.py config/mlconfig.txt
 -- the second argument is the text file with configurations for the NN/setup
+
+ {"none",0},    // :: NONE = QCD (background)
+ {"QB",1},      // :: QB-Q = Signal AK8(QB) + AK4(Q)
+ {"W",2},       // :: QQ-B = Signal AK8(W)  + AK4(B)
 """
 import os
 import sys
 import json
-from info import VERBOSE
+import util
 from config import Config
 from collections import Counter
 from time import strftime,localtime
@@ -28,29 +31,30 @@ print
 print " ------------------------------ "
 print " *  Deep Learning with Keras  * "
 print " ------------------------------ "
-print " Discrimination between hadronic "
-print " decays of top/antitop quarks "
 print
 
 
 date   = strftime("%d%b", localtime())
 cmaDir = os.path.expandvars('$CYMINIANADIR')
-vb     = VERBOSE()
+vb     = util.VERBOSE()
 
 ## Set configuration options ##
 config = Config(sys.argv[1])
 vb.level = config.verbose_level
+vb.initialize()
 
-
-if not config.loadNN and not config.buildNN:
+if not config.runTraining and not config.runInference:
     vb.ERROR("RUN :  No configuration set ")
-    vb.ERROR("RUN :  Please set the arguments 'loadNN' or 'buildNN' to define workflow ")
+    vb.ERROR("RUN :  Please set the arguments 'runTraining' or 'runInference' to define workflow ")
     vb.ERROR("RUN :  Exiting.")
     sys.exit(1)
 
 
 ## Setup features
-featureKeys = json.load(open('share/features.json','r'))
+NN_parameters = ['epochs','batch_size','loss','optimizer','metrics','activations',
+                 'nHiddenLayers','nNodes','input_dim','kfold_splits']
+
+featureKeys = json.load(open('config/features.json'))
 
 featureKey = -1
 for key in featureKeys.keys():
@@ -61,101 +65,93 @@ if featureKey<0:
     featureKey = max([int(i) for i in featureKeys.keys()])+1
     featureKeys[str(featureKey)] = config.features
     vb.INFO("RUN :  New features for NN ")
-    with open('share/features.json','w') as outfile:
+    with open('config/features.json','w') as outfile:
         json.dump(featureKeys,outfile)
-
-
-## Setup Deep Learning class
-dnn = DeepLearning()
-dnn.hep_data  = config.hep_data
-dnn.dnn_data  = config.dnn_data
-dnn.verbose_level = config.verbose_level
-
-
 
 ## Set output directory
 output_dir  = "nHiddenLayers{0}_".format(config.nHiddenLayers)
 output_dir += "nNodes{0}_".format('-'.join(config.nNodes))
-output_dir += "epoch{0}_".format(config.nb_epoch)
+output_dir += "epoch{0}_".format(config.epochs)
 output_dir += "batch{0}_".format(config.batch_size)
 output_dir += "kfold{0}_".format(config.kfold_splits)
-output_dir += "activation-{0}_".format(config.activation)
+output_dir += "activation-{0}_".format(config.activation.replace(',','-'))
 output_dir += "featureKey{0}".format(featureKey)
 hep_data_name = config.hep_data.split('/')[-1].split('.')[0]
-if config.buildNN:
-    dnn.output = config.output_path+"/{0}/{1}".format(output_dir,hep_data_name)
-else:
-    dnn.output = config.output_path+"/{0}/{1}/loadDNN".format(output_dir,hep_data_name)
 
-if not os.path.isdir(dnn.output):
-    vb.WARNING("RUN : '{0}' does not exist ".format(dnn.output))
+
+## Setup Deep Learning class
+dnn = DeepLearning()
+
+dnn.hep_data   = config.hep_data
+dnn.model_name = config.dnn_data
+dnn.verbose_level = config.verbose_level
+dnn.treename   = config.treename
+dnn.useLWTNN   = True
+dnn.dnn_name   = "dnn"
+dnn.output_dim = config.output_dim
+dnn.dnn_method = 'binary'
+dnn.loss       = config.loss
+dnn.init       = config.init
+dnn.nNodes     = config.nNodes
+dnn.dropout    = None
+dnn.metrics    = config.metrics
+dnn.features   = config.features
+dnn.epochs     = config.epochs
+dnn.optimizer  = config.optimizer
+dnn.input_dim  = len(config.features)
+dnn.batch_size = config.batch_size
+dnn.activations   = config.activation.split(',')
+dnn.kfold_splits  = config.kfold_splits
+dnn.nHiddenLayers = config.nHiddenLayers
+#dnn.earlystopping = {'monitor':'loss','min_delta':0.0001,'patience':5,'mode':'auto'}
+
+
+## inference/training
+output = "{0}/{1}/{2}".format( config.output_path,output_dir,hep_data_name)
+if config.runTraining:
+    output += "/training/"
+else:
+    output += "/inference/"
+dnn.output_dir = output
+
+if not os.path.isdir(output):
+    vb.WARNING("RUN : '{0}' does not exist ".format(output))
     vb.WARNING("RUN :       Creating the directory. ")
-    os.system( 'mkdir -p {0}'.format(dnn.output) )
+    os.system( 'mkdir -p {0}'.format(output) )
 else:
-    vb.INFO("RUN :  Saving output to {0}".format(dnn.output))
-
-
+    vb.INFO("RUN :  Saving output to {0}".format(output))
 
 ## load hep data (physics data -- .json file). Always need this for testing/training
 dnn.features = config.features
-dnn.initialize()     # Setup some things as needed
-dnn.getHEPData()     # load JSON file with HEP data
-dnn.plot_features()  # sanity checks
-dnn.save_features()  # save the features for loading with lwtnn later
 
-if config.buildNN:
+## Setup
+dnn.initialize()
+
+
+if config.runTraining:
 
     vb.INFO("RUN :  > Build the NN")
     # set properties of the NN
-    dnn.nb_epoch   = config.nb_epoch
-    dnn.batch_size = config.batch_size
-    dnn.loss       = config.loss
-    dnn.optimizer  = config.optimizer
-    dnn.metrics    = config.metrics
-    dnn.init       = config.init
-    dnn.input_dim  = len(config.features)
-    dnn.nNodes     = config.nNodes
-    dnn.nHiddenLayers = config.nHiddenLayers
-    dnn.kfold_splits  = config.kfold_splits
-    dnn.percentile    = config.percentile
-    dnn.activation    = config.activation
+    dnn.runTraining()
 
-    dnn.buildNN()
-    dnn.model.summary()
-
-
-    # Save information on the NN to a text file to reference later
-    outputFile = open(dnn.output+'/ABOUT.txt','w')
+    ## -- Save information on the NN to a text file to reference later
+    outputFile = open(dnn.output_dir+'/ABOUT.txt','w')
     outputFile.write(" * NN Setup * \n")
     outputFile.write(" NN Summary: \n")
     outputFile.write("\n NN parameters: \n")
 
-    NN_parameters = ['nb_epoch','batch_size','loss','optimizer','metrics','activation',
-                     'nHiddenLayers','nNodes','input_dim','kfold_splits','percentile']
     for NN_parameter in NN_parameters:
         outputFile.write( NN_parameter+": "+str(getattr(dnn,NN_parameter))+"\n" )
-
     outputFile.write( "\n NN Features: \n" )
     for feature in dnn.features:
         outputFile.write("  >> "+feature+"\n" )
-
     outputFile.close()
 
 
-if config.loadNN:
+if config.runInference:
     vb.INFO("RUN :  > Load NN model from disk")
-    dnn.loadModel()
-
-
-vb.INFO("RUN :  > Get NN score ")
-dnn.plot_score()
-
-vb.INFO("RUN :  > Obtain & plot the ROC curve")
-dnn.plot_ROC()
-
-if config.buildNN:
-    vb.INFO("RUN :  > Save model. ")
-    dnn.saveModel()
+    dnn.runInference()
 
 
 ## END ##
+

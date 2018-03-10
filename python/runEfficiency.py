@@ -8,14 +8,14 @@ Texas A&M University
 -----
 
 Steering script for making simple efficiency plots from TEfficiency objects.
-
 This can be modified or extended by whomever.
 
 To run:
-python python/runEfficiency.py --files <files.txt> --hists <histogramNames.txt> -o <output_path>
+ python python/runEfficiency.py --files <files.txt> --hists <histogramNames.txt> -o <output_path>
 """
 import sys
 import ROOT
+import util
 from argparse import ArgumentParser
 
 from Analysis.CyMiniAna.hepPlotter.hepPlotter import HepPlotter
@@ -36,17 +36,13 @@ parser.add_argument('-o','--outpath', action='store',default=None,
                     help='Directory for storing output plots')
 results = parser.parse_args()
 
-listOfFiles = results.listOfFiles
-listOfHists = results.listOfHists
-outpath     = results.outpath
+outpath    = results.outpath
+files      = util.file2list(results.listOfFiles)  # ROOT files to read
+histograms = util.file2list(results.listOfEffs)   # TEfficiencies/Histograms to plot
 
-files      = open(listOfFiles,"r").readlines()  # root files to access
-histograms = open(listOfHists,"r").readlines()  # TEfficiencies/Histograms to plot
-
+labels    = hpl.variable_labels()
+variable  = 'jet_pt'                              # Setup to plot multiple efficiencies/hists as a function of one variable
 betterColors = hpt.betterColors()['linecolors']
-labels    = {"_":r"\_"} # change histogram names into something better for legend
-extraText = {"":""}     # change filename into something to label on the plot
-
 
 ## Add the data from each file
 ## Assume the data is structured such that you want to plot
@@ -57,7 +53,6 @@ extraText = {"":""}     # change filename into something to label on the plot
 ##          To plot multiple kinds of variables on different plots, 
 ##          you'll need another loop
 for file in files:
-    file = file.rstrip("\n")
     f = ROOT.TFile.Open(file)
     filename = file.split("/")[-1].split(".")[0]
 
@@ -68,20 +63,20 @@ for file in files:
 
     hist.drawEffDist = True    # draw the physics distribution for efficiency (jet_pt for jet trigger)
     hist.rebin       = 1
-    hist.x_label     = r"Jet p$_\text{T}$ [GeV]"
+    hist.x_label     = labels[variable].label
     hist.y_label     = "Efficiency"
-    hist.extra_text  = extraText[filename]
     hist.format      = 'png'       # file format for saving image
     hist.saveAs      = outpath+"eff_"+filename # save figure with name
     hist.CMSlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
     hist.CMSlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
+
+    #hist.extra_text.Add(text,coords[0,0])
 
     hist.initialize()
 
     # loop over variables to put on one plot
     for hi,histogram in enumerate(histograms):
 
-        histogram = histogram.strip('\n')
         print "    :: Plotting "+histogram
 
         h_hist = getattr(f,histogram)       # retrieve the histogram
