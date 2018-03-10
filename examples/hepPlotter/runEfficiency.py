@@ -1,31 +1,27 @@
 """
-Created:         3 September 2016
-Last Updated:    3 September 2016
+Created:        3  September 2016
+Last Updated:   9  March     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
 Texas A&M University
 -----
 
-Steering script for making simple efficiency plots.
-Primarily want to do this from root histograms/tefficiencies (faster to make those in c++).
-I don't recommend passing efficiency-type data from non-TEfficiency objects, but
-if you pass a list / array, it should be okay.
-You can also pass simple root histograms if you want to plot the underlying physics
-distribution for reference with the efficiency.
-
+Steering script for making simple efficiency plots from TEfficiency objects.
 This can be modified or extended by whomever.
 
 To run:
-python python/runEfficiency.py --files <files.txt> --hists <histogramNames.txt> -o <output_path>
+ python python/runEfficiency.py --files <files.txt> --hists <histogramNames.txt> -o <output_path>
 """
 import sys
 import ROOT
+import util
 from argparse import ArgumentParser
 
-from hepPlotter import HepPlotter
-import hepPlotterTools as hpt
-import hepPlotterLabels as hpl
+from Analysis.CyMiniAna.hepPlotter.hepPlotter import HepPlotter
+import Analysis.CyMiniAna.hepPlotter.hepPlotterTools as hpt
+import Analysis.CyMiniAna.hepPlotter.hepPlotterLabels as hpl
+
 
 parser = ArgumentParser(description="Efficiency Plotter")
 
@@ -40,18 +36,13 @@ parser.add_argument('-o','--outpath', action='store',default=None,
                     help='Directory for storing output plots')
 results = parser.parse_args()
 
-listOfFiles = results.listOfFiles
-listOfHists = results.listOfHists
-outpath     = results.outpath
+outpath    = results.outpath
+files      = util.file2list(results.listOfFiles)  # ROOT files to read
+histograms = util.file2list(results.listOfEffs)   # TEfficiencies/Histograms to plot
 
-files      = open(listOfFiles,"r").readlines()  # root files to access
-histograms = open(listOfHists,"r").readlines()  # TEfficiencies/Histograms to plot
-
-
+labels    = hpl.variable_labels()
+variable  = 'jet_pt'                              # Setup to plot multiple efficiencies/hists as a function of one variable
 betterColors = hpt.betterColors()['linecolors']
-labels    = {"_":r"\_"} # change histogram names into something better for legend
-extraText = {"":""}     # change filename into something to label on the plot
-
 
 ## Add the data from each file
 ## Assume the data is structured such that you want to plot
@@ -62,7 +53,6 @@ extraText = {"":""}     # change filename into something to label on the plot
 ##          To plot multiple kinds of variables on different plots, 
 ##          you'll need another loop
 for file in files:
-    file = file.rstrip("\n")
     f = ROOT.TFile.Open(file)
     filename = file.split("/")[-1].split(".")[0]
 
@@ -73,20 +63,20 @@ for file in files:
 
     hist.drawEffDist = True    # draw the physics distribution for efficiency (jet_pt for jet trigger)
     hist.rebin       = 1
-    hist.x_label     = r"Jet p$_\text{T}$ [GeV]"
+    hist.x_label     = labels[variable].label
     hist.y_label     = "Efficiency"
-#    hist.extra_text.Add(extraText[key],coords=[x,y]) # see hepPlotter for exact use of extra_text (PlotText() objects)
     hist.format      = 'png'       # file format for saving image
     hist.saveAs      = outpath+"eff_"+filename # save figure with name
     hist.CMSlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
     hist.CMSlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
+
+    #hist.extra_text.Add(text,coords[0,0])
 
     hist.initialize()
 
     # loop over variables to put on one plot
     for hi,histogram in enumerate(histograms):
 
-        histogram = histogram.strip('\n')
         print "    :: Plotting "+histogram
 
         h_hist = getattr(f,histogram)       # retrieve the histogram

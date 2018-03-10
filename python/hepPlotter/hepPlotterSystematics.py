@@ -1,15 +1,15 @@
 '''
-Created:        9 September 2016
-Last Updated:  28 September 2016
+Created:       9  September 2016
+Last Updated:  9  March     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
-University of Michigan, Ann Arbor, MI 48109
+Texas A&M University
 -----
+
 Class to handle calculating and drawing all of the systematic uncertainties.
 Need to calculate systematics with respect to nominal samples --
   do this for each sample (ttbar, wjets, zjets, etc.)
-STRONGLY RECOMMEND USING PRE-MADE HISTOGRAMS, NOT LISTS OF VALUES & WEIGHTS
 '''
 import os
 import sys
@@ -18,32 +18,24 @@ from math import fabs
 from copy import deepcopy
 from collections import OrderedDict
 
-## ------------------------------ ##
-## Setup Matplotlib Configuration ##
+from hepPlotter import HepPlotter
+import hepPlotterTools as hpt
+import hepPlotterLabels as hpl
+
+import numpy as np
 import matplotlib
 mpl_version = matplotlib.__version__
-matplotlib.use('Agg') # Force matplotlib to not use any Xwindows backend.
 from matplotlib import rc
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import AutoMinorLocator
-import numpy as np
 
-rc('text', usetex=True)
-rc('font', family='sans-serif')
+fontProperties = {}
 if mpl_version.startswith('1.5'):
     fontProperties = {}
 else:
     fontProperties = {'family':'sans-serif','sans-serif':['Helvetica']}
-params = {'text.latex.preamble' : [r'\usepackage{amsmath}']}
-plt.rcParams.update(params)
-os.environ['PATH'] = os.environ['PATH']+':/usr/texbin'+':/Library/TeX/texbin'  # LaTeX support
-## ------------------------------ ##
-
-from hepPlotter import HepPlotter
-import hepPlotterTools as hpt
-import hepPlotterLabels as hpl
 
 
 
@@ -56,7 +48,7 @@ class HepPlotterSystematics(object):
         self.outpath     = "./"
         self.binning     = 10
         self.rebin       = 1
-        self.x_labels    = hpl.text_dicts()['variables']
+        self.x_labels    = hpl.variable_labels()
         self.plotSystematics = True
 
         return
@@ -201,7 +193,7 @@ class HepPlotterSystematics(object):
         hist.stacked    = False      # stack plots
         hist.rebin      = self.rebin
         hist.logplot    = False      # plot on log scale
-        hist.x_label    = self.x_labels[self.variable]['label']
+        hist.x_label    = self.x_labels[self.variable].label
         hist.y_label    = "Events"
         hist.extra_text = systname+'\n '+self.sampleName
         hist.binning    = self.systData['nominal']['bins']
@@ -209,7 +201,7 @@ class HepPlotterSystematics(object):
         hist.y_ratio_label    = "Syst/Nom"
         hist.lumi             = '14.7'      # in /fb
         hist.format           = 'png'       # file format for saving image
-        hist.saveAs           = self.outpath+"h_syst_"+self.sampleName+"_"+systname # save figure with unique name
+        hist.saveAs           = "{0}/h_syst_{1}_{2}".format(self.outpath,self.sampleName,systname)  # save figure with unique name
         hist.CMSlabel       = 'top left'  # 'top left', 'top right'; hack code for something else
         hist.CMSlabelStatus = 'Simulation Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
 

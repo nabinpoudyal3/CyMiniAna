@@ -1,6 +1,6 @@
 """
-Created:         6 April     2016
-Last Updated:    5 November  2016
+Created:        6  April     2016
+Last Updated:   9  March     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -10,13 +10,13 @@ Bennett Magy
 bmagy@umichSPAMNOT.edu
 University of Michigan, Ann Arbor, MI 48109
 -----
+
 Class to make a simple instance each time we want some basic plots!
 
 This does not include an interface to load/access data.
 Here we just plot the data we're given.
-See "python/runHistogram.py" and "python/runEfficiency.py" as an example setup script.
 
-template for making histograms or efficiency curves
+Base class for turning histograms or efficiency curves into plots
 """
 import os
 import sys
@@ -25,12 +25,10 @@ from math import fabs
 from copy import deepcopy
 from collections import OrderedDict
 
-os.environ['PATH'] = os.environ['PATH']+':/usr/texbin'+':/Library/TeX/texbin' # LaTeX support
-
 ## Setup Matplotlib Configuration ##
 import matplotlib
 mpl_version = matplotlib.__version__
-matplotlib.use('Agg') # Force matplotlib to not use any Xwindows backend.
+matplotlib.use('PDF')                  # No 'dvipng' support at the LPC yet, need PDFs instead
 from matplotlib import rc
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
@@ -52,7 +50,11 @@ else:
     plt.register_cmap(name='magma',   cmap=cmaps.magma)
     plt.register_cmap(name='inferno', cmap=cmaps.inferno)
     plt.register_cmap(name='plasma',  cmap=cmaps.plasma)
+
+# the following may not do anything, might be useful in non-CMSSW environments
+os.environ['PATH'] = os.environ['PATH']+':/usr/texbin'+':/Library/TeX/texbin' # LaTeX support
 ## ------------------------------ ##
+
 import hepPlotterTools as hpt
 import hepPlotterLabels as hpl
 
@@ -63,11 +65,12 @@ class HepPlotter(object):
     def __init__(self,typeOfPlot,dimensions):
         """
         @param typeOfPlot    Set the kind of plot: histogram or efficiency
+        @param dimensions    Number of dimension for the histogram/efficiency: 1 or 2
         """
         if not isinstance(dimensions,(int,long)):
-            print " You have specified a dimension of non-integer type."
-            print " This is not supported. "
+            print " You have specified an unsupported type for 'dimension'"
             print " For the hepPlotter class, choose either 1 or 2 dimenions."
+            print " Exiting. "
             sys.exit(1)
 
         # customizable options
@@ -78,7 +81,7 @@ class HepPlotter(object):
         self.stacked    = False       # stack plots (1D only)
         self.binning    = 20          # integer for number of bins, or list for non-uniform bins
         self.rebin      = 1           # rebin root histograms
-        self.label_size = 20          #
+        self.label_size = 20          # size of label for text on plots
         self.normed     = False       # normalize histogram
         self.logplot    = False       # plot on log scale
         self.underflow  = False       # plot the underflow
@@ -99,7 +102,7 @@ class HepPlotter(object):
         self.plotLUMI       = False
         self.CMSlabel       = 'top left'     # 'top left', 'top right' & 'outer' for 2D
         self.CMSlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary'
-        self.format         = 'png'          # file format for saving image
+        self.format         = 'pdf'          # file format for saving image
         self.saveAs         = "plot_{0}d_{1}".format(self.dimensions,self.CMSlabelStatus) # save figure with name
         self.numLegendColumns = 2
         self.legendLoc        = 1
@@ -234,6 +237,7 @@ class HepPlotter(object):
         self.kwargs[name]     = kwargs      # pass normal matplotlib arguments
         self.colors[name]     = color
         self.yerrors[name]    = yerr        # method for drawing y-errors
+        self.draw_types[name] = draw
         self.linecolors[name] = linecolor
         self.linestyles[name] = linestyle
         self.linewidths[name] = linewidth
@@ -242,7 +246,7 @@ class HepPlotter(object):
         self.ratio_den[name]  = ratio_den   # denominator in ratio
         self.ratio_num[name]  = ratio_num   # numerator in ratio
         self.ratio_partner[name] = ratio_partner
-        self.draw_types[name] = draw
+
         if draw=='errorbar':
             self.errorbarplot.append(name)
             if linestyle=='solid':
@@ -255,8 +259,7 @@ class HepPlotter(object):
 
     def execute(self):
         """
-        Execute the plot.  Pass arguments concerning the data in the following way:
-
+        Execute the plot.
         return the Figure object to the user (they can edit it if they please)
         """
         if self.dimensions == 1:
@@ -272,6 +275,10 @@ class HepPlotter(object):
         """Plot a 1D histogram."""
         self.ratio_ylims  = {}
         self.ratio_yticks = {}
+
+        fig      = None
+        self.ax1 = None
+        self.ax2 = None
         if self.ratio_plot:
             fig = plt.figure()
             gs  = matplotlib.gridspec.GridSpec(2,1,height_ratios=[3,1],hspace=0.0)
@@ -411,11 +418,14 @@ class HepPlotter(object):
         self.ax1.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         if self.xlim is not None:
             plt.xlim(self.xlim)
+
+        x_axis = None
         if self.ratio_plot:
             self.drawRatio()
             x_axis = self.ax2
         else:
             x_axis = self.ax1
+
         self.setXAxis(x_axis)
 
 
@@ -462,10 +472,8 @@ class HepPlotter(object):
                                     weights=h_data )
             self.colormap = hpt.getDataStructure( hh )
 
-        if self.logplot:  norm2d = LogNorm()
-        else:             norm2d = None
-
         # Make the plot
+        norm2d = LogNorm() if self.logplot else None
         plt.hist2d(x_bin_center,y_bin_center,bins=[binns_x,binns_y],
                    weights=h_data,cmap=self.colormap,norm=norm2d)
 
@@ -483,7 +491,7 @@ class HepPlotter(object):
         if self.logplot:
             cbar.ax.set_yticklabels( [r"10$^{\text{%s}}$"%(hpt.extract(i.get_text())) for i in cbar.ax.get_yticklabels()] )
         else:
-            cbar.ax.set_yticklabels( [r"$\text{%s}$"%(i.get_text().replace(r'$','')) for i in cbar.ax.get_yticklabels()],fontProperties )
+            cbar.ax.set_yticklabels( [r"$\text{%s}$"%(i.get_text().replace(r'$','')) for i in cbar.ax.get_yticklabels()],**fontProperties )
         if self.colorbar_title != None:
             cbar.ax.set_ylabel(self.colorbar_title)
 
@@ -496,16 +504,16 @@ class HepPlotter(object):
 
 
     def drawRatio(self):
-        """Ratio plot in frame under main plot
-           (assume this -- could extend functionality and make 2D version)
-           Can handle plotting multiple ratios with one quantity
-           (e.g., up/down systs with nominal)
+        """
+        Ratio plot in frame under main plot
+         Can handle plotting multiple ratios with one quantity,
+         e.g., compare both up & down systs with nominal
         """
         for i in self.names:
             num_hists       = []   # list of histograms for numerator of ratio
             num_hists_names = []   # names of histograms in numerator of ratio
-            if self.ratio_den[ i ]:
-                den_hist = np.array( self.histograms[ i ] )
+            if self.ratio_den[i]:
+                den_hist = np.array( self.histograms[i] )
                 try:
                     num_hists.append( np.array(self.histograms[self.ratio_partner[i]]) )
                     num_hists_names.append( self.ratio_partner[i] )
@@ -568,7 +576,7 @@ class HepPlotter(object):
         self.ax2.xaxis.set_major_formatter(FormatStrFormatter('%g'))
 
         self.ax2.set_yticks(self.ax2.get_yticks()[::2])
-        self.ax2.set_yticklabels(self.ax2.get_yticks(),fontProperties,fontsize=self.label_size)
+        self.ax2.set_yticklabels(self.ax2.get_yticks(),fontsize=self.label_size,**fontProperties)
         self.ax2.set_ylabel(self.y_ratio_label,fontsize=self.label_size,ha='center',va='bottom')
 
         return
@@ -579,7 +587,7 @@ class HepPlotter(object):
         """
         Plot uncertainties
 
-        @param axis
+        @param axis        Which Axes object to draw on
         @param name        Name of sample to plot (access data from global dictionaries)
         @param normalize   draw on ratio plot (divide by total prediction)
         """
@@ -622,38 +630,53 @@ class HepPlotter(object):
         return
 
 
+    def setAxis(self,axis,ax=""):
+        """Draw labels for a given axis"""
+        if not ax: return
 
-    def setYAxis(self,y_axis):
-        """Draw labels for y-axis -- simple so that users can specify limits/range
-           of their y-axis and just pass the axis ticks here"""
-        y_axis.set_ylabel(self.y_label,fontsize=self.label_size,ha='right',va='bottom',position=(0,1))
-        axis_yticks = y_axis.get_yticks()
+        axis_ticks = None
+        yaxis = False
 
+        if ax=="y":
+            yaxis = True
+            axis.set_ylabel(self.y_label,fontsize=self.label_size,ha='right',va='bottom',position=(0,1))
+            axis_ticks = axis.get_yticks()
+        elif ax=="x":
+            axis.set_xlabel(self.x_label,fontsize=self.label_size,ha='right',va='top',position=(1,0))
+            axis_ticks = axis.get_xticks()
+        else: # unsupported option
+            return
+
+        # Modify tick labels
         if self.logplot:
-            logTickLabels = [r"10$^{\text{%s}}$"%(int(np.log10(i)) ) for i in axis_yticks]
-            y_axis.set_yticklabels(logTickLabels,fontProperties,fontsize=self.label_size)
+            logTickLabels = [r"10$^{\text{%s}}$"%(int(np.log10(i)) ) for i in axis_ticks]
+            if yaxis: axis.set_yticklabels(logTickLabels,fontsize=self.label_size,**fontProperties)
+            else:     axis.set_xticklabels(logTickLabels,fontsize=self.label_size,**fontProperties)
         else:
-            if len(set(axis_yticks.astype(int)))==len(axis_yticks):
-                y_axis.set_yticklabels(axis_yticks.astype(int),fontProperties,fontsize=self.label_size)
+            # Draw tick marks as integers or decimal values
+            axis_ticks_int = axis_ticks.astype(int)
+            if len(set(axis_ticks_int))==len(axis_ticks):
+                # all of the ticks are unique as integers so draw them as integers
+                if yaxis: axis.set_yticklabels(axis_ticks_int,fontsize=self.label_size,**fontProperties)
+                else:     axis.set_xticklabels(axis_ticks_int,fontsize=self.label_size,**fontProperties)
             else:
-                y_axis.set_yticklabels(axis_yticks[0:-1],fontProperties,fontsize=self.label_size)
+                # the ticks are not unique as integers, leave them as they are
+                if yaxis: axis.set_yticklabels(axis_ticks[0:-1],fontsize=self.label_size,**fontProperties)
+                else:     axis.set_xticklabels(axis_ticks,fontsize=self.label_size,**fontProperties)
 
         return
 
 
+    def setYAxis(self,axis):
+        """Draw labels for a given axis"""
+        self.setAxis(axis,ax="y")
+        return
 
-    def setXAxis(self,x_axis):
+
+    def setXAxis(self,axis):
         """Draw labels for x-axis"""
-        x_axis.set_xlabel(self.x_label,fontsize=self.label_size,ha='right',va='top',position=(1,0))
-        x_axis_xticks = x_axis.get_xticks()
-
-        if len(set(x_axis_xticks.astype(int)))==len(x_axis_xticks):
-            x_axis.set_xticklabels(x_axis_xticks.astype(int),fontProperties,fontsize=self.label_size)
-        else:
-            x_axis.set_xticklabels(x_axis_xticks,fontProperties,fontsize=self.label_size)
-
+        self.setAxis(axis,ax="x")
         return
-
 
 
     def setAxisTickMarks(self):
@@ -662,7 +685,7 @@ class HepPlotter(object):
         self.ax1.xaxis.set_tick_params(which='major', length=8)
         if self.minor_ticks:
             if not self.logplot:
-                self.ax1.yaxis.set_minor_locator(self.y1minorLocator) # causes tick number error on logplot
+                self.ax1.yaxis.set_minor_locator(self.y1minorLocator) # causes 'tick number error' on logplot
             self.ax1.xaxis.set_minor_locator(self.x1minorLocator)
             if self.ratio_plot:
                 self.ax2.xaxis.set_minor_locator(self.x2minorLocator)
@@ -673,7 +696,10 @@ class HepPlotter(object):
 
 
     def text_labels(self):
-        """Labels for CMS plots"""
+        """
+        Labels for CMS plots
+        Write the CMS, Energy, and LUMI labels
+        """
         if self.dimensions==2 and self.CMSlabel!='outer':
             print " WARNING :: You have chosen a label position "
             print "            not considered for 2D plots. "
@@ -681,9 +707,6 @@ class HepPlotter(object):
             print "            parameter 'CMSlabel' to 'outer'."
 
         text = self.text_coords[self.CMSlabel]
-
-
-        ## CMS, Energy, and LUMI labels
 
         cms_stamp    = hpl.CMSStamp(self.CMSlabelStatus)
         lumi_stamp   = hpl.LumiStamp(self.lumi)
@@ -744,16 +767,14 @@ class HepPlotter(object):
         N = len(x_bin_center) # number of bins (a flattened list for both TH1/TH2)
 
         text_colors = self.bin_yields_color
-        if text_colors == None:
-            text_colors = ['0.00' for i in range(N)]
+        if text_colors is None:
+            text_colors = ['k' for _ in range(N)]
 
         for i in range(N):
-            self.ax1.text(x_bin_center[i],
-                            y_bin_center[i],
-                            "{0:.1f}".format(h_data[i]),
-                            horizontalalignment='center',
-                            verticalalignment='center',
-                            color=text_colors[i])
+            self.ax1.text(x_bin_center[i],y_bin_center[i],
+                          "{0:.1f}".format(h_data[i]),
+                          ha='center',va='center',
+                          color=text_colors[i])
 
         return
 

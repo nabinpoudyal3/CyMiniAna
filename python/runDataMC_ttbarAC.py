@@ -92,7 +92,7 @@ for histogram in histograms:
     hist.CMSlabel    = 'top left'  # 'top left', 'top right'; hack code for something else
     hist.numLegendColumns = 1
     hist.CMSlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
-    hist.format           = 'png'       # file format for saving image
+    hist.format           = 'pdf'       # file format for saving image
     hist.saveAs           = outpath+"/datamc_ttbarAC_"+histogramName # save figure with name
 
     hist.initialize()

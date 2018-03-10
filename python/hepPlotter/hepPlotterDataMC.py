@@ -1,6 +1,6 @@
 '''
 Created:       31 August    2016
-Last Updated:  15 June      2017
+Last Updated:   9 March     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -10,8 +10,9 @@ Bennett Magy
 bmagy@umichSPAMNOT.edu
 University of Michigan, Ann Arbor, MI 48109 (former student)
 -----
+
 Much of the code was inherited from a plotting packaged developed by Bennett.
-As it has merged with CyMiniAnaAC, other features have been added to improve modularity.
+As it has merged with CyMiniAna, other features have been added to improve modularity.
 '''
 import os
 import sys
@@ -22,29 +23,24 @@ from collections import OrderedDict
 
 os.environ['PATH'] = os.environ['PATH']+':/usr/texbin'+':/Library/TeX/texbin'  # LaTeX support
 
-## Setup Matplotlib Configuration ##
+from hepPlotter import HepPlotter
+import hepPlotterTools as hpt
+import hepPlotterLabels as hpl
+
+import numpy as np
 import matplotlib
 mpl_version = matplotlib.__version__
-matplotlib.use('Agg') # Force matplotlib to not use any Xwindows backend.
 from matplotlib import rc
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import AutoMinorLocator
-import numpy as np
 
-rc('text', usetex=True)
-rc('font', family='sans-serif')
+fontProperties = {}
 if mpl_version.startswith('1.5') or mpl_version.startswith('2'):
     fontProperties = {}
 else:
     fontProperties = {'family':'sans-serif','sans-serif':['Helvetica']}
-params = {'text.latex.preamble' : [r'\usepackage{amsmath}']}
-plt.rcParams.update(params)
-## ------------------------------ ##
-from hepPlotter import HepPlotter
-import hepPlotterTools as hpt
-import hepPlotterLabels as hpl
 
 
 
