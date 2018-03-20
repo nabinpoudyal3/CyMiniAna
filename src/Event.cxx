@@ -30,8 +30,14 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_isOneLeptonAnalysis  = m_config->isOneLeptonAnalysis();
     m_isTwoLeptonAnalysis  = m_config->isTwoLeptonAnalysis();
 
-    m_getDNN        = m_config->getDNN();            // build DNN
-    m_kinematicReco = m_config->kinematicReco();     // build the ttbar system
+    m_useJets       = m_config->useJets();
+    m_useLargeRJets = m_config->useLargeRJets();
+    m_useLeptons    = m_config->useLeptons();
+    m_useNeutrinos  = m_config->useNeutrinos();
+    m_DNNinference  = m_config->DNNinference();            // use DNN to predict values
+    m_DNNtraining   = m_config->DNNtraining();             // load DNN features (save/use later)
+    m_getDNN        = (m_DNNinference || m_DNNtraining);   // CWoLa
+    m_kinematicReco = m_config->kinematicReco();           // build the ttbar/neutrino system
 
     // b-tagging working points
     m_CSVv2L = m_config->CSVv2L();
@@ -54,7 +60,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 */
 
     /** JETS **/
-    if (m_config->useJets()){
+    if (m_useJets){
       // small-R jet information
       m_jet_pt   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4pt");
       m_jet_eta  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4eta");
@@ -63,7 +69,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_jet_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4bDisc");
     }
 
-    if (m_config->useLargeRJets()){
+    if (m_useLargeRJets){
       // large-R Jet information
       m_ljet_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8pt");
       m_ljet_eta    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8eta");
@@ -89,7 +95,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
 
     /** LEPTONS **/
-    if (m_config->useLeptons()){
+    if (m_useLeptons){
       m_el_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELpt");
       m_el_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELeta");
       m_el_phi = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELphi");
@@ -107,7 +113,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_mu_id  = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUlooseID");
     }
 
-    if (!m_kinematicReco && m_config->useNeutrinos()){
+    if (!m_kinematicReco && m_useNeutrinos){
         // Neutrinos aren't stored in the baseline ntuples, requires 'kinematicReco' to create
         m_nu_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_pt");
         m_nu_eta = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_eta");
@@ -155,10 +161,8 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
     // DNN material
     m_deepLearningTool = new deepLearning(cmaConfig);
-
-    bool useDNN(false);
-    if (!m_getDNN && useDNN)  // always false for now
-        m_dnn_score = new TTreeReaderValue<float>(m_ttree,"dnn_score");
+    if (!m_getDNN && m_useDNN)  // always false for now
+        m_dnn_score = new TTreeReaderValue<float>(m_ttree,"ljet_CWoLa");
 
 
     // Kinematic reconstruction algorithms
@@ -678,15 +682,16 @@ std::vector<int> Event::btag_jets(const std::string &wkpt) const{
 }
 
 void Event::deepLearningPrediction(){
-    /* Return map of deep learning values */
-    for (auto& ljet : m_ljets){
-        m_deepLearningTool->training(ljet);
-        ljet.features = m_deepLearningTool->features();  // store the features on the ljet to make easily accessible later
-    }
-
-    if (m_getDNN){
+    /* Deep learning for large-R jets -- CWoLa */
+    if (m_DNNinference){
         cma::DEBUG("EVENT : Calculate DNN ");
         m_deepLearningTool->inference(m_ljets);     // decorate the ljet with DNN values
+    }
+    else{
+        for (auto& ljet : m_ljets){
+            m_deepLearningTool->training(ljet);
+            ljet.features = m_deepLearningTool->features();  // store the features on the ljet to make easily accessible later
+        }
     }
 
     return;

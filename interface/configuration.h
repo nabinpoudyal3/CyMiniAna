@@ -31,7 +31,7 @@ class configuration {
     virtual void print();
 
     // Type of File(s) being processed
-    virtual bool isMC();              // must call "checkFileType(file)" or "isMC(file)" first!
+    virtual bool isMC() {return m_isMC;}              // must call "checkFileType(file)" or "isMC(file)" first!
     virtual bool isMC( TFile& file );
     bool isGridFile(){ return m_isGridFile;}
     bool isTtbar(){ return m_isTtbar;}
@@ -39,19 +39,20 @@ class configuration {
 
 
     // Type of analysis (all-hadronic, semi-leptonic, or di-leptonic)
-    virtual bool isZeroLeptonAnalysis();
-    virtual bool isOneLeptonAnalysis();
-    virtual bool isTwoLeptonAnalysis();
+    virtual bool isZeroLeptonAnalysis() {return m_isZeroLeptonAnalysis;}
+    virtual bool isOneLeptonAnalysis() {return m_isOneLeptonAnalysis;}
+    virtual bool isTwoLeptonAnalysis() {return m_isTwoLeptonAnalysis;}
 
     // object declarations
-    virtual bool useJets();
-    virtual bool useNeutrinos();
-    virtual bool useLeptons();
-    virtual bool useLargeRJets();
-    virtual bool useTruth();
+    virtual bool useJets() {return m_useJets;}
+    virtual bool useNeutrinos() {return m_useNeutrinos;}
+    virtual bool useLeptons() {return m_useLeptons;}
+    virtual bool useLargeRJets() {return m_useLargeRJets;}
+    virtual bool useTruth() {return m_useTruth;}
+    bool kinematicReco() {return m_kinematicReco;}
 
-    std::string jet_btagWkpt();
-    std::vector<std::string> btagWkpts();
+    std::string jet_btagWkpt() {return m_jet_btag_wkpt;}
+    std::vector<std::string> btagWkpts() {return m_btag_WPs;}
     float cMVAv2L() {return m_cMVAv2L;}
     float cMVAv2M() {return m_cMVAv2M;}
     float cMVAv2T() {return m_cMVAv2T;}
@@ -63,56 +64,58 @@ class configuration {
     // functions about the TTree
     virtual bool isNominalTree();
     virtual bool isNominalTree( const std::string &tree_name );
-    std::vector<std::string> treeNames();
+    std::vector<std::string> treeNames() {return m_treeNames;}
     void setTreename(std::string treeName);
-    std::string treename();
+    std::string treename() {return m_treename;}
 
     // functions about the file
     virtual void inspectFile( TFile& file );
-    std::vector<std::string> filesToProcess();
+    std::vector<std::string> filesToProcess() {return m_filesToProcess;}
     void setFilename(std::string fileName);
     std::string filename(){ return m_filename;}
     std::string primaryDataset(){ return m_primaryDataset;}
     unsigned int NTotalEvents(){ return m_NTotalEvents;}
 
     // return some values from config file
-    std::string verboseLevel();
-    std::vector<std::string> selections();
-    std::vector<std::string> qcdSelections();
-    std::vector<std::string> cutsfiles();
-    std::string outputFilePath();
-    std::string customDirectory();
-    std::string configFileName();
-    std::string getAbsolutePath();
-    int nEventsToProcess();
-    unsigned long long firstEvent();
-    bool makeTTree();
-    bool makeHistograms();
-    bool makeEfficiencies();
+    std::string verboseLevel() {return m_verboseLevel;}
+    std::vector<std::string> selections() {return m_selections;}
+    std::vector<std::string> qcdSelections() {return m_qcdSelections;}
+    std::vector<std::string> cutsfiles() {return m_cutsfiles;}
+    std::string outputFilePath() {return m_outputFilePath;}
+    std::string customDirectory() {return m_customDirectory;}
+    std::string configFileName() {return m_configFile;}
+    std::string getAbsolutePath() {return m_cma_absPath;}
+    int nEventsToProcess() {return m_nEventsToProcess;}
+    unsigned long long firstEvent() {return m_firstEvent;}
+    bool makeTTree() {return m_makeTTree;}
+    bool makeHistograms() {return m_makeHistograms;}
+    bool makeEfficiencies() {return m_makeEfficiencies;}
 
     // information for event weights
-    std::string metadataFile();
+    std::string metadataFile() {return m_metadataFile;}
     std::map<std::string,Sample> mapOfSamples(){return m_mapOfSamples;}
     Sample sample(){return m_mapOfSamples.at(m_primaryDataset);}
-    virtual double LUMI();
+    virtual double LUMI() {return m_LUMI;}
 
     // weight systematics
-    bool calcWeightSystematics();
-    std::map<std::string,unsigned int> mapOfWeightVectorSystematics();
-    std::vector<std::string> listOfWeightSystematics();
-    std::string listOfWeightSystematicsFile();
-    std::string listOfWeightVectorSystematicsFile();
+    bool calcWeightSystematics() {return m_calcWeightSystematics;}
+    std::map<std::string,unsigned int> mapOfWeightVectorSystematics() {return m_mapOfWeightVectorSystematics;}
+    std::vector<std::string> listOfWeightSystematics() {return m_listOfWeightSystematics;}
+    std::string listOfWeightSystematicsFile() {return m_listOfWeightSystematicsFile;}
+    std::string listOfWeightVectorSystematicsFile() {return m_listOfWeightVectorSystematicsFile;}
 
     // DNN
-    std::string dnnFile();
-    bool getDNN();
-    double minDNN();
-    double maxDNN();
-    std::string dnnKey();   // key for lwtnn
+    std::string dnnFile() {return m_dnnFile;}
+    bool useDNN() {return m_useDNN;}
+    bool DNNinference() {return m_DNNinference;}
+    bool DNNtraining() {return m_DNNtraining;}
+    double minDNN() {return m_minDNN;}
+    double maxDNN() {return m_maxDNN;}
+    std::string dnnKey() {return m_dnnKey;}   // key for lwtnn
 
     // Reco/Truth event loops
-    bool doRecoEventLoop();
-    bool matchTruthToReco();
+    bool doRecoEventLoop() {return m_doRecoEventLoop;}
+    bool matchTruthToReco() {return m_matchTruthToReco;}
     void setMatchTruthToReco(bool truthToReco);
 
     // truth-reco matching
@@ -120,13 +123,11 @@ class configuration {
     std::map<int,std::string> mapOfPartonContainmentRev() {return m_containmentMapRev;}
     std::map<std::string,int> mapOfTargetValues() {return m_targetMap;}
 
-
-    // misc. for dilepton ttbar
-    bool kinematicReco();
-    unsigned int NJetSmear();
-    unsigned int NMassPoints();
-    unsigned int massMin();
-    unsigned int massMax();
+    // dilepton ttbar reco
+    unsigned int NJetSmear() {return m_NJetSmear;}
+    unsigned int NMassPoints() {return m_NMassPoints;}
+    unsigned int massMin() {return m_massMin;}
+    unsigned int massMax() {return m_massMax;}
 
     float beamEnergy() {return m_beamEnergy;}           // 13000.;
     double topQuarkMass() {return m_topQuarkMass;}      // 172.5
@@ -190,11 +191,14 @@ class configuration {
     std::string m_sumWeightsFiles;
     std::string m_cma_absPath;
     std::string m_metadataFile;
-    bool m_getDNN;
+    bool m_useDNN;
+    bool m_DNNinference;
+    bool m_DNNtraining;
     std::string m_dnnFile;
     std::string m_dnnKey;
     bool m_doRecoEventLoop;
     bool m_matchTruthToReco;
+    bool m_kinematicReco;
 
     std::string m_jet_btag_wkpt;   // "L","M","T"
     std::string m_tjet_btag_wkpt;
@@ -231,7 +235,7 @@ class configuration {
     double m_minDNN  = 0.0;   // min. value in the DNN discriminant
     double m_maxDNN  = 1.0;   // max. value in the DNN discriminant
 
-    // -- Top Mass Variables -- //
+    // -- Top Mass Variables (dilepton ttbar reco) -- //
     const double m_electronMass = 0.000511;
     const double m_muonMass     = 0.105658;
     const double m_bQuarkMass   = 4.8;
@@ -241,13 +245,10 @@ class configuration {
     const int SENTINEL    = -1000;
     const int NCHAN       = 4;
     const double m_sqrt_s = 13000;      // center-of-mass energy
-
-    bool m_kinematicReco;
     unsigned int m_NJetSmear;    // 500
     unsigned int m_NMassPoints;  // 500
     unsigned int m_massMin;      // 100
     unsigned int m_massMax;      // 300
-
 
     // Primary dataset names for different samples in analysis
     std::vector<std::string> m_ttbarFiles = {};
@@ -307,9 +308,11 @@ class configuration {
              {"verboseLevel",          "INFO"},
              {"dnnFile",               "config/keras_ttbar_DNN.json"},
              {"dnnKey",                "dnn"},
-             {"getDNN",                "false"},
+             {"useDNN",                "false"},
+             {"DNNinference",          "false"},
+             {"DNNtraining",           "false"},
              {"doRecoEventLoop",       "true"},
-             {"kinematicReco",        "true"},
+             {"kinematicReco",         "false"},
              {"NJetSmear",             "500"},
              {"NMassPoints",           "1"},
              {"massMin",               "172"},
