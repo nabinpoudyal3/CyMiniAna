@@ -43,7 +43,7 @@ void miniTree::initialize(TTree* t, TFile& outputFile) {
     }
 
     m_ttree->Branch( "BESTProb_t_j", &m_BEST_t_j );
-    if ( m_config->getDNN() )
+    if ( m_config->DNNinference() )
         m_ttree->Branch( "DNN", &m_dnn, "DNN/F" );
 
     /*** disable branches here ***/

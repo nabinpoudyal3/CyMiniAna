@@ -143,9 +143,16 @@ class Event {
     bool m_isTwoLeptonAnalysis;
 
     // neural network & kinematic reconstruction
+    bool m_useJets;
+    bool m_useLargeRJets;
+    bool m_useLeptons;
+    bool m_useNeutrinos;
     bool m_kinematicReco;
     bool m_buildNeutrinos;
     bool m_getDNN;
+    bool m_useDNN;
+    bool m_DNNinference;
+    bool m_DNNtraining;
 
     ttbarReco* m_ttbarRecoTool;            // tool to perform ttbar reconstruction
     deepLearning* m_deepLearningTool;      // tool to perform deep learning

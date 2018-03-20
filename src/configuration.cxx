@@ -41,16 +41,18 @@ configuration::configuration(const std::string &configFile) :
   m_sumWeightsFiles("SetMe"),
   m_cma_absPath("SetMe"),
   m_metadataFile("SetMe"),
-  m_getDNN(false),
+  m_useDNN(false),
+  m_DNNinference(false),
+  m_DNNtraining(false),
   m_dnnFile("SetMe"),
   m_dnnKey("SetMe"),
   m_doRecoEventLoop(false),
   m_matchTruthToReco(true),
+  m_kinematicReco(true),
   m_jet_btag_wkpt("SetMe"),
   m_calcWeightSystematics(false),
   m_listOfWeightSystematicsFile("SetMe"),
-  m_listOfWeightVectorSystematicsFile("SetMe"),
-  m_kinematicReco(true){
+  m_listOfWeightVectorSystematicsFile("SetMe"){
     m_selections.clear();
     m_cutsfiles.clear();
 
@@ -154,14 +156,12 @@ void configuration::initialize() {
     m_makeEfficiencies = cma::str2bool( getConfigOption("makeEfficiencies") );
     m_dnnFile          = getConfigOption("dnnFile");
     m_dnnKey           = getConfigOption("dnnKey");
-    m_getDNN           = cma::str2bool( getConfigOption("getDNN") );
+    m_useDNN           = cma::str2bool( getConfigOption("useDNN") );
+    m_DNNinference     = cma::str2bool( getConfigOption("DNNinference") );
+    m_DNNtraining      = cma::str2bool( getConfigOption("DNNtraining") );
     m_doRecoEventLoop  = cma::str2bool( getConfigOption("doRecoEventLoop") );
     m_matchTruthToReco = true;  // not needed in this analysis (so it's not a config option) but here in case we do later
-    m_kinematicReco   = cma::str2bool( getConfigOption("kinematicReco") );
-    m_NJetSmear        = std::stoi( getConfigOption("NJetSmear") );
-    m_NMassPoints      = std::stoi( getConfigOption("NMassPoints") );
-    m_massMin          = std::stoi( getConfigOption("massMin") );
-    m_massMax          = std::stoi( getConfigOption("massMax") );
+    m_kinematicReco    = cma::str2bool( getConfigOption("kinematicReco") );
     m_metadataFile     = getConfigOption("metadataFile");
     m_calcWeightSystematics             = cma::str2bool( getConfigOption("calcWeightSystematics") );
     m_listOfWeightSystematicsFile       = getConfigOption("weightSystematicsFile");
@@ -190,6 +190,13 @@ void configuration::initialize() {
 
         m_mapOfWeightVectorSystematics.insert( std::pair<std::string,unsigned int>( tokens.at(0),std::stoi(tokens.at(1)) ) );
     }
+
+
+    // dilepton ttbar reco (not used right now)
+    m_NJetSmear   = std::stoi( getConfigOption("NJetSmear") );
+    m_NMassPoints = std::stoi( getConfigOption("NMassPoints") );
+    m_massMin     = std::stoi( getConfigOption("massMin") );
+    m_massMax     = std::stoi( getConfigOption("massMax") );
 
     return;
 }
@@ -249,23 +256,9 @@ void configuration::inspectFile( TFile& file ){
 }
 
 
-std::string configuration::verboseLevel(){
-    /* Return the verbosity level */
-    return m_verboseLevel;
-}
-
-std::string configuration::getAbsolutePath(){
-    /* Return the absolute path of the CyMiniAna directory (batch jobs) */
-    return m_cma_absPath;
-}
-
 void configuration::setTreename(std::string treeName){
     m_treename = treeName;
     return;
-}
-
-std::string configuration::treename(){
-    return m_treename;
 }
 
 void configuration::setFilename(std::string fileName){
@@ -288,58 +281,11 @@ bool configuration::isNominalTree( const std::string &tree_name ){
     return isNominal;
 }
 
-bool configuration::isMC(){
-    return m_isMC;
-}
-
 bool configuration::isMC( TFile& file ){
     /* Check the sum of weights tree DSIDs (to determine Data || MC) */
     inspectFile( file );
     return m_isMC;
 }
-
-
-// Kind of analysis (0/1/2-leptons)
-bool configuration::isZeroLeptonAnalysis(){
-    /* All-hadronic */
-    return m_isZeroLeptonAnalysis;
-}
-
-bool configuration::isOneLeptonAnalysis(){
-    /* Semi-leptonic */
-    return m_isOneLeptonAnalysis;
-}
-
-bool configuration::isTwoLeptonAnalysis(){
-    /* Dileptonic */
-    return m_isTwoLeptonAnalysis;
-}
-
-// weights + systematics
-bool configuration::calcWeightSystematics(){
-    return m_calcWeightSystematics;
-}
-
-std::map<std::string,unsigned int> configuration::mapOfWeightVectorSystematics(){
-    return m_mapOfWeightVectorSystematics;
-}
-
-std::vector<std::string> configuration::listOfWeightSystematics(){
-    return m_listOfWeightSystematics;
-}
-
-std::string configuration::listOfWeightSystematicsFile(){
-    return m_listOfWeightSystematicsFile;
-}
-
-std::string configuration::listOfWeightVectorSystematicsFile(){
-    return m_listOfWeightVectorSystematicsFile;
-}
-
-std::string configuration::metadataFile(){
-    return m_metadataFile;
-}
-
 
 void configuration::check_btag_WP(const std::string &wkpt){
     /* Check the b-tagging working point */
@@ -377,139 +323,9 @@ std::string configuration::convert(const Era& era) {
     }
 }
 
-bool configuration::useJets(){
-    return m_useJets;
-}
-
-bool configuration::useLeptons(){
-    return m_useLeptons;
-}
-
-bool configuration::useLargeRJets(){
-    return m_useLargeRJets;
-}
-
-bool configuration::useNeutrinos(){
-    return m_useNeutrinos;
-}
-
-std::string configuration::configFileName(){
-    return m_configFile;
-}
-
-std::vector<std::string> configuration::selections(){
-    return m_selections;
-}
-
-std::vector<std::string> configuration::cutsfiles(){
-    return m_cutsfiles;
-}
-
-std::string configuration::jet_btagWkpt(){
-    return m_jet_btag_wkpt;
-}
-
-std::vector<std::string> configuration::btagWkpts(){
-    return m_btag_WPs;
-}
-
-int configuration::nEventsToProcess(){
-    return m_nEventsToProcess;
-}
-
-unsigned long long configuration::firstEvent(){
-    return m_firstEvent;
-}
-
-std::string configuration::outputFilePath(){
-    return m_outputFilePath;
-}
-
-std::string configuration::customDirectory(){
-    return m_customDirectory;
-}
-
-double configuration::LUMI(){
-    return m_LUMI;
-}
-
-bool configuration::useTruth(){
-    return m_useTruth;
-}
-
-
-std::vector<std::string> configuration::filesToProcess(){
-    return m_filesToProcess;
-}
-
-std::vector<std::string> configuration::treeNames(){
-    return m_treeNames;
-}
-
-bool configuration::makeTTree(){
-    return m_makeTTree;
-}
-
-bool configuration::makeHistograms(){
-    return m_makeHistograms;
-}
-
-bool configuration::makeEfficiencies(){
-    return m_makeEfficiencies;
-}
-
-std::vector<std::string> configuration::qcdSelections(){
-    return m_qcdSelections;
-}
-
-// values for DNN
-std::string configuration::dnnFile(){
-    return m_dnnFile;  // file with dnn values (*.json)
-}
-std::string configuration::dnnKey(){
-    return m_dnnKey;   // key in dnnFile to access NN
-}
-// build the DNN
-bool configuration::getDNN(){
-    return m_getDNN;
-}
-bool configuration::doRecoEventLoop(){
-    return m_doRecoEventLoop;
-}
-
-bool configuration::matchTruthToReco(){
-    /* true  -- match truth events to reco events (loop over reco events)
-     * false -- match reco events to truth events (loop over truth events)
-     */
-    return m_matchTruthToReco;
-}
-
 void configuration::setMatchTruthToReco(bool truthToReco){
     m_matchTruthToReco = truthToReco;
     return;
-}
-
-bool configuration::kinematicReco(){
-    return m_kinematicReco;
-}
-unsigned int configuration::NJetSmear(){
-    return m_NJetSmear;
-}
-unsigned int configuration::NMassPoints(){
-    return m_NMassPoints;
-}
-unsigned int configuration::massMin(){
-    return m_massMin;
-}
-unsigned int configuration::massMax(){
-    return m_massMax;
-}
-
-double configuration::minDNN(){
-    return m_minDNN;
-}
-double configuration::maxDNN(){
-    return m_maxDNN;
 }
 
 // THE END

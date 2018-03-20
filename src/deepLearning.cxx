@@ -23,7 +23,7 @@ deepLearning::deepLearning( configuration& cmaConfig ) :
 
     // Setup lwtnn
     m_dnnKey = m_config->dnnKey();
-    if (m_config->getDNN()){
+    if (m_config->DNNinference()){
       std::ifstream input_cfg = cma::open_file( m_config->dnnFile() );
       lwt::JSONConfig cfg     = lwt::parse_json( input_cfg );
       m_lwnn   = new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs);
