@@ -34,10 +34,11 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_useLargeRJets = m_config->useLargeRJets();
     m_useLeptons    = m_config->useLeptons();
     m_useNeutrinos  = m_config->useNeutrinos();
+    m_neutrinoReco  = m_config->neutrinoReco();            // reconstruct neutrino
     m_DNNinference  = m_config->DNNinference();            // use DNN to predict values
     m_DNNtraining   = m_config->DNNtraining();             // load DNN features (save/use later)
     m_getDNN        = (m_DNNinference || m_DNNtraining);   // CWoLa
-    m_kinematicReco = m_config->kinematicReco();           // build the ttbar/neutrino system
+    m_kinematicReco = m_config->kinematicReco();           // build the ttbar system
 
     // b-tagging working points
     m_CSVv2L = m_config->CSVv2L();
@@ -288,21 +289,6 @@ void Event::execute(Long64_t entry){
     cma::DEBUG("EVENT : Setup kinematic variables ");
 
 
-
-    // kinematic reconstruction -- usually needed for neutrinos!
-    if (m_kinematicReco){
-        // if 0/1/2-lepton:
-        if (m_isTwoLeptonAnalysis){
-            getDilepton();
-            cma::DEBUG("EVENT : Setup the dilepton struct. ");
-        }
-    }
-
-    // build the ttbar system (depends on analysis!)
-    // use the reconstruction, or load from root file; depends on m_kinematicReco value
-    buildTtbar();
-    cma::DEBUG("EVENT : Ttbar system constructed & defined");
-
     // Neutrinos
     if (m_config->useNeutrinos()){
         // relies on kinematic reconstruction, unless the information is saved in root file
@@ -310,15 +296,33 @@ void Event::execute(Long64_t entry){
         cma::DEBUG("EVENT : Setup neutrinos ");
     }
 
-
-
-    // ------------- //
-
-    // Ttbar Reconstruction
-    m_ttbarRecoTool->execute(m_jets,m_ljets);
-//    m_ttbar = m_ttbarRecoTool->tops();
+    // Kinematic reconstruction (if they values aren't in the root file)
+    if (m_kinematicReco) ttbarReconstruction();
 
     cma::DEBUG("EVENT : Setup Event ");
+
+    return;
+}
+
+
+void Event::ttbarReconstruction(){
+    /* Reconstruct ttbar system -- after event selection! */
+    m_ttbar0L = {};
+    m_ttbar1L = {};
+    m_ttbar2L = {};
+
+    if (m_isZeroLeptonAnalysis){
+        m_ttbarRecoTool->execute(m_ljets);
+        m_ttbar0L = m_ttbarRecoTool->ttbar0L();
+    }
+    else if (m_isOneLeptonAnalysis){
+        m_ttbarRecoTool->execute(m_electrons,m_muons,m_jets,m_ljets);
+        m_ttbar1L = m_ttbarRecoTool->ttbar1L();
+    }
+    else if (m_isTwoLeptonAnalysis){
+        m_ttbarRecoTool->execute(m_electrons,m_muons,m_jets);
+        m_ttbar2L = m_ttbarRecoTool->ttbar2L();
+    }
 
     return;
 }
@@ -338,22 +342,28 @@ void Event::initialize_jets(){
         CSVv2T 0.9432
      */
     unsigned int nJets = (*m_jet_pt)->size();
-    m_jets.resize( nJets );   // (*m_jet_pt)->size());
+    m_jets.clear();
+
     for (const auto& btagWP : m_config->btagWkpts() ){
         m_btag_jets[btagWP].clear();
     }
 
+    unsigned int idx(0);
     for (unsigned int i=0; i<nJets; i++){
         Jet jet;
         jet.p4.SetPtEtaPhiM( (*m_jet_pt)->at(i),(*m_jet_eta)->at(i),(*m_jet_phi)->at(i),(*m_jet_m)->at(i));
 
-        jet.bdisc = (*m_jet_bdisc)->at(i);
-        jet.index = i;
-        jet.isGood = (jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
+        bool isGood(jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
+        if (!isGood) continue;
+
+        jet.bdisc  = (*m_jet_bdisc)->at(i);
+        jet.index  = idx;
+        jet.isGood = isGood;
 
         getBtaggedJets(jet);
 
-        m_jets[i] = jet;
+        m_jets.push_back(jet);
+        idx++;
     }
 
     m_btag_jets_default = m_btag_jets.at(m_config->jet_btagWkpt());
@@ -368,17 +378,23 @@ void Event::initialize_ljets(){
       1 :: Anti-top (lepton Q > 0)
     */
     unsigned int nLjets = (*m_ljet_pt)->size();
-    m_ljets.resize(nLjets);
+    m_ljets.clear();
 
+    // Define CWoLa classification based on lepton charge (only single lepton events)
     int target(-1);
     if (m_config->isOneLeptonAnalysis() && (m_electrons.size()+m_muons.size())>0){
         int charge = (m_electrons.size()>0) ? m_electrons.at(0).charge : m_muons.at(0).charge;
         target = (charge>0) ? 1:0;
     }
 
+    unsigned int idx(0);
     for (unsigned int i=0; i<nLjets; i++){
         Ljet ljet;
         ljet.p4.SetPtEtaPhiM( (*m_ljet_pt)->at(i),(*m_ljet_eta)->at(i),(*m_ljet_phi)->at(i),(*m_ljet_m)->at(i));
+        ljet.softDropMass = (*m_ljet_SDmass)->at(i);
+
+        bool isGood(ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && ljet.softDropMass>10.);
+        if (!isGood) continue;
 
         ljet.charge = (*m_ljet_charge)->at(i);
         ljet.tau1   = (*m_ljet_tau1)->at(i);
@@ -386,12 +402,6 @@ void Event::initialize_ljets(){
         ljet.tau3   = (*m_ljet_tau3)->at(i);
         ljet.tau21  = ljet.tau2 / ljet.tau1;
         ljet.tau32  = ljet.tau3 / ljet.tau2;
-        ljet.softDropMass = (*m_ljet_SDmass)->at(i);
-
-        ljet.subjet0_bdisc  = (*m_ljet_subjet0_bdisc)->at(i);
-        ljet.subjet0_charge = (*m_ljet_subjet0_charge)->at(i);
-        ljet.subjet1_bdisc  = (*m_ljet_subjet1_bdisc)->at(i);
-        ljet.subjet1_charge = (*m_ljet_subjet1_charge)->at(i);
 
         ljet.BEST_t = (*m_ljet_BEST_t)->at(i);
         ljet.BEST_w = (*m_ljet_BEST_w)->at(i);
@@ -400,13 +410,22 @@ void Event::initialize_ljets(){
         ljet.BEST_j = (*m_ljet_BEST_j)->at(i);
         ljet.BEST_class = (*m_ljet_BEST_class)->at(i);
 
-        ljet.target = target;
-        ljet.isGood = (ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && ljet.softDropMass>10.);
-        ljet.index  = i;
+        ljet.subjet0_bdisc  = (*m_ljet_subjet0_bdisc)->at(i);
+        ljet.subjet0_charge = (*m_ljet_subjet0_charge)->at(i);
+        ljet.subjet1_bdisc  = (*m_ljet_subjet1_bdisc)->at(i);
+        ljet.subjet1_charge = (*m_ljet_subjet1_charge)->at(i);
 
-        m_ljets[i] = ljet;
+        ljet.target = target;
+        ljet.isGood = isGood;
+        ljet.index  = idx;
+
+        if (isGood && ljet.p4.Pt()<400) std::cout << " LARGE R JET SNUCK THROUGH " << std::endl;
+
+        m_ljets.push_back(ljet);
+        idx++;
     }
-    deepLearningPrediction();   // add features to map (easily access later)
+
+    deepLearningPrediction();   // store features in map (easily access later)
 
     return;
 }
@@ -424,33 +443,39 @@ void Event::initialize_leptons(){
 
     // Muons
     unsigned int nMuons = (*m_mu_pt)->size();
-    m_muons.resize(nMuons);
+    m_muons.clear();
 
     for (unsigned int i=0; i<nMuons; i++){
         Muon mu;
         mu.p4.SetPtEtaPhiE( (*m_mu_pt)->at(i),(*m_mu_eta)->at(i),(*m_mu_phi)->at(i),(*m_mu_e)->at(i));
 
+        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.1);
+        if (!isGood) continue;
+
         mu.charge = (*m_mu_charge)->at(i);
         mu.id  = (*m_mu_id)->at(i);
         mu.iso = (*m_mu_iso)->at(i);
-        mu.isGood = (mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.1);
+        mu.isGood = isGood;
 
-        m_muons[i] = mu;
+        m_muons.push_back(mu);
     }
 
     // Electrons
     unsigned int nElectrons = (*m_el_pt)->size();
-    m_electrons.resize(nElectrons);
+    m_electrons.clear();
     for (unsigned int i=0; i<nElectrons; i++){
         Electron el;
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
 
+        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1);
+        if (!isGood) continue;
+
         el.charge = (*m_el_charge)->at(i);
         el.id  = (*m_el_id)->at(i);
         el.iso = (*m_el_iso)->at(i);
-        el.isGood = (el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1);
+        el.isGood = isGood;
 
-        m_electrons[i] = el;
+        m_electrons.push_back(el);
     }
 
     return;
@@ -461,30 +486,21 @@ void Event::initialize_neutrinos(){
     /* Build the neutrinos */
     m_neutrinos.clear();
 
+    if (!m_isOneLeptonAnalysis && !m_isTwoLeptonAnalysis){
+        cma::ERROR("EVENT : 'initialize_neutrinos()' called for analysis without neutrinos!");
+        return;
+    }
+
     Neutrino nu1;
     Neutrino nu2;
 
-    // Assign neutrinos from 'm_ttbar'
-    if (m_isOneLeptonAnalysis){
-        nu1 = m_ttbar["top"].neutrino;
-        m_neutrinos.push_back( nu1 );
-    }
-    else if (m_isTwoLeptonAnalysis){
-        nu1 = m_ttbar["top"].neutrino;
-        nu2 = m_ttbar["antitop"].neutrino;
-
-        // pT-ordering
-        if (nu1.p4.Pt() > nu2.p4.Pt()){
-            m_neutrinos.push_back( nu1 );
-            m_neutrinos.push_back( nu2 );
+    if (m_neutrinoReco){}  // reconstruct neutrinos!
+        if (m_isOneLeptonAnalysis){
         }
-        else{
-            m_neutrinos.push_back( nu2 );
-            m_neutrinos.push_back( nu1 );
+        else if (m_isTwoLeptonAnalysis){
         }
-    }
     else{
-        cma::ERROR("EVENT : 'initialize_neutrinos()' called for analysis without neutrinos!");
+        // Assign neutrinos from root file
     }
 
     return;
@@ -498,8 +514,8 @@ void Event::initialize_weights(){
     m_weight_btag.clear();
     if (m_isMC){
         m_nominal_weight  = 1.0; //(**m_weight_pileup) * (**m_weight_mc);
-/*        m_nominal_weight *= (m_xsection) * (m_kfactor) * m_LUMI / (m_sumOfWeights);
-      // event weights
+        m_nominal_weight *= (m_xsection) * (m_kfactor) * m_LUMI / (m_sumOfWeights);
+/*      // event weights
         m_weight_btag["70"] = (**m_weight_btag_70);
         m_weight_btag["77"] = (**m_weight_btag_77);
         m_weight_btag_default = m_weight_btag[m_config->jet_btagWkpt()];
@@ -586,27 +602,6 @@ void Event::getDilepton(){
     cma::DEBUG("EVENT : met       = "+std::to_string(m_met.p4.Pt()));
     cma::DEBUG("EVENT : lepton pT = "+std::to_string(m_leptons.at(0).p4.Pt()));
     cma::DEBUG("EVENT : jet pT    = "+std::to_string(m_jets.at(0).p4.Pt()));
-
-    return;
-}
-
-
-
-//BUILD TTBAR
-//    USE ROOT FILE INFORMATION IF "m_kinematicReco"==false
-//    ELSE USE ALGORITHM (DEPENDS ON 0/1/2-lepton ANALYSIS
-
-void Event::buildTtbar(){
-    /* Build ttbar system */
-    if (m_kinematicReco){
-        if (m_isTwoLeptonAnalysis){
-            getDilepton();
-            m_ttbar = m_dileptonTtbar->execute(m_dilepton);
-        }
-    }
-    else{
-        m_ttbar = {};
-    }
 
     return;
 }

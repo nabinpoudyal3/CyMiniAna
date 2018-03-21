@@ -203,10 +203,11 @@ int main(int argc, char** argv) {
             passEvent = evtSel.applySelection(event);
 
             if (passEvent){
-                cma::DEBUG("RUNML : Passed selection, now save information");
+                cma::DEBUG("RUNML : Passed selection, now reconstruct ttbar & save information");
+                event.ttbarReconstruction();
 
-                // For ML, we are training on semi-boosted top quarks (AK8+AK4)
-                // Only save features of the AK8+AK4 system to the output ntuple/histograms
+                // For ML, we are training on boosted top quarks in data!
+                // Only save features of the AK8 to the output ntuple/histograms
                 std::map<std::string,double> features2save;
                 features2save["xsection"] = s.XSection;
                 features2save["kfactor"]  = s.KFactor;
@@ -220,7 +221,7 @@ int main(int argc, char** argv) {
                     for (const auto& x : ljet.features){
                         features2save[x.first] = x.second;
                     }
-                    // extra features
+                    // extra features for plotting
                     features2save["ljet_BEST_t"] = ljet.BEST_t;
                     features2save["ljet_BEST_w"] = ljet.BEST_w;
                     features2save["ljet_BEST_z"] = ljet.BEST_z;

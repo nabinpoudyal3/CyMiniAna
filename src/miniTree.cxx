@@ -46,6 +46,13 @@ void miniTree::initialize(TTree* t, TFile& outputFile) {
     if ( m_config->DNNinference() )
         m_ttree->Branch( "DNN", &m_dnn, "DNN/F" );
 
+
+    if (m_config->isOneLeptonAnalysis()){
+        m_ttree->Branch( "leptop_jet",  &m_leptop_jet,  "leptop_jet/I" );   // index of AK4 jet in leptonic top candidate
+        m_ttree->Branch( "hadtop_ljet", &m_hadtop_ljet, "hadtop_ljet/I" );  // index of AK8 jet as hadronic top candidate
+    }
+
+
     /*** disable branches here ***/
     // m_ttree->SetBranchStatus("", 0);
 
@@ -77,6 +84,14 @@ void miniTree::saveEvent(Event& event, const std::vector<unsigned int>& evtsel_d
 
     for (unsigned int idx=0; idx<n_sels; idx++)
         m_passSelection.at(idx) = (generateDecisions) ? 0 : evtsel_decisions.at(idx); // set to 0 by default
+
+
+    if (m_config->isOneLeptonAnalysis()){
+        Ttbar1L ttbar = event.ttbar1L();
+        m_leptop_jet  = ttbar.jet.index;
+        m_hadtop_ljet = ttbar.ljet.index;
+    }
+
 
     cma::DEBUG("MINITREE : Fill the tree");
     m_ttree->Fill();

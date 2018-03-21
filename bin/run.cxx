@@ -137,6 +137,7 @@ int main(int argc, char** argv) {
         cma::INFO("RUN :   >> Saving to "+fullOutputFilename);
 
         // check the file type
+        config.setFilename( filename );      // set the filename for the configuration
         config.inspectFile( *file );         // check the type of file this is
 
         std::vector<std::string> fileKeys;
@@ -248,7 +249,9 @@ int main(int argc, char** argv) {
                     // at least 1 selection passed
                     // share information on which selection passed in case these classes
                     // want to use that information, e.g., special branch or histogram name
-                    cma::DEBUG("RUN : Passed selection, now save information");
+                    cma::DEBUG("RUN : Passed selection, now reconstruct ttbar & save information");
+                    event.ttbarReconstruction();
+
                     if (makeTTree)        miniTTree.saveEvent(event,passEvents);
                     if (makeHistograms)   histMaker.fill(event,passEvents);
                     if (makeEfficiencies) effMaker.fill(event,passEvents);

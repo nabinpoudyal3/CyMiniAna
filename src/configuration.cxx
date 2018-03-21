@@ -28,6 +28,7 @@ configuration::configuration(const std::string &configFile) :
   m_useLeptons(false),
   m_useLargeRJets(false),
   m_useNeutrinos(false),
+  m_neutrinoReco(false),
   m_input_selection("SetMe"),
   m_treename("SetMe"),
   m_filename("SetMe"),
@@ -38,7 +39,6 @@ configuration::configuration(const std::string &configFile) :
   m_customDirectory("SetMe"),
   m_makeTTree(false),
   m_makeHistograms(false),
-  m_sumWeightsFiles("SetMe"),
   m_cma_absPath("SetMe"),
   m_metadataFile("SetMe"),
   m_useDNN(false),
@@ -145,12 +145,12 @@ void configuration::initialize() {
     m_jet_btag_wkpt    = getConfigOption("jet_btag_wkpt");
     m_outputFilePath   = getConfigOption("output_path");
     m_customDirectory  = getConfigOption("customDirectory");
-    m_sumWeightsFiles  = getConfigOption("sumWeightsFiles");
     m_useTruth         = cma::str2bool( getConfigOption("useTruth") );
     m_useJets          = cma::str2bool( getConfigOption("useJets") );
     m_useLeptons       = cma::str2bool( getConfigOption("useLeptons") );
     m_useLargeRJets    = cma::str2bool( getConfigOption("useLargeRJets") );
     m_useNeutrinos     = cma::str2bool( getConfigOption("useNeutrinos") );
+    m_neutrinoReco     = cma::str2bool( getConfigOption("neutrinoReco") );
     m_makeTTree        = cma::str2bool( getConfigOption("makeTTree") );
     m_makeHistograms   = cma::str2bool( getConfigOption("makeHistograms") );
     m_makeEfficiencies = cma::str2bool( getConfigOption("makeEfficiencies") );
@@ -239,7 +239,7 @@ bool configuration::checkPrimaryDataset(const std::vector<std::string>& files){
     /* Check if filename is in list of files */
     bool inListOfFiles(false);
     for (auto& x : files){
-        inListOfFiles    = (m_filename.find(x)!=std::string::npos);
+        inListOfFiles = (m_filename.find(x)!=std::string::npos);
         if (inListOfFiles){
             m_primaryDataset = m_mapOfPrimaryDatasets.at(x);
             break;
@@ -270,6 +270,7 @@ void configuration::inspectFile( TFile& file ){
     if (m_primaryDataset.size()>0) m_NTotalEvents = m_mapOfSamples.at(m_primaryDataset).NEvents;
     else{
         cma::WARNING("CONFIGURATION : Primary dataset name not found, checking the map");
+        cma::WARNING("CONFIGURATION : - isMC = "+std::to_string(m_isMC));
         for (const auto& s : m_mapOfSamples){
             Sample samp = s.second;
             std::size_t found = m_filename.find(samp.primaryDataset);

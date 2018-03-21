@@ -146,24 +146,38 @@ struct MET : CmaBase{
 
 
 // Top Quark Definitions
+struct Ttbar0L : CmaBase{
+    // 2 FatJets
+    std::vector<Ljet> ljets;
+};
+struct Ttbar1L : CmaBase{
+    // 1 FatJet
+    Ljet ljet;
+    // 1 LepTop
+    Lepton lepton;
+    Neutrino neutrino;
+    Jet jet;
+};
+struct Ttbar2L : CmaBase{
+    // 2 LepTops -- split by top/antitop (lepton charge)
+    Lepton lepton_t;
+    Neutrino neutrino_t;
+    Jet jet_t;
+
+    Lepton lepton_tbar;
+    Neutrino neutrino_tbar;
+    Jet jet_tbar;
+};
+
+// ************************************ //
+// dilepton ttbar System -- needs to be cleaned-up (21 March 2018)
 struct Top : CmaBase{
     // Define a top quark
-    unsigned int target;               // for ML training
-    std::map<std::string,double> dnn;  // ML results (from lwtnn)
-
     bool isTop;
     bool isAntiTop;
-
-    // contains all associated jets (hadronic or leptonic)
-    std::vector<int> jets;  
 };
 
-struct HadTop : Top {
-    // Hadronically-decay top quark
-    int ljet;            // Associated AK8 jet (if boosted)
-};
-
-struct LepTop : Top {
+struct LepTop : Top{
     // Leptonically-decaying top quark aspects
     Jet jet;
     Lepton lepton;
@@ -173,10 +187,6 @@ struct LepTop : Top {
     float weight_ES;     // reconstruction weight (EventShape)
     float weight_tt;     // reconstruction weight (ttbar XS method)
 };
-
-
-// ************************************ //
-// ttbar System
 
 struct DileptonReco {
     // struct of information needed for neutrino reconstruction (AMWT)

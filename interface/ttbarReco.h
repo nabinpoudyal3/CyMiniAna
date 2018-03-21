@@ -16,20 +16,31 @@ class ttbarReco {
 
     ~ttbarReco();
 
-    std::vector<Top> tops();
-    void execute(const std::vector<Jet>& jets, const std::vector<Ljet>& ljets);
-    bool isTopTagged(const Ljet& ljet);
+    Ttbar0L ttbar0L() {return m_ttbar0L;}
+    Ttbar1L ttbar1L() {return m_ttbar1L;}
+    Ttbar2L ttbar2L() {return m_ttbar2L;}
+
+    // all-hadronic
+    void execute(std::vector<Ljet>& ljets);
+
+    // single lepton
+    void execute(std::vector<Electron>& electrons, std::vector<Muon>& muons, std::vector<Jet>& jets, std::vector<Ljet>& ljets);
+
+    // dilepton
+    void execute(std::vector<Electron>& electrons, std::vector<Muon>& muons, std::vector<Jet>& jets);
 
   protected:
 
     configuration *m_config;
 
-    std::vector<Top> m_ttbar;
+    Ttbar0L m_ttbar0L;
+    Ttbar1L m_ttbar1L;
+    Ttbar2L m_ttbar2L;
+
     std::map<std::string,int> m_mapContainment;
     std::map<std::string,int> m_targetMap;
 
-    std::vector<Jet> m_jets;
-    std::vector<Ljet> m_ljets;
+    float M_HALF_PI = M_PI*0.5;
 };
 
 #endif

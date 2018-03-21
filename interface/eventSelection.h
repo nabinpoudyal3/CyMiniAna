@@ -112,6 +112,10 @@ class eventSelection{
     unsigned int m_NMuons;
     unsigned int m_NJets;
     unsigned int m_NLjets;
+
+    Ttbar0L m_ttbar0L;
+    Ttbar1L m_ttbar1L;
+    Ttbar2L m_ttbar2L;
 };
 
 #endif
