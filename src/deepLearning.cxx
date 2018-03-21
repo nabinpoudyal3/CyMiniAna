@@ -77,8 +77,10 @@ void deepLearning::loadFeatures(const Ljet& ljet){
 
     m_features["ljet_subjet0_bdisc"]  = ljet.subjet0_bdisc;
     m_features["ljet_subjet0_charge"] = ljet.subjet0_charge;
+    m_features["ljet_subjet0_pTrel"]  = 1; //ljet.subjet0_bdisc;
     m_features["ljet_subjet1_bdisc"]  = ljet.subjet1_bdisc;
     m_features["ljet_subjet1_charge"] = ljet.subjet1_charge;
+    m_features["ljet_subjet1_pTrel"]  = 1; //ljet.subjet0_charge;
 
     m_features["ljet_charge"] = ljet.charge;
 

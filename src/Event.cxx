@@ -265,6 +265,12 @@ void Event::execute(Long64_t entry){
         cma::DEBUG("EVENT : Setup truth information ");
     }
 
+    // Leptons
+    if (m_config->useLeptons()){
+        initialize_leptons();
+        cma::DEBUG("EVENT : Setup leptons ");
+    }
+
     // Jets
     if (m_config->useJets()){
         initialize_jets();
@@ -275,12 +281,6 @@ void Event::execute(Long64_t entry){
     if (m_config->useLargeRJets()){
         initialize_ljets();
         cma::DEBUG("EVENT : Setup large-R jets ");
-    }
-
-    // Leptons
-    if (m_config->useLeptons()){
-        initialize_leptons();
-        cma::DEBUG("EVENT : Setup leptons ");
     }
 
     // Get some kinematic variables (MET, HT, ST)
@@ -363,9 +363,18 @@ void Event::initialize_jets(){
 
 
 void Event::initialize_ljets(){
-    /* Setup struct of large-R jets and relevant information */
+    /* Setup struct of large-R jets and relevant information 
+      0 :: Top      (lepton Q < 0)
+      1 :: Anti-top (lepton Q > 0)
+    */
     unsigned int nLjets = (*m_ljet_pt)->size();
     m_ljets.resize(nLjets);
+
+    int target(-1);
+    if (m_config->isOneLeptonAnalysis() && (m_electrons.size()+m_muons.size())>0){
+        int charge = (m_electrons.size()>0) ? m_electrons.at(0).charge : m_muons.at(0).charge;
+        target = (charge>0) ? 1:0;
+    }
 
     for (unsigned int i=0; i<nLjets; i++){
         Ljet ljet;
@@ -391,6 +400,7 @@ void Event::initialize_ljets(){
         ljet.BEST_j = (*m_ljet_BEST_j)->at(i);
         ljet.BEST_class = (*m_ljet_BEST_class)->at(i);
 
+        ljet.target = target;
         ljet.isGood = (ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && ljet.softDropMass>10.);
         ljet.index  = i;
 
@@ -687,7 +697,7 @@ void Event::deepLearningPrediction(){
         cma::DEBUG("EVENT : Calculate DNN ");
         m_deepLearningTool->inference(m_ljets);     // decorate the ljet with DNN values
     }
-    else{
+    else if (m_DNNtraining){
         for (auto& ljet : m_ljets){
             m_deepLearningTool->training(ljet);
             ljet.features = m_deepLearningTool->features();  // store the features on the ljet to make easily accessible later

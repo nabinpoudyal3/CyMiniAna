@@ -69,6 +69,7 @@ class configuration {
     std::string treename() {return m_treename;}
 
     // functions about the file
+    bool checkPrimaryDataset(const std::vector<std::string>& files);
     virtual void inspectFile( TFile& file );
     std::vector<std::string> filesToProcess() {return m_filesToProcess;}
     void setFilename(std::string fileName);
@@ -153,6 +154,8 @@ class configuration {
     bool m_isGridFile;
     bool m_isQCD;
     bool m_isTtbar;
+    bool m_isWjets;
+    bool m_isSingleTop;
 
     // type of analysis
     bool m_isZeroLeptonAnalysis;
@@ -251,8 +254,25 @@ class configuration {
     unsigned int m_massMax;      // 300
 
     // Primary dataset names for different samples in analysis
-    std::vector<std::string> m_ttbarFiles = {};
-    std::vector<std::string> m_qcdFiles = {};
+    std::map<std::string,std::string> m_mapOfPrimaryDatasets = {
+        {"ttbar","TT_TuneCUETP8M1_13TeV-powheg-pythia8"},
+        {"singletop_schan","ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"},
+        {"singletop_tchan_top","ST_t-channel_top_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin"},
+        {"singletop_tchan_antitop","ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin"},
+        {"singletop_tWchan_antitop","ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1"},
+        {"singletop_tWchan_top","ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1"},
+        {"wjets1","WJetsToLNu_Pt-100To250_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
+        {"wjets2","WJetsToLNu_Pt-250To400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
+        {"wjets3","WJetsToLNu_Pt-400To600_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
+        {"wjets4","WJetsToLNu_Pt-600ToInf_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"}
+    };
+
+    std::vector<std::string> m_qcdFiles   = {"qcd"};
+    std::vector<std::string> m_ttbarFiles = {"ttbar"};
+    std::vector<std::string> m_wjetsFiles = {"wjets1","wjets2","wjets3","wjets4"};
+    std::vector<std::string> m_singleTopFiles = {"singletop_schan","singletop_tWchan_antitop",
+                                                 "singletop_tWchan_top","singletop_tchan_antitop",
+                                                 "singletop_tchan_top","singletop_tchan_top"};
 
     // Degrees of 'containment' for parton matching to jets
     std::map<std::string,int> m_containmentMap = {
@@ -303,6 +323,7 @@ class configuration {
              {"cutsfile",              "examples/config/cuts_example.txt"},
              {"inputfile",             "examples/config/miniSL_ALLfiles.txt"},
              {"treenames",             "examples/config/treenames_nominal"},
+             {"treename",              "eventVars"},
              {"metadataFile",          "config/sampleMetaData.txt"},
              {"sumWeightsFiles",       "examples/config/miniSL_ALLMCFiles.txt"},
              {"verboseLevel",          "INFO"},
