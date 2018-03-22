@@ -214,29 +214,27 @@ int main(int argc, char** argv) {
                 features2save["sumOfWeights"] = s.sumOfWeights;
                 features2save["nominal_weight"] = event.nominal_weight();
 
-                std::vector<Ljet> ljets = event.ljets();
-                for (const auto& ljet : ljets){
-                    if (!ljet.isGood) continue;
+                Ttbar1L tt = event.ttbar1L();             // setup for CWoLa (large-R jet from l+jets events)
+                Ljet ljet = tt.ljet;
 
-                    for (const auto& x : ljet.features){
-                        features2save[x.first] = x.second;
-                    }
-                    // extra features for plotting
-                    features2save["ljet_BEST_t"] = ljet.BEST_t;
-                    features2save["ljet_BEST_w"] = ljet.BEST_w;
-                    features2save["ljet_BEST_z"] = ljet.BEST_z;
-                    features2save["ljet_BEST_h"] = ljet.BEST_h;
-                    features2save["ljet_BEST_j"] = ljet.BEST_j;
-                    features2save["ljet_SDmass"] = ljet.softDropMass;
-                    features2save["ljet_tau1"]   = ljet.tau1;
-                    features2save["ljet_tau2"]   = ljet.tau2;
-                    features2save["ljet_tau3"]   = ljet.tau3;
-                    features2save["ljet_tau21"]  = ljet.tau21;
-                    features2save["ljet_tau32"]  = ljet.tau32;
-
-                    miniTTree.saveEvent(features2save);
-                    histMaker.fill(features2save);
+                for (const auto& x : ljet.features){
+                    features2save[x.first] = x.second;
                 }
+                // extra features for plotting
+                features2save["ljet_BEST_t"] = ljet.BEST_t;
+                features2save["ljet_BEST_w"] = ljet.BEST_w;
+                features2save["ljet_BEST_z"] = ljet.BEST_z;
+                features2save["ljet_BEST_h"] = ljet.BEST_h;
+                features2save["ljet_BEST_j"] = ljet.BEST_j;
+                features2save["ljet_SDmass"] = ljet.softDropMass;
+                features2save["ljet_tau1"]   = ljet.tau1;
+                features2save["ljet_tau2"]   = ljet.tau2;
+                features2save["ljet_tau3"]   = ljet.tau3;
+                features2save["ljet_tau21"]  = ljet.tau21;
+                features2save["ljet_tau32"]  = ljet.tau32;
+
+                miniTTree.saveEvent(features2save);
+                histMaker.fill(features2save);
             }
 
             // iterate the entry and number of events processed

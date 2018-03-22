@@ -121,6 +121,12 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
         m_nu_phi = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_phi");
     }
 
+    if (!m_kinematicReco && m_getDNN){
+        // Load ttbar variables from file
+        m_leptop_jet  = new TTreeReaderValue<int>(m_ttree, "leptop_jet");
+        m_hadtop_ljet = new TTreeReaderValue<int>(m_ttree, "hadtop_ljet");
+    }
+
     m_met_met  = new TTreeReaderValue<float>(m_ttree,"METpt");
     m_met_phi  = new TTreeReaderValue<float>(m_ttree,"METphi");
 
@@ -297,7 +303,22 @@ void Event::execute(Long64_t entry){
     }
 
     // Kinematic reconstruction (if they values aren't in the root file)
+    m_ttbar0L = {};
+    m_ttbar1L = {};
+    m_ttbar2L = {};
     if (m_kinematicReco) ttbarReconstruction();
+    else{
+        if (m_isOneLeptonAnalysis){
+            int ljetidx = **m_hadtop_ljet;
+            int jetidx  = **m_leptop_jet;
+            m_ttbar1L.jet  = m_jets.at(jetidx);
+            m_ttbar1L.ljet = m_ljets.at(ljetidx);
+            if (m_muons.size()>0)
+                m_ttbar1L.lepton = m_muons.at(0);
+            else if (m_electrons.size()>0)
+                m_ttbar1L.lepton = m_electrons.at(0);
+        }
+    }
 
     cma::DEBUG("EVENT : Setup Event ");
 

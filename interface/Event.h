@@ -311,6 +311,10 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_truth_jet_phi;
     TTreeReaderValue<std::vector<float>> * m_truth_jet_e;
 
+
+    TTreeReaderValue<int> * m_leptop_jet;
+    TTreeReaderValue<int> * m_hadtop_ljet;
+
     // Truth info
     TTreeReaderValue<float> * m_weight_mc;
     TTreeReaderValue<float> * m_weight_pileup;

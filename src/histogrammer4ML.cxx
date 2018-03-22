@@ -47,11 +47,11 @@ void histogrammer4ML::bookHists(){
 
     for (const auto& target : m_targets){
         // Non-features just to compare consistency between top/anti-top
-        histogrammer::init_hist("ljet_BEST_t-"+target+"_"+m_name,  100,  0.0,  100.0);
-        histogrammer::init_hist("ljet_BEST_w-"+target+"_"+m_name,  100,  0.0,  100.0);
-        histogrammer::init_hist("ljet_BEST_z-"+target+"_"+m_name,  100,  0.0,  100.0);
-        histogrammer::init_hist("ljet_BEST_h-"+target+"_"+m_name,  100,  0.0,  100.0);
-        histogrammer::init_hist("ljet_BEST_j-"+target+"_"+m_name,  100,  0.0,  100.0);
+        histogrammer::init_hist("ljet_BEST_t-"+target+"_"+m_name,  100,  0.0,    1.0);
+        histogrammer::init_hist("ljet_BEST_w-"+target+"_"+m_name,  100,  0.0,    1.0);
+        histogrammer::init_hist("ljet_BEST_z-"+target+"_"+m_name,  100,  0.0,    1.0);
+        histogrammer::init_hist("ljet_BEST_h-"+target+"_"+m_name,  100,  0.0,    1.0);
+        histogrammer::init_hist("ljet_BEST_j-"+target+"_"+m_name,  100,  0.0,    1.0);
         histogrammer::init_hist("ljet_SDmass-"+target+"_"+m_name,  500,  0.0,  500.0);
         histogrammer::init_hist("ljet_tau1-"+target+"_"+m_name,    200,  0.0,    2.0);
         histogrammer::init_hist("ljet_tau2-"+target+"_"+m_name,    200,  0.0,    2.0);
@@ -60,13 +60,13 @@ void histogrammer4ML::bookHists(){
         histogrammer::init_hist("ljet_tau32-"+target+"_"+m_name,   100,  0.0,    1.0);
 
         // Features
-        histogrammer::init_hist("ljet_charge-"+target+"_"+m_name,  3,-1.5, 1.5);
+        histogrammer::init_hist("ljet_charge-"+target+"_"+m_name,  100,-5, 5);
         histogrammer::init_hist("ljet_subjet0_bdisc-"+target+"_"+m_name, 100, 0.0, 1.0);
         histogrammer::init_hist("ljet_subjet0_pTrel-"+target+"_"+m_name, 100, 0.0, 1.0);
-        histogrammer::init_hist("ljet_subjet0_charge-"+target+"_"+m_name,  3,-1.5, 1.5);
+        histogrammer::init_hist("ljet_subjet0_charge-"+target+"_"+m_name,100,  -5,   5);
         histogrammer::init_hist("ljet_subjet1_bdisc-"+target+"_"+m_name, 100, 0.0, 1.0);
         histogrammer::init_hist("ljet_subjet1_pTrel-"+target+"_"+m_name, 100, 0.0, 1.0);
-        histogrammer::init_hist("ljet_subjet1_charge-"+target+"_"+m_name,  3,-1.5, 1.5);
+        histogrammer::init_hist("ljet_subjet1_charge-"+target+"_"+m_name,100,  -5,   5);
     }
 
     return;
@@ -81,8 +81,6 @@ void histogrammer4ML::fill( const std::map<std::string,double> features, double 
     std::string target = std::to_string( int(features.at("target")) );
 
     cma::DEBUG("HISTOGRAMMER : Fill histograms: "+m_name+"; target = "+target);
-
-    for (const auto& key : features) cma::INFO("HIST4ML : Feature "+key.first);
 
     histogrammer::fill("ljet_BEST_t-"+target+"_"+m_name, features.at("ljet_BEST_t"), weight);
     histogrammer::fill("ljet_BEST_w-"+target+"_"+m_name, features.at("ljet_BEST_w"), weight);
