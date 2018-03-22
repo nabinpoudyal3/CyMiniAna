@@ -28,6 +28,7 @@ configuration::configuration(const std::string &configFile) :
   m_useLeptons(false),
   m_useLargeRJets(false),
   m_useNeutrinos(false),
+  m_neutrinoReco(false),
   m_input_selection("SetMe"),
   m_treename("SetMe"),
   m_filename("SetMe"),
@@ -38,7 +39,6 @@ configuration::configuration(const std::string &configFile) :
   m_customDirectory("SetMe"),
   m_makeTTree(false),
   m_makeHistograms(false),
-  m_sumWeightsFiles("SetMe"),
   m_cma_absPath("SetMe"),
   m_metadataFile("SetMe"),
   m_useDNN(false),
@@ -145,12 +145,12 @@ void configuration::initialize() {
     m_jet_btag_wkpt    = getConfigOption("jet_btag_wkpt");
     m_outputFilePath   = getConfigOption("output_path");
     m_customDirectory  = getConfigOption("customDirectory");
-    m_sumWeightsFiles  = getConfigOption("sumWeightsFiles");
     m_useTruth         = cma::str2bool( getConfigOption("useTruth") );
     m_useJets          = cma::str2bool( getConfigOption("useJets") );
     m_useLeptons       = cma::str2bool( getConfigOption("useLeptons") );
     m_useLargeRJets    = cma::str2bool( getConfigOption("useLargeRJets") );
     m_useNeutrinos     = cma::str2bool( getConfigOption("useNeutrinos") );
+    m_neutrinoReco     = cma::str2bool( getConfigOption("neutrinoReco") );
     m_makeTTree        = cma::str2bool( getConfigOption("makeTTree") );
     m_makeHistograms   = cma::str2bool( getConfigOption("makeHistograms") );
     m_makeEfficiencies = cma::str2bool( getConfigOption("makeEfficiencies") );
@@ -169,6 +169,7 @@ void configuration::initialize() {
 
     cma::read_file( getConfigOption("inputfile"), m_filesToProcess );
     cma::read_file( getConfigOption("treenames"), m_treeNames );
+    m_treename = getConfigOption("treename");
 
     m_isGridFile = (m_input_selection.compare("grid")==0) ? true : false;
 
@@ -234,24 +235,61 @@ std::string configuration::getConfigOption( std::string item ){
 }
 
 
-void configuration::inspectFile( TFile& file ){
-    // -- Check the sum of weights tree DSIDs (to determine Data || MC)
-    m_isMC = true; // only MC for now -- need to know how CMS does this!
-/*
-    TTreeReader sumWeights("sumWeights", &file);
-    TTreeReaderValue<int> dsid(sumWeights, "dsid");
-
-    std::vector<int> dsids;   // keep track of dsids (just in case)
-    unsigned int mc_dsid(0);  // count number of events that have DSID > 0
-
-    while (sumWeights.Next()){
-        dsids.push_back(*dsid);
-        if (*dsid>0){
-            ++mc_dsid;
-        } // MC sample (dsid>0)
+bool configuration::checkPrimaryDataset(const std::vector<std::string>& files){
+    /* Check if filename is in list of files */
+    bool inListOfFiles(false);
+    for (auto& x : files){
+        inListOfFiles = (m_filename.find(x)!=std::string::npos);
+        if (inListOfFiles){
+            m_primaryDataset = m_mapOfPrimaryDatasets.at(x);
+            break;
+        }
     }
-    m_isMC = (mc_dsid > 0) ? true : false;
-*/
+
+    return inListOfFiles;
+}
+
+
+void configuration::inspectFile( TFile& file ){
+    /* Compare filenames to determine file type */
+    m_isQCD   = false;
+    m_isTtbar = false;
+    m_isWjets = false;
+    m_isSingleTop    = false;
+    m_primaryDataset = "";
+    m_NTotalEvents = 0;
+
+    m_isQCD   = checkPrimaryDataset(m_qcdFiles);            // check if file is QCD
+    m_isTtbar = checkPrimaryDataset(m_ttbarFiles);          // check if file is ttbar
+    m_isWjets = checkPrimaryDataset(m_wjetsFiles);          // check if file is wjets
+    m_isSingleTop = checkPrimaryDataset(m_singleTopFiles);  // check if file is single top
+
+    m_isMC = (m_isQCD || m_isTtbar || m_isWjets || m_isSingleTop);  // no other MC at this point
+
+    // get the metadata
+    if (m_primaryDataset.size()>0) m_NTotalEvents = m_mapOfSamples.at(m_primaryDataset).NEvents;
+    else{
+        cma::WARNING("CONFIGURATION : Primary dataset name not found, checking the map");
+        cma::WARNING("CONFIGURATION : - isMC = "+std::to_string(m_isMC));
+        for (const auto& s : m_mapOfSamples){
+            Sample samp = s.second;
+            std::size_t found = m_filename.find(samp.primaryDataset);
+            if (found!=std::string::npos){ 
+                m_primaryDataset = samp.primaryDataset;
+                m_NTotalEvents   = samp.NEvents;
+                break;
+            } // end if the filename contains this primary dataset
+        } // end loop over map of samples (to access metadata info)
+    } // end else
+
+
+    // Protection against accessing truth information that may not exist
+    if (!m_isMC && m_useTruth){
+        cma::WARNING("CONFIGURATION : 'useTruth=true' but 'isMC=false'");
+        cma::WARNING("CONFIGURATION : Setting 'useTruth' to false");
+        m_useTruth = false;
+    }
+
     return;
 }
 

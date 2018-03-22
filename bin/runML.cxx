@@ -5,7 +5,6 @@ Last Updated:   17 February 2018
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
 Texas A&M University
-
 -----
 
 Basic steering macro for running CyMiniAna
@@ -50,13 +49,13 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    unsigned long long maxEntriesToRun(0);     // maximum number of entries in TTree
-    unsigned int numberOfEventsToRun(0);       // number of events to run
-    bool passEvent(false);                     // event passed selection
-
     // configuration
     configuration config(argv[1]);                         // configuration file
     config.initialize();
+
+    unsigned long long maxEntriesToRun(0);     // maximum number of entries in TTree
+    unsigned int numberOfEventsToRun(0);       // number of events to run
+    bool passEvent(false);                     // event passed selection
 
     int nEvents = config.nEventsToProcess();                      // requested number of events to run
     std::string outpathBase = config.outputFilePath();            // directory for output files
@@ -96,8 +95,11 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        cma::INFO("RUNML : set file name and inspect ");
         config.setFilename( filename );   // Use the filename to determine primary dataset and information about the sample
+        cma::INFO("RUNML : set file name and inspect ");
         config.inspectFile( *file );      // Determine information about the input file (metadata)
+        cma::INFO("RUNML : set file name and inspect ");
         Sample s = config.sample();       // load the Sample struct (xsection,kfactor,etc)
 
         std::vector<std::string> fileKeys;
@@ -111,7 +113,6 @@ int main(int argc, char** argv) {
             cma::DEBUG("RUNML : Creating directory for storing output: "+outpath);
             system( ("mkdir "+outpath).c_str() );  // make the directory so the files are grouped together
         }
-        setenv( "CMA_OUTPUTDIR",(outpath).c_str(),1 );  // set environment variable for output directory (access elsewhere)
 
         std::size_t pos   = filename.find_last_of(".");     // the last ".", i.e., ".root"
         std::size_t found = filename.find_last_of("/");     // the last "/"
@@ -202,23 +203,38 @@ int main(int argc, char** argv) {
             passEvent = evtSel.applySelection(event);
 
             if (passEvent){
-                cma::DEBUG("RUNML : Passed selection, now save information");
+                cma::DEBUG("RUNML : Passed selection, now reconstruct ttbar & save information");
+                event.ttbarReconstruction();
 
-                // For ML, we are training on semi-boosted top quarks (AK8+AK4)
-                // Only save features of the AK8+AK4 system to the output ntuple/histograms
+                // For ML, we are training on boosted top quarks in data!
+                // Only save features of the AK8 to the output ntuple/histograms
                 std::map<std::string,double> features2save;
                 features2save["xsection"] = s.XSection;
                 features2save["kfactor"]  = s.KFactor;
                 features2save["sumOfWeights"] = s.sumOfWeights;
                 features2save["nominal_weight"] = event.nominal_weight();
 
-                std::vector<Ljet> ljets = event.ljets();
-                for (const auto& ljet : ljets){
-                    for (const auto& x : ljet.features) features2save[x.first] = x.second;
+                Ttbar1L tt = event.ttbar1L();             // setup for CWoLa (large-R jet from l+jets events)
+                Ljet ljet = tt.ljet;
 
-                    miniTTree.saveEvent(features2save);
-                    histMaker.fill(features2save);
+                for (const auto& x : ljet.features){
+                    features2save[x.first] = x.second;
                 }
+                // extra features for plotting
+                features2save["ljet_BEST_t"] = ljet.BEST_t;
+                features2save["ljet_BEST_w"] = ljet.BEST_w;
+                features2save["ljet_BEST_z"] = ljet.BEST_z;
+                features2save["ljet_BEST_h"] = ljet.BEST_h;
+                features2save["ljet_BEST_j"] = ljet.BEST_j;
+                features2save["ljet_SDmass"] = ljet.softDropMass;
+                features2save["ljet_tau1"]   = ljet.tau1;
+                features2save["ljet_tau2"]   = ljet.tau2;
+                features2save["ljet_tau3"]   = ljet.tau3;
+                features2save["ljet_tau21"]  = ljet.tau21;
+                features2save["ljet_tau32"]  = ljet.tau32;
+
+                miniTTree.saveEvent(features2save);
+                histMaker.fill(features2save);
             }
 
             // iterate the entry and number of events processed

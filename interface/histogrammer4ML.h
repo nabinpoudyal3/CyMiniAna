@@ -42,7 +42,7 @@ class histogrammer4ML : public histogrammer {
     std::string m_name;
 
     // Target values for system
-    std::vector<std::string> m_targets = {"0","1","2"};
+    std::vector<std::string> m_targets = {"0","1"};
 };
 
 #endif

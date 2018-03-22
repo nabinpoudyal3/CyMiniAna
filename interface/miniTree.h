@@ -52,6 +52,9 @@ class miniTree {
     float m_dnn;
     std::vector<float> m_BEST_t_j;
     std::vector<unsigned int> m_passSelection;
+
+    unsigned int m_leptop_jet;
+    unsigned int m_hadtop_ljet;
 };
 
 #endif

@@ -78,6 +78,7 @@ class Event {
     virtual float HT() const {return m_HT;}
     virtual float ST() const {return m_ST;}
 
+    void ttbarReconstruction();
     virtual void getBtaggedJets( Jet& jet );
     virtual std::vector<int> btag_jets(const std::string &wkpt) const;
     virtual std::vector<int> btag_jets() const {return m_btag_jets_default;} // using configured b-tag WP
@@ -103,10 +104,11 @@ class Event {
     virtual float kfactor() const {return m_kfactor;}
     virtual float sumOfWeights() const {return m_sumOfWeights;}
 
-    // kinematic reconstruction
-    void buildTtbar();
+    // kinematic reconstruction, ML
     void getDilepton();
-    std::map<std::string,LepTop> ttbar() const {return m_ttbar;}
+    Ttbar0L ttbar0L() const {return m_ttbar0L;}
+    Ttbar1L ttbar1L() const {return m_ttbar1L;}
+    Ttbar2L ttbar2L() const {return m_ttbar2L;}
     void deepLearningPrediction();
 
     // MC info & weights
@@ -148,7 +150,7 @@ class Event {
     bool m_useLeptons;
     bool m_useNeutrinos;
     bool m_kinematicReco;
-    bool m_buildNeutrinos;
+    bool m_neutrinoReco;
     bool m_getDNN;
     bool m_useDNN;
     bool m_DNNinference;
@@ -158,12 +160,15 @@ class Event {
     deepLearning* m_deepLearningTool;      // tool to perform deep learning
     truthMatching* m_truthMatchingTool;    // tool to perform truth-matching
 
-    // -- dilepton
+    Ttbar0L m_ttbar0L;
+    Ttbar1L m_ttbar1L;
+    Ttbar2L m_ttbar2L;
+
+    // -- dilepton -- to be fixed
     bool m_ee;
     bool m_mumu;
     bool m_emu;
     dileptonTtbarReco* m_dileptonTtbar;
-    std::map<std::string,LepTop> m_ttbar;
     DileptonReco m_dilepton;
 
     // event weight information
@@ -305,6 +310,10 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_truth_jet_eta;
     TTreeReaderValue<std::vector<float>> * m_truth_jet_phi;
     TTreeReaderValue<std::vector<float>> * m_truth_jet_e;
+
+
+    TTreeReaderValue<int> * m_leptop_jet;
+    TTreeReaderValue<int> * m_hadtop_ljet;
 
     // Truth info
     TTreeReaderValue<float> * m_weight_mc;
