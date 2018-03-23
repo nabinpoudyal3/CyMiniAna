@@ -1,7 +1,7 @@
 date today
 output_dir eos
-eos_path /store/user/lpctop/ttbarAC/flatNtuples/test/$TODAY
-files config/listOfBatchFiles_SingleLepton.txt
+eos_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/$TODAY
+files config/listOfBatchFiles_SingleMuon.txt
 username demarley
 executable run
 test False
