@@ -1,1 +1,1 @@
-root://cmseos.fnal.gov//store/group/lpctlbsm/pilot/ttbarACFiles/ttbarAC_tree_ttbarGOOD_80.root
+root://cmseos.fnal.gov//store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_tree_SingleMuon_dataH_99.root
