@@ -58,7 +58,8 @@ void flatTree4ML::initialize(TFile& outputFile) {
     m_ttree->Branch( "ljet_tau3",   &m_ljet_tau3,   "ljet_tau3/F" );
     m_ttree->Branch( "ljet_tau21",  &m_ljet_tau21,  "ljet_tau21/F" );
     m_ttree->Branch( "ljet_tau32",  &m_ljet_tau32,  "ljet_tau32/F" );
-    m_ttree->Branch( "ljet_isHadTop", &m_ljet_isHadTop, "ljet_isHadTop/I" );
+    m_ttree->Branch( "ljet_isHadTop",&m_ljet_isHadTop, "ljet_isHadTop/i" );
+    m_ttree->Branch( "ljet_contain", &m_ljet_contain,  "ljet_contain/I" );
 
     /**** Metadata ****/
     // which sample has which target value
@@ -102,6 +103,7 @@ void flatTree4ML::saveEvent(const std::map<std::string,double> features) {
     m_ljet_tau21  = features.at("ljet_tau21");
     m_ljet_tau32  = features.at("ljet_tau32");
     m_ljet_isHadTop = static_cast<unsigned int>(features.at("ljet_isHadTop"));
+    m_ljet_contain  = static_cast<int>(features.at("ljet_contain"));
 
     /**** Fill the tree ****/
     cma::DEBUG("FLATTREE4ML : had top "+std::to_string(features.at("ljet_isHadTop")));
