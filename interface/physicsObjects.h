@@ -1,12 +1,12 @@
-#ifndef PHYSICSOBJECTS_H_
-#define PHYSICSOBJECTS_H_
-
 /* 
    Physics objects to be used in analyses
    This structure allows the Event class
    and other classes to access these objects
    without circular inclusion (which breaks!)
 */
+#ifndef PHYSICSOBJECTS_H_
+#define PHYSICSOBJECTS_H_
+
 #include "TLorentzVector.h"
 #include <map>
 #include <string>
@@ -26,6 +26,7 @@ struct Parton : CmaBase {
     int parent_ref;  // index in truth vector of parent
     int parent_idx;  // index in truth record of parent
     int containment;
+    int top_index;   // index of parton in the truth_top vector
 
     // Heavy Object Booleans
     bool isTop;
@@ -69,6 +70,7 @@ struct Jet : CmaBase{
     int index;       // index in vector of jets
     float radius;    // radius of jet (for truth-matching in DeltaR)
 
+    bool isHadTop;   // matched to hadronically-decaying truth top parton
     int truth_jet;   // index in vector of truth jets that is matched to this jet
     int containment; // level of containment for partons matched to jet
     int matchId;     // keep track if jet is matched to top or anti-top

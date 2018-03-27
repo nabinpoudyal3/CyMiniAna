@@ -1,10 +1,10 @@
 date today
 output_dir eos
 eos_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/$TODAY
-files config/listOfBatchFiles_SingleElectron.txt
+files config/listOfLeptonJets.txt
 username demarley
-executable run
+executable runML
 test False
 submit True
 verbose True
-config config/cmaConfig.txt
+config config/cmaConfigML.txt
