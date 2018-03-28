@@ -66,14 +66,13 @@ def getSeparation(sig,bkg):
     """Calculate separation between two distributions"""
     separation = 0
 
-    nS = np.sum(sig)
-    nB = np.sum(bkg)
+    nS = 1.0*np.sum(sig)
+    nB = 1.0*np.sum(bkg)
     for ss,bb in zip(sig,bkg):
         s = ss/nS
         b = bb/nB
         
         if (s+b) > 0: separation += (s - b)*(s - b)/(s + b)
-
     separation *= 0.5
 
     return separation
@@ -97,6 +96,16 @@ def extract(str_value, start_='{', stop_='}'):
     """Extract a string between two symbols, e.g., parentheses."""
     extraction = str_value[str_value.index(start_)+1:str_value.index(stop_)]
     return extraction
+
+
+def to_csv(filename,data):
+    """Write data to CSV file"""
+    f = open(filename,"w")
+    for d in data:
+        f.write(d)
+    f.close()
+
+    return
 
 
 def file2list(filename):

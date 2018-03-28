@@ -572,11 +572,12 @@ class HepPlotter(object):
                           ymax=self.ratio_ylims['ymax'][self.ratio_type])
         self.ratio_yticks['significance']=self.ax2.get_yticks()[::2]
 
-        self.ax2.yaxis.set_major_formatter(FormatStrFormatter('%g'))
-        self.ax2.xaxis.set_major_formatter(FormatStrFormatter('%g'))
+        self.ax2.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        self.ax2.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
         self.ax2.set_yticks(self.ax2.get_yticks()[::2])
-        self.ax2.set_yticklabels(self.ax2.get_yticks(),fontsize=self.label_size,**fontProperties)
+        tickLabels = self.setTickLabels(self.ax2.get_yticks())
+        self.ax2.set_yticklabels(tickLabels,fontsize=self.label_size,**fontProperties)
         self.ax2.set_ylabel(self.y_ratio_label,fontsize=self.label_size,ha='center',va='bottom')
 
         return
@@ -661,6 +662,7 @@ class HepPlotter(object):
                 else:     axis.set_xticklabels(axis_ticks_int,fontsize=self.label_size,**fontProperties)
             else:
                 # the ticks are not unique as integers, leave them as they are
+                axis_ticks = self.setTickLabels(axis_ticks)
                 if yaxis: axis.set_yticklabels(axis_ticks[0:-1],fontsize=self.label_size,**fontProperties)
                 else:     axis.set_xticklabels(axis_ticks,fontsize=self.label_size,**fontProperties)
 
@@ -777,6 +779,14 @@ class HepPlotter(object):
                           color=text_colors[i])
 
         return
+
+
+    def setTickLabels(self,values):
+        """Remove extra trailing characters"""
+        values = [str(i) for i in values]
+        len_ticklabels = min( [len(i) for i in values if len(i)>0] )
+        values = [i[:len_ticklabels] for i in values]
+        return values
 
 
     def savefig(self):
