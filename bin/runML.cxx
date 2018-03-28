@@ -231,6 +231,7 @@ int main(int argc, char** argv) {
                 features2save["ljet_tau21"]  = ljet.tau21;
                 features2save["ljet_tau32"]  = ljet.tau32;
                 features2save["ljet_isHadTop"] = ljet.isHadTop*1.0;
+                features2save["ljet_contain"] = ljet.containment;
 
                 miniTTree.saveEvent(features2save);
                 histMaker.fill(features2save);

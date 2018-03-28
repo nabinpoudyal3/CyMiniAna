@@ -421,6 +421,7 @@ void Event::initialize_truth(){
             top.isLeptonic = !(*m_mc_isHadTop)->at(p_idx);
             parton.top_index   = t_idx;
             parton.containment = m_mapOfContainment.at("FULL");   // only considering truth tops right now, not the decay products
+            if (parton.pdgId<0) parton.containment *= -1;         // negative value for anti-tops
             m_truth_tops.push_back(top);   // store tops now, add information from children in future iterations
             t_idx++;
         }

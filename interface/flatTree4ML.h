@@ -74,6 +74,7 @@ class flatTree4ML {
     float m_ljet_tau21;
     float m_ljet_tau32;
     unsigned int m_ljet_isHadTop;
+    int m_ljet_contain;
 
     float m_ljet_charge;
     float m_ljet_subjet0_bdisc;
