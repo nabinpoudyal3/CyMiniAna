@@ -215,6 +215,10 @@ int main(int argc, char** argv) {
                 Ttbar1L tt = event.ttbar1L();             // setup for CWoLa (large-R jet from l+jets events)
                 Ljet ljet = tt.ljet;
 
+                // Quality cuts on the jets
+                if (ljet.features.at("ljet_subjet0_bdisc")<0 || ljet.features.at("ljet_subjet1_bdisc")<0) continue; 
+                if (std::abs(ljet.features.at("ljet_subjet0_charge"))>20 || std::abs(ljet.features.at("ljet_subjet1_charge"))>20) continue; 
+
                 for (const auto& x : ljet.features){
                     features2save[x.first] = x.second;
                 }

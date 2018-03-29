@@ -1,7 +1,7 @@
 date today
 output_dir eos
 eos_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/$TODAY
-files config/listOfLeptonJets.txt
+files config/listOfBatchFiles_ttbarGEN-ljets.txt
 username demarley
 executable runML
 test False
