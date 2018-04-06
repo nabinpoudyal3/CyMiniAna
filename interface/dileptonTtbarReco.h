@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <numeric>
 #include <TLorentzVector.h>
 #include <TMath.h>
 

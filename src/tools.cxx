@@ -119,7 +119,7 @@ void getSampleWeights( std::string metadata_file,
     if (cma_path==NULL){
         cma::WARNING("TOOLS : environment variable 'CYMINIANADIR' is not set." );
         cma::WARNING("TOOLS : Relative paths will be used " );
-        cma_absPath = "./";
+        cma_absPath = ".";
     }
     else cma_absPath = cma_path;
 
