@@ -40,6 +40,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_DNNinference  = m_config->DNNinference();            // use DNN to predict values
     m_DNNtraining   = m_config->DNNtraining();             // load DNN features (save/use later)
     m_getDNN        = (m_DNNinference || m_DNNtraining);   // CWoLa
+    m_useDNN        = m_config->useDNN();                  // Access CWoLa from TTree
     m_kinematicReco = m_config->kinematicReco();           // build the ttbar system
 
     // b-tagging working points
@@ -53,9 +54,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_runNumber    = new TTreeReaderValue<unsigned int>(m_ttree,"runNumber");
     m_lumiblock    = new TTreeReaderValue<unsigned int>(m_ttree,"lumiblock");
 
-    m_npv = new TTreeReaderValue<int>(m_ttree,"npv");
+    m_npv = new TTreeReaderValue<unsigned int>(m_ttree,"npv");
     m_rho = new TTreeReaderValue<float>(m_ttree,"rho");
-    m_true_pileup = new TTreeReaderValue<int>(m_ttree,"true_pileup");
+    m_true_pileup = new TTreeReaderValue<unsigned int>(m_ttree,"true_pileup");
 
     /** Triggers **/
     m_HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50");
@@ -63,6 +64,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_HLT_Ele115_CaloIdVT_GsfTrkIdT    = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Ele115_CaloIdVT_GsfTrkIdT");
     m_HLT_Mu40_Eta2P1_PFJet200_PFJet50 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Mu40_Eta2P1_PFJet200_PFJet50");
     m_HLT_Mu50    = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Mu50");
+    m_HLT_TkMu50  = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_TkMu50");
     m_HLT_PFHT800 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_PFHT800");
     m_HLT_PFHT900 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_PFHT900");
     m_HLT_AK8PFJet450 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_AK8PFJet450");
@@ -111,8 +113,8 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_subjet0_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0pt");
       m_ljet_subjet0_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0mass");
       m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge");
-      m_ljet_subjet1_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8Subjet1bDisc");
-      m_ljet_subjet1_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8Subjet1deepCSV");
+      m_ljet_subjet1_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1bDisc");
+      m_ljet_subjet1_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1deepCSV");
       m_ljet_subjet1_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1pt");
       m_ljet_subjet1_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1mass");
 
@@ -136,12 +138,12 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_el_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELenergy");
       m_el_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELcharge");
       //m_el_iso = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELiso");
-      m_el_id_loose  = new TTreeReaderValue<std::vector<int>>(m_ttree,"ELlooseID");
-      m_el_id_medium = new TTreeReaderValue<std::vector<int>>(m_ttree,"ELmediumID");
-      m_el_id_tight  = new TTreeReaderValue<std::vector<int>>(m_ttree,"ELtightID");
-      m_el_id_loose_noIso  = new TTreeReaderValue<std::vector<int>>(m_ttree,"ELlooseIDnoIso");
-      m_el_id_medium_noIso = new TTreeReaderValue<std::vector<int>>(m_ttree,"ELmediumIDnoIso");
-      m_el_id_tight_noIso  = new TTreeReaderValue<std::vector<int>>(m_ttree,"ELtightIDnoIso");
+      m_el_id_loose  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELlooseID");
+      m_el_id_medium = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELmediumID");
+      m_el_id_tight  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELtightID");
+      m_el_id_loose_noIso  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELlooseIDnoIso");
+      m_el_id_medium_noIso = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELmediumIDnoIso");
+      m_el_id_tight_noIso  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELtightIDnoIso");
 
       m_mu_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUpt");
       m_mu_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUeta");
@@ -149,9 +151,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_mu_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUenergy");
       m_mu_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUcharge");
       m_mu_iso = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUcorrIso");
-      m_mu_id_loose  = new TTreeReaderValue<std::vector<int>>(m_ttree,"MUlooseID");
-      m_mu_id_medium = new TTreeReaderValue<std::vector<int>>(m_ttree,"MUmediumID");
-      m_mu_id_tight  = new TTreeReaderValue<std::vector<int>>(m_ttree,"MUtightID");
+      m_mu_id_loose  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUlooseID");
+      m_mu_id_medium = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUmediumID");
+      m_mu_id_tight  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUtightID");
     }
 
     if (!m_kinematicReco && m_useNeutrinos){
@@ -217,7 +219,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
     // DNN material
     m_deepLearningTool = new deepLearning(cmaConfig);
-    if (!m_getDNN && m_useDNN)  // always false for now
+    if (!m_getDNN && m_useDNN)
         m_dnn_score = new TTreeReaderValue<float>(m_ttree,"ljet_CWoLa");
 
 

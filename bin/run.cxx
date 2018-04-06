@@ -150,9 +150,7 @@ int main(int argc, char** argv) {
         if (makeEfficiencies)
             effMaker.bookEffs( *outputFile );
 
-        // -- Cutflow histograms (vector to store one for each selection)
-        std::map<std::string, std::vector<TH1D*>>  h_cutflows;            // map of cutflow histograms (weights applied)
-        std::map<std::string, std::vector<TH1D*>>  h_cutflows_unw;        // map of cutflow histograms (raw # of events)
+        for (auto& x : evtSels) x.setCutflowHistograms( *outputFile );  // setup cutflow histograms
 
         // -- Loop over treenames -> usually only one tree
         for (const auto& treename : treenames) {
@@ -161,33 +159,6 @@ int main(int argc, char** argv) {
             if (std::find(fileKeys.begin(), fileKeys.end(), treename) == fileKeys.end()){
                 cma::INFO("RUN : TTree "+treename+" is not present in this file, continuing to next TTree");
                 continue;
-            }
-
-
-            // -- Cutflow histogram [initialize and label bins]
-            for (unsigned int ss=0, size=selections.size(); ss<size; ss++){
-                std::string sel = selections.at(ss);
-                unsigned int cuts = ncuts.at(ss);
-                std::vector<std::string> cutNames = namesOfCuts.at(ss);
-
-                cma::DEBUG("RUN :     Number of cuts for selection "+sel+" = "+std::to_string(cuts));
-
-                TH1D* h_cutflows_tmp     = new TH1D( (treename+"_"+sel+"_cutflow").c_str(),(treename+"_"+sel+"_cutflow").c_str(),cuts+1,0,cuts+1);
-                TH1D* h_cutflows_unw_tmp = new TH1D( (treename+"_"+sel+"_cutflow_unweighted").c_str(),(treename+"_"+sel+"_cutflow_unweighted").c_str(),cuts+1,0,cuts+1);
-
-                h_cutflows_tmp->GetXaxis()->SetBinLabel(1,"INITIAL");
-                h_cutflows_unw_tmp->GetXaxis()->SetBinLabel(1,"INITIAL");
-
-                for (unsigned int c=1;c<=cuts;++c){
-                    h_cutflows_tmp->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
-                    h_cutflows_unw_tmp->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
-                }
-
-                h_cutflows[treename].push_back( h_cutflows_tmp );
-                h_cutflows_unw[treename].push_back( h_cutflows_unw_tmp );
-
-                // -- Set cutflow histograms in event selection
-                evtSels.at(ss).setCutflowHistograms(*h_cutflows_tmp,*h_cutflows_unw_tmp);
             }
 
 
@@ -288,6 +259,10 @@ int main(int argc, char** argv) {
         delete file;          // free up some memory 
         file = ((TFile *)0);  // (no errors for too many root files open)
     } // end file loop
+
+    for (auto& evtSel : evtSels)
+        evtSel.finalize();
+    evtSels.clear();
 
     cma::INFO("RUN : *** End of file loop *** ");
 }

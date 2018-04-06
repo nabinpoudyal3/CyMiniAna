@@ -43,13 +43,13 @@ eventSelection::eventSelection(configuration &cmaConfig, const std::string &leve
 
 eventSelection::~eventSelection() {}
 
-
 void eventSelection::initialize(const std::string& selection, const std::string& cutsfile) {
     /* Build the cuts using the cut file from configuration */
     m_selection = selection;
     m_cutsfile  = cutsfile;
 
     initialize( m_cutsfile );
+
     return;
 }
 
@@ -102,16 +102,34 @@ void eventSelection::identifySelection(){
 }
 
 
-void eventSelection::setCutflowHistograms(TH1D &cutflow, TH1D &cutflow_unweighted) {
+void eventSelection::setCutflowHistograms(TFile& outputFile){
     /* Set the cutflow histograms to use in the framework -- 
-       don't need to pass them for every event! 
+       can modify this function to generate histograms with different names
+       e.g., based on the name of the TTree 
 
        Two cutflows:  
          "cutflow"            event weights
          "cutflow_unweighted" no event weights -> raw event numbers
     */
-    m_cutflow     = cutflow;
-    m_cutflow_unw = cutflow_unweighted;
+    outputFile.cd();
+
+    m_cutflow     = new TH1D( (m_selection+"_cutflow").c_str(),(m_selection+"_cutflow").c_str(),m_numberOfCuts+1,0,m_numberOfCuts+1);
+    m_cutflow_unw = new TH1D( (m_selection+"_cutflow_unweighted").c_str(),(m_selection+"_cutflow_unweighted").c_str(),m_numberOfCuts+1,0,m_numberOfCuts+1);
+
+    m_cutflow->GetXaxis()->SetBinLabel(1,"INITIAL");
+    m_cutflow_unw->GetXaxis()->SetBinLabel(1,"INITIAL");
+
+    for (unsigned int c=1;c<=m_numberOfCuts;++c){
+        m_cutflow->GetXaxis()->SetBinLabel(c+1,m_cutflowNames.at(c-1).c_str());
+        m_cutflow_unw->GetXaxis()->SetBinLabel(c+1,m_cutflowNames.at(c-1).c_str());
+    }
+
+    return;
+}
+
+
+void eventSelection::finalize() {
+    /* Clean-up */
     return;
 }
 
@@ -128,8 +146,7 @@ bool eventSelection::applySelection(const Event &event) {
     double first_bin(0.5);            // first bin value in cutflow histogram ("INITIAL")
 
     // fill cutflow histograms with initial value (before any cuts)
-    m_cutflow.Fill(first_bin,m_nominal_weight); // event weights
-    m_cutflow_unw.Fill( first_bin );   // raw event numbers
+    fillCutflows(first_bin);
 
     // FIRST CHECK IF VALID EVENT FROM TREE
     if(!event.isValidRecoEntry())
@@ -414,8 +431,8 @@ bool eventSelection::twoLeptonSelection(double cutflow_bin){
 
 void eventSelection::fillCutflows(double cutflow_bin){
     /* Fill cutflow histograms with weight at specific bin */
-    m_cutflow.Fill(cutflow_bin,m_nominal_weight);  // fill cutflow
-    m_cutflow_unw.Fill(cutflow_bin);
+    m_cutflow->Fill(cutflow_bin,m_nominal_weight);  // fill cutflow
+    m_cutflow_unw->Fill(cutflow_bin);
     return;
 }
 

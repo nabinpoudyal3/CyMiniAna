@@ -71,9 +71,7 @@ int main(int argc, char** argv) {
 
     // event selection
     eventSelection evtSel( config );
-    evtSel.initialize( selection, config.cutsfiles().at(0) ); // need event selection and cutsfiles names
-    unsigned int ncuts = evtSel.numberOfCuts();               // number of cuts in selection
-    std::vector<std::string> cutNames = evtSel.cutNames();    // names of cuts
+    evtSel.initialize(selection, config.cutsfiles().at(0) ); // need event selection and cutsfiles names
 
 
     // --------------- //
@@ -122,35 +120,16 @@ int main(int argc, char** argv) {
         std::unique_ptr<TFile> outputFile(TFile::Open( fullOutputFilename.c_str(), "RECREATE"));
         cma::INFO("RUNML :   >> Saving to "+fullOutputFilename);
 
-
         histogrammer4ML histMaker(config,"ML");      // initialize histogrammer
         histMaker.initialize( *outputFile );
 
-        // -- Cutflow histograms
-        std::map<std::string, TH1D*>  h_cutflows;            // map of cutflow histograms (weights applied)
-        std::map<std::string, TH1D*>  h_cutflows_unweighted; // map of cutflow histograms (raw # of events)
-
+        evtSel.setCutflowHistograms( *outputFile );
 
         // check that the ttree exists in this file before proceeding
         if (std::find(fileKeys.begin(), fileKeys.end(), treename) == fileKeys.end()){
             cma::INFO("RUNML : TTree "+treename+" is not present in this file, continuing to next TTree");
             continue;
         }
-
-        // -- Cutflow histogram [initialize and label bins]
-        h_cutflows[treename] = new TH1D( (treename+"_cutflow").c_str(),(treename+"_cutflow").c_str(),ncuts+1,0,ncuts+1);
-        h_cutflows_unweighted[treename] = new TH1D( (treename+"_cutflow_unweighted").c_str(),(treename+"_cutflow_unweighted").c_str(),ncuts+1,0,ncuts+1);
-
-        h_cutflows[treename]->GetXaxis()->SetBinLabel(1,"INITIAL");
-        h_cutflows_unweighted[treename]->GetXaxis()->SetBinLabel(1,"INITIAL");
-
-        for (unsigned int c=1;c<=ncuts;++c){
-            h_cutflows[treename]->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
-            h_cutflows_unweighted[treename]->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
-        }
-
-        // -- Pass cutflow histograms to event selection class
-        evtSel.setCutflowHistograms(*h_cutflows.at(treename),*h_cutflows_unweighted.at(treename));
 
         // -- Load TTree to loop over
         cma::INFO("RUNML :      TTree "+treename);

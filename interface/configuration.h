@@ -326,7 +326,7 @@ class configuration {
              {"cutsfile",              "examples/config/cuts_example.txt"},
              {"inputfile",             "examples/config/miniSL_ALLfiles.txt"},
              {"treenames",             "examples/config/treenames_nominal"},
-             {"treename",              "eventVars"},
+             {"treename",              "tree/eventVars"},
              {"metadataFile",          "config/sampleMetaData.txt"},
              {"verboseLevel",          "INFO"},
              {"dnnFile",               "config/keras_ttbar_DNN.json"},

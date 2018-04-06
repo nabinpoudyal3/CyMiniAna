@@ -236,9 +236,9 @@ class Event {
     TTreeReaderValue<float> * m_treeXSection;
     TTreeReaderValue<float> * m_treeKFactor;
     TTreeReaderValue<float> * m_treeSumOfWeights;
-    TTreeReaderValue<int> * m_npv;
+    TTreeReaderValue<unsigned int> * m_npv;
     TTreeReaderValue<float> * m_rho;
-    TTreeReaderValue<int> * m_true_pileup;
+    TTreeReaderValue<unsigned int> * m_true_pileup;
 
     // MET
     TTreeReaderValue<float> * m_met_met;
@@ -253,12 +253,12 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_el_e;
     TTreeReaderValue<std::vector<float>> * m_el_charge;
     TTreeReaderValue<std::vector<float>> * m_el_iso;
-    TTreeReaderValue<std::vector<int>> * m_el_id_loose;
-    TTreeReaderValue<std::vector<int>> * m_el_id_medium;
-    TTreeReaderValue<std::vector<int>> * m_el_id_tight;
-    TTreeReaderValue<std::vector<int>> * m_el_id_loose_noIso;
-    TTreeReaderValue<std::vector<int>> * m_el_id_medium_noIso;
-    TTreeReaderValue<std::vector<int>> * m_el_id_tight_noIso;
+    TTreeReaderValue<std::vector<unsigned int>> * m_el_id_loose;
+    TTreeReaderValue<std::vector<unsigned int>> * m_el_id_medium;
+    TTreeReaderValue<std::vector<unsigned int>> * m_el_id_tight;
+    TTreeReaderValue<std::vector<unsigned int>> * m_el_id_loose_noIso;
+    TTreeReaderValue<std::vector<unsigned int>> * m_el_id_medium_noIso;
+    TTreeReaderValue<std::vector<unsigned int>> * m_el_id_tight_noIso;
 
     TTreeReaderValue<std::vector<float>> * m_mu_pt;
     TTreeReaderValue<std::vector<float>> * m_mu_eta;
@@ -266,9 +266,9 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_mu_e;
     TTreeReaderValue<std::vector<float>> * m_mu_charge;
     TTreeReaderValue<std::vector<float>> * m_mu_iso;
-    TTreeReaderValue<std::vector<int>> * m_mu_id_loose;
-    TTreeReaderValue<std::vector<int>> * m_mu_id_medium;
-    TTreeReaderValue<std::vector<int>> * m_mu_id_tight;
+    TTreeReaderValue<std::vector<unsigned int>> * m_mu_id_loose;
+    TTreeReaderValue<std::vector<unsigned int>> * m_mu_id_medium;
+    TTreeReaderValue<std::vector<unsigned int>> * m_mu_id_tight;
 
     // Reconstructed neutrinos
     TTreeReaderValue<std::vector<float>> * m_nu_pt;
@@ -375,6 +375,7 @@ class Event {
     TTreeReaderValue<unsigned int> * m_HLT_Ele115_CaloIdVT_GsfTrkIdT;
     TTreeReaderValue<unsigned int> * m_HLT_Mu40_Eta2P1_PFJet200_PFJet50;
     TTreeReaderValue<unsigned int> * m_HLT_Mu50;
+    TTreeReaderValue<unsigned int> * m_HLT_TkMu50;
     TTreeReaderValue<unsigned int> * m_HLT_PFHT800;
     TTreeReaderValue<unsigned int> * m_HLT_PFHT900;
     TTreeReaderValue<unsigned int> * m_HLT_AK8PFJet450;

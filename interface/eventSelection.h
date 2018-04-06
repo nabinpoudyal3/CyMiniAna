@@ -34,10 +34,13 @@ class eventSelection{
     // Run once at the start of the job to setup the cuts
     virtual void initialize(const std::string& selection, const std::string& cutsfile);
     virtual void initialize(const std::string &cutsfile);
+
+    virtual void finalize();
+
     virtual void identifySelection();
 
     // Run for every tree (before the event loop)
-    void setCutflowHistograms(TH1D& cutflow, TH1D& cutflow_unweighted);
+    void setCutflowHistograms(TFile& outputFile);
 
     // Run for every event (in every systematic) that needs saving
     virtual bool applySelection(const Event& event);
@@ -86,8 +89,8 @@ class eventSelection{
     std::vector<Cut> m_cuts;
 
     // cutflow histograms
-    TH1D m_cutflow;
-    TH1D m_cutflow_unw;
+    TH1D* m_cutflow;
+    TH1D* m_cutflow_unw;
 
     // booleans for each selection
     bool m_dummySelection;

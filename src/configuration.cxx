@@ -84,8 +84,8 @@ void configuration::initialize() {
     // -- map of defaultConfigs defined in header (can't use 'verbose' tools, not defined yet!)
     for (const auto& defaultConfig : m_defaultConfigs){
         if ( m_map_config.find(defaultConfig.first) == m_map_config.end() ){ // item isn't in config file
-            std::cout << " WARNING :: CONFIG : Configuration " << defaultConfig.first << " not defined" << std::endl;
-            std::cout << " WARNING :: CONFIG : Setting value to default " << defaultConfig.second << std::endl;
+            std::cout << " WARNING :: CONFIG : Configuration " << defaultConfig.first << 
+                         " not defined, set to default " << defaultConfig.second <<  std::endl;
             m_map_config[defaultConfig.first] = defaultConfig.second;
         }
     }
@@ -249,6 +249,14 @@ bool configuration::checkPrimaryDataset(const std::vector<std::string>& files){
 }
 
 
+void configuration::readMetadata(TFile& file){
+    /* Read metadata TTree */
+    TTree* metadata = (TTree*)file.Get("tree/metadata");
+    metadata->GetEntry(0);
+
+    m_primaryDataset = metadata->p
+}
+
 void configuration::inspectFile( TFile& file ){
     /* Compare filenames to determine file type */
     m_isQCD   = false;
@@ -257,6 +265,8 @@ void configuration::inspectFile( TFile& file ){
     m_isSingleTop    = false;
     m_primaryDataset = "";
     m_NTotalEvents = 0;
+
+    readMetadata(file);
 
     m_isQCD   = checkPrimaryDataset(m_qcdFiles);            // check if file is QCD
     m_isTtbar = checkPrimaryDataset(m_ttbarFiles);          // check if file is ttbar
