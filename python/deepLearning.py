@@ -33,9 +33,9 @@ import json
 import util
 import datetime
 
-import uproot
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('PDF')   # png not supported at LPC; do this before anything else tries to set the backend
+import uproot
 import numpy as np
 import pandas as pd
 
@@ -82,6 +82,8 @@ class DeepLearning(object):
         self.runDiagnostics = True      # Make plots pre/post training
         self.verbose_level  = 'INFO'
         self.verbose = False
+        self.target_names  = ["top","antitop"]
+        self.target_values = [0,1]
 
         self.loss    = 'binary_crossentropy' # preferred for binary classification
         self.init    = 'normal'
@@ -163,13 +165,11 @@ class DeepLearning(object):
     ## Single functions to run all of the necessary pieces
     def runTraining(self):
         """Train NN model"""
-        self.load_hep_data()
+        self.load_hep_data(['ljet_contain'])
         self.build_model()
 
         # hard-coded :/
-        target_names  = ["multijet","QB","W"]
-        target_values = [0,1,2]
-        self.plotter.initialize(self.df,target_names,target_values)
+        self.plotter.initialize(self.df,self.target_names,self.target_values)
 
         if self.runDiagnostics:
             self.diagnostics(preTraining=True)     # save plots of the features and model architecture
@@ -245,17 +245,22 @@ class DeepLearning(object):
             earlystop = EarlyStopping(**self.earlystopping)
             callbacks_list = [earlystop]
 
-        ttbar1 = self.df[ self.df['target']==1 ]
-#        ttbar2 = self.df[ self.df['target']==2 ]
+        targets = []
+        for i in self.target_values:
+            tmp_target = self.df[ self.df['target']==i ]
+            targets.append(tmp_target)
 
-        qcd    = self.df[ self.df['target']==0 ]
-        qcd    = qcd.sample(frac=1)[0:ttbar1.shape[0]]  # equal statistics (shuffle QCD entries first)
-
-        training_df = pd.concat( [qcd,ttbar1] ) #,ttbar2] )  # re-combine into dataframe
+        training_df = self.df[ self.df['ljet_contain']!=0 ]   # check using truth tops instead of data
         training_df = training_df.sample(frac=1)             # shuffle entries
 
+        col_name = 'ljet_contain'
+        mask1 = training_df.ljet_contain == -5  # anti-top; target = 1
+        mask2 = training_df.ljet_contain == 5   # top; target = 0
+        training_df.loc[mask1,col_name] = 1
+        training_df.loc[mask2,col_name] = 0
+
         X = training_df[self.features].values  # self.df[self.features].values
-        Y = training_df['target'].values       # self.df['target'].values
+        Y = training_df['ljet_contain'].values       # self.df['target'].values
 
         kfold = StratifiedKFold(n_splits=self.kfold_splits, shuffle=True, random_state=seed)
         nsplits = kfold.get_n_splits(X,Y)

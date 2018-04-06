@@ -40,20 +40,32 @@ void flatTree4ML::initialize(TFile& outputFile) {
 
     // Features
     m_ttree->Branch( "target", &m_target, "target/I" );  // target value (.e.g, 0 or 1)
+    m_ttree->Branch( "ljet_charge",  &m_ljet_charge,  "ljet_charge/F" );
+    m_ttree->Branch( "ljet_subjet0_bdisc",  &m_ljet_subjet0_bdisc,   "ljet_subjet0_bdisc/F" );
+    m_ttree->Branch( "ljet_subjet0_charge", &m_ljet_subjet0_charge, "ljet_subjet0_charge/F" );
+    m_ttree->Branch( "ljet_subjet1_bdisc",  &m_ljet_subjet1_bdisc,   "ljet_subjet1_bdisc/F" );
+    m_ttree->Branch( "ljet_subjet1_charge", &m_ljet_subjet1_charge, "ljet_subjet1_charge/F" );
 
     // AK8
-    m_ttree->Branch( "ljet_charge",  &m_ljet_charge,  "ljet_charge/F" );
-    m_ttree->Branch( "ljet_subjet0_bdisc", &m_ljet_subjet0_bdisc,   "ljet_subjet0_bdisc/F" );
-    m_ttree->Branch( "ljet_subjet0_charge", &m_ljet_subjet0_charge, "ljet_subjet0_charge/F");
-    m_ttree->Branch( "ljet_subjet1_bdisc", &m_ljet_subjet1_bdisc,   "ljet_subjet1_bdisc/F" );
-    m_ttree->Branch( "ljet_subjet1_charge", &m_ljet_subjet1_charge, "ljet_subjet1_charge/F");
-
+    m_ttree->Branch( "ljet_BEST_t", &m_ljet_BEST_t, "ljet_BEST_t/F" );
+    m_ttree->Branch( "ljet_BEST_w", &m_ljet_BEST_w, "ljet_BEST_w/F" );
+    m_ttree->Branch( "ljet_BEST_z", &m_ljet_BEST_z, "ljet_BEST_z/F" );
+    m_ttree->Branch( "ljet_BEST_h", &m_ljet_BEST_h, "ljet_BEST_h/F" );
+    m_ttree->Branch( "ljet_BEST_j", &m_ljet_BEST_j, "ljet_BEST_j/F" );
+    m_ttree->Branch( "ljet_SDmass", &m_ljet_SDmass, "ljet_SDmass/F" );
+    m_ttree->Branch( "ljet_tau1",   &m_ljet_tau1,   "ljet_tau1/F" );
+    m_ttree->Branch( "ljet_tau2",   &m_ljet_tau2,   "ljet_tau2/F" );
+    m_ttree->Branch( "ljet_tau3",   &m_ljet_tau3,   "ljet_tau3/F" );
+    m_ttree->Branch( "ljet_tau21",  &m_ljet_tau21,  "ljet_tau21/F" );
+    m_ttree->Branch( "ljet_tau32",  &m_ljet_tau32,  "ljet_tau32/F" );
+    m_ttree->Branch( "ljet_isHadTop",&m_ljet_isHadTop, "ljet_isHadTop/i" );
+    m_ttree->Branch( "ljet_contain", &m_ljet_contain,  "ljet_contain/I" );
 
     /**** Metadata ****/
     // which sample has which target value
     // many ROOT files will be merged together to do the training
     m_metadataTree->Branch( "name",    &m_name );
-    m_metadataTree->Branch( "target",  &m_target_value,  "target/I" );
+    m_metadataTree->Branch( "target",  &m_target_value,  "target/I" );    // useful if processing targets stored in different samples
     m_metadataTree->Branch( "nEvents", &m_nEvents,       "nEvents/I" );
 
     return;
@@ -79,7 +91,22 @@ void flatTree4ML::saveEvent(const std::map<std::string,double> features) {
     m_ljet_subjet1_bdisc  = features.at("ljet_subjet1_bdisc");
     m_ljet_subjet1_charge = features.at("ljet_subjet1_charge");
 
+    m_ljet_BEST_t = features.at("ljet_BEST_t");
+    m_ljet_BEST_w = features.at("ljet_BEST_w");
+    m_ljet_BEST_z = features.at("ljet_BEST_z");
+    m_ljet_BEST_h = features.at("ljet_BEST_h");
+    m_ljet_BEST_j = features.at("ljet_BEST_j");
+    m_ljet_SDmass = features.at("ljet_SDmass");
+    m_ljet_tau1   = features.at("ljet_tau1");
+    m_ljet_tau2   = features.at("ljet_tau2");
+    m_ljet_tau3   = features.at("ljet_tau3");
+    m_ljet_tau21  = features.at("ljet_tau21");
+    m_ljet_tau32  = features.at("ljet_tau32");
+    m_ljet_isHadTop = static_cast<unsigned int>(features.at("ljet_isHadTop"));
+    m_ljet_contain  = static_cast<int>(features.at("ljet_contain"));
+
     /**** Fill the tree ****/
+    cma::DEBUG("FLATTREE4ML : had top "+std::to_string(features.at("ljet_isHadTop")));
     cma::DEBUG("FLATTREE4ML : Fill the tree");
     m_ttree->Fill();
 

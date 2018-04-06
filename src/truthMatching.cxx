@@ -46,13 +46,19 @@ void truthMatching::matchJetToTruthTop(Jet& jet){
        Currently setup to process partons from top quarks (qqb)
     */
     jet.matchId     = -1;
+    jet.isHadTop    = false;
     jet.containment = 0;         // initialize containment
     jet.truth_partons.clear();
 
+    cma::DEBUG("TRUTHMATCHING : Truth matching tops to jet "+std::to_string(m_truth_tops.size()));
     for (unsigned int t_idx=0, size=m_truth_tops.size(); t_idx<size; t_idx++){
+        cma::DEBUG("TRUTHMATCHING : Truth matching top to jet "+std::to_string(t_idx));
         auto truthtop = m_truth_tops.at(t_idx);
         if (!truthtop.isHadronic) continue;         // only want hadronically-decaying tops
 
+        Parton top = m_truth_partons.at( truthtop.Top );
+        parton_match(top,jet,0.6);
+/*
         Parton bottomQ = m_truth_partons.at( truthtop.bottom );
         Parton wdecay1 = m_truth_partons.at( truthtop.Wdecays.at(0) );
         Parton wdecay2 = m_truth_partons.at( truthtop.Wdecays.at(1) );
@@ -60,14 +66,12 @@ void truthMatching::matchJetToTruthTop(Jet& jet){
         parton_match(bottomQ,jet);
         parton_match(wdecay1,jet);
         parton_match(wdecay2,jet);
+*/
 
         // if the jet is matched to a truth top, exit
         if (jet.containment!=0){
-            cma::DEBUG("TRUTHMATCHING : Jet deltaR bottomQ = "+std::to_string(jet.p4.DeltaR(bottomQ.p4)));
-            cma::DEBUG("TRUTHMATCHING : Jet deltaR wdecay1 = "+std::to_string(jet.p4.DeltaR(wdecay1.p4)));
-            cma::DEBUG("TRUTHMATCHING : Jet deltaR wdecay2 = "+std::to_string(jet.p4.DeltaR(wdecay2.p4)));
-
-            jet.matchId = t_idx;
+            jet.matchId  = t_idx;
+            jet.isHadTop = true;
             break;
         }
     }
@@ -91,6 +95,8 @@ void truthMatching::parton_match(const Parton& p, Jet& r, double dR){
         r.truth_partons.push_back(p.index);
         r.containment += p.containment;
     }
+    else 
+        cma::DEBUG("TRUTHMATCH : parton_match() failed "+std::to_string(p.index));
 
     return;
 }

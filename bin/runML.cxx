@@ -95,11 +95,9 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        cma::INFO("RUNML : set file name and inspect ");
+        cma::DEBUG("RUNML : set file name and inspect ");
         config.setFilename( filename );   // Use the filename to determine primary dataset and information about the sample
-        cma::INFO("RUNML : set file name and inspect ");
         config.inspectFile( *file );      // Determine information about the input file (metadata)
-        cma::INFO("RUNML : set file name and inspect ");
         Sample s = config.sample();       // load the Sample struct (xsection,kfactor,etc)
 
         std::vector<std::string> fileKeys;
@@ -217,6 +215,10 @@ int main(int argc, char** argv) {
                 Ttbar1L tt = event.ttbar1L();             // setup for CWoLa (large-R jet from l+jets events)
                 Ljet ljet = tt.ljet;
 
+                // Quality cuts on the jets
+                if (ljet.features.at("ljet_subjet0_bdisc")<0 || ljet.features.at("ljet_subjet1_bdisc")<0) continue; 
+                if (std::abs(ljet.features.at("ljet_subjet0_charge"))>20 || std::abs(ljet.features.at("ljet_subjet1_charge"))>20) continue; 
+
                 for (const auto& x : ljet.features){
                     features2save[x.first] = x.second;
                 }
@@ -232,6 +234,8 @@ int main(int argc, char** argv) {
                 features2save["ljet_tau3"]   = ljet.tau3;
                 features2save["ljet_tau21"]  = ljet.tau21;
                 features2save["ljet_tau32"]  = ljet.tau32;
+                features2save["ljet_isHadTop"] = ljet.isHadTop*1.0;
+                features2save["ljet_contain"] = ljet.containment;
 
                 miniTTree.saveEvent(features2save);
                 histMaker.fill(features2save);
@@ -264,4 +268,3 @@ int main(int argc, char** argv) {
 }
 
 // THE END
-

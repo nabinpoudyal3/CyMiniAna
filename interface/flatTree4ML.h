@@ -61,12 +61,21 @@ class flatTree4ML {
     unsigned int m_nDeepAK8;
     std::vector<float> m_ljet_deepAK8;
 
+    float m_ljet_BEST_t;
+    float m_ljet_BEST_w;
+    float m_ljet_BEST_z;
+    float m_ljet_BEST_h;
+    float m_ljet_BEST_j;
+
     float m_ljet_SDmass;
     float m_ljet_tau1;
     float m_ljet_tau2;
     float m_ljet_tau3;
     float m_ljet_tau21;
     float m_ljet_tau32;
+    unsigned int m_ljet_isHadTop;
+    int m_ljet_contain;
+
     float m_ljet_charge;
     float m_ljet_subjet0_bdisc;
     float m_ljet_subjet0_pTrel;

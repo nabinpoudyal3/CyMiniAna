@@ -1,11 +1,10 @@
 /*
 Created:        20 August    2016
-Last Updated:   16 October   2017
+Last Updated:   25 March     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
 Texas A&M University
-
 -----
 
 Configuration class
@@ -267,6 +266,7 @@ void configuration::inspectFile( TFile& file ){
     m_isMC = (m_isQCD || m_isTtbar || m_isWjets || m_isSingleTop);  // no other MC at this point
 
     // get the metadata
+    cma::DEBUG("CONFIGURATION : Found primary dataset = "+m_primaryDataset);
     if (m_primaryDataset.size()>0) m_NTotalEvents = m_mapOfSamples.at(m_primaryDataset).NEvents;
     else{
         cma::WARNING("CONFIGURATION : Primary dataset name not found, checking the map");

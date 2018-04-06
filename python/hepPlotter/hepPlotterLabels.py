@@ -48,6 +48,10 @@ def sample_labels():
     samples['wjets']     = Sample(label=r'W+jets',color='yellow')
     samples['zjets']     = Sample(label=r'Z+jets',color='darkorange')
 
+    # Machine learning (CWoLa)
+    samples['top'] = Sample(label='Top',color='white')
+    samples['antitop'] = Sample(label='Anti-top',color='white')
+
     # Machine Learning (AK8+AK4)
     samples['QB'] = Sample(label=ttbar+' (QB)',color='white')
     samples['W']  = Sample(label=ttbar+' (W)',color='white')
@@ -90,6 +94,8 @@ def variable_labels():
     variables['ljet_tau3']  = Variable(binning=hist1d(10,  0.,   0.6), label=r'$\tau_{\text{3}}$')
     variables['ljet_tau32'] = Variable(binning=hist1d(11,  0.,   1.1), label=r'$\tau_{\text{32}}$')
     variables['ljet_softDropMass'] = Variable(binning=hist1d(40,0.,400.), label=r'Large-R Jet '+_mass)
+    variables['ljet_charge'] = Variable(binning=hist1d(80,  -5.,   5.), label=r'Large-R Jet Charge')
+
     for i in range(16):
         variables['ljet_deepAK8_{0}'.format(i)] = Variable(binning=hist1d(10,0,1), label=r'Large-R Jet DeepAK8[{0}]'.format(i))
     variables['ljet_jet_m']      = Variable(binning=hist1d(50,0.,5000.), label=r'Large-R Jet + Small-R Jet '+_mass)
@@ -103,6 +109,12 @@ def variable_labels():
     variables['ljet_subjet_0_bdisc_Qneg']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 0 b-disc.')
     variables['ljet_subjet_1_charge_Qneg'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 1 charge')
     variables['ljet_subjet_1_bdisc_Qneg']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 1 b-disc.')
+
+    variables['ljet_subjet0_charge'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 0 charge')
+    variables['ljet_subjet0_bdisc']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 0 b-disc.')
+    variables['ljet_subjet1_charge'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 1 charge')
+    variables['ljet_subjet1_bdisc']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 1 b-disc.')
+    variables['ljet_contain'] = Variable(binning=hist1d(11,-5.5,5.5), label=r'Large-R Jet Containment')
 
     variables['jet_pt']  =   Variable(binning=hist1d(10,25., 500.),  label=r'Small-R Jet p'+_T)
     variables['jet_eta'] =   Variable(binning=hist1d(10,-2.5,  2.5), label=r'Small-R Jet '+_eta)

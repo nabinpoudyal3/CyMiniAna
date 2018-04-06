@@ -3,7 +3,7 @@ useLargeRJets true
 useLeptons true
 useNeutrinos false
 neutrinoReco false
-useTruth false
+useTruth true
 jet_btag_wkpt M
 makeTTree true
 makeHistograms true
