@@ -144,8 +144,9 @@ bool eventSelection::applySelection(const Event &event) {
     // set physics objects
     m_jets  = event.jets();
     m_ljets = event.ljets();
-    m_muons = event.muons();
-    m_electrons = event.electrons();
+    m_leptons = event.leptons();
+//    m_muons = event.muons();
+//    m_electrons = event.electrons();
     m_neutrinos = event.neutrinos();
     m_met = event.met();
     m_ht  = event.HT();
@@ -155,9 +156,14 @@ bool eventSelection::applySelection(const Event &event) {
 
     m_NLjets     = m_ljets.size();
     m_NJets      = m_jets.size();
-    m_NMuons     = m_muons.size();
-    m_NElectrons = m_electrons.size();
+    m_NLeptons   = m_leptons.size();
 
+    m_NMuons     = 0;   //m_muons.size();
+    m_NElectrons = 0;   //m_electrons.size();
+    for (const auto x : m_leptons){
+        if (x.isMuon) m_NMuons++;
+        else m_NElectrons++;
+    }
 
     // Perform selections
     // -- use if/else if statements to maintain orthogonality
@@ -217,8 +223,8 @@ bool eventSelection::zeroLeptonSelection(double cutflow_bin){
     bool pass(false);
 
     // cut0 :: No leptons
-    if ( m_NElectrons+m_NMuons>0 )
-        return false;  // exit the function now; no need to test other cuts!
+    if ( m_NLeptons>0 )    // m_NElectrons+m_NMuons
+        return false;      // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin);
         pass = true;
@@ -298,8 +304,8 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     bool pass(false);
 
     // cut0 :: One lepton
-    if ( m_NElectrons+m_NMuons != 1 )
-        return false;  // exit the function now; no need to test other cuts!
+    if ( m_NLeptons != 1 )     // NElectrons+m_NMuons
+        return false;          // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin);
         pass = true;
@@ -325,8 +331,7 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
 
 
     // ** The following cuts are slightly different for e+jets and mu+jets ** //
-    Lepton lep;
-    lep.p4 = (m_NMuons==1) ? m_muons.at(0).p4 : m_electrons.at(0).p4;
+    Lepton lep = m_leptons.at(0);
 
     // cut3 :: DeltaR(AK4,lepton)
     //         >=1 AK4 jet in the same hemisphere as the electron, 0.3 < R(l,jet) < pi/2
@@ -352,14 +357,14 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
 
     // selection based on lepton -- e+jets or mu+jets
     // only do selection if the user requested a specific
-    // lepton flavor or any lepton flavor ("ljets"), 
+    // lepton flavor
     // e.g., if user selected "ejets", don't do mu+jets selection!
-    bool ljets  = m_selection.compare("ljets")==0;
+    bool ljets  = m_selection.compare("ljets")==0;    // general "lepton+jets" selection
     bool ejets  = m_selection.compare("ejets")==0;
     bool mujets = m_selection.compare("mujets")==0;
 
     if (ljets){
-        // Do the selection based on which lepton flavor we have
+        // Do the selection based on which lepton flavor we have in the event
         if (m_NElectrons==1) pass = ejetsSelection(cutflow_bin+5,lep);
         else pass = mujetsSelection(cutflow_bin+5);
     }
@@ -383,8 +388,8 @@ bool eventSelection::twoLeptonSelection(double cutflow_bin){
     bool pass(false);
 
     // cut0 :: Two leptons
-    if ( m_NElectrons+m_NMuons != 2 )
-        return false;  // exit the function now; no need to test other cuts!
+    if ( m_NLeptons != 2 )  // m_NElectrons+m_NMuons
+        return false;       // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin);
         pass = true;

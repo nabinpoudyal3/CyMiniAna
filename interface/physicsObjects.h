@@ -64,11 +64,16 @@ struct TruthTop {
 // -- common to all types of jets
 struct Jet : CmaBase{
     float bdisc;
+    float deepCSV;
     std::map<std::string, bool> isbtagged;
     float charge;
 
     int index;       // index in vector of jets
     float radius;    // radius of jet (for truth-matching in DeltaR)
+
+    float area;      // area of jet (needed to redo JEC)
+    float uncorrPt;  // area of jet (needed to redo JEC)
+    float uncorrE;   // area of jet (needed to redo JEC)
 
     bool isHadTop;   // matched to hadronically-decaying truth top parton
     int truth_jet;   // index in vector of truth jets that is matched to this jet
@@ -117,9 +122,12 @@ struct Lepton : CmaBase{
 
     float iso;
     float id;
-    float loose;
-    float medium;
-    float tight;
+    int loose;
+    int medium;
+    int tight;
+    int loose_noIso;
+    int medium_noIso;
+    int tight_noIso;
 };
 
 struct Electron : Lepton{

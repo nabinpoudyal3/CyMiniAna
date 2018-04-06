@@ -103,11 +103,13 @@ class eventSelection{
     std::vector<Jet> m_jets;
     std::vector<Muon> m_muons;
     std::vector<Electron> m_electrons;
+    std::vector<Lepton> m_leptons;
     std::vector<Neutrino> m_neutrinos;
     MET m_met;
     float m_ht;
     float m_st;
 
+    unsigned int m_NLeptons;
     unsigned int m_NElectrons;
     unsigned int m_NMuons;
     unsigned int m_NJets;

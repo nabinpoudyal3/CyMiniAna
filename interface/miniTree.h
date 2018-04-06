@@ -31,7 +31,7 @@ class miniTree {
     virtual ~miniTree();
 
     // Run once at the start of the job;
-    virtual void initialize(TTree * t, TFile& outputFile);
+    virtual void initialize(TTree * t, TFile& outputFile, const std::string directory);
 
     // Run for every event (in every systematic) that needs saving;
     virtual void saveEvent(Event &event, const std::vector<unsigned int>& evtsel_decisions=std::vector<unsigned int>());

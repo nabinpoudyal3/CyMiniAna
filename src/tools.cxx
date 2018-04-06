@@ -96,12 +96,26 @@ void getListOfKeys( TFile* file, std::vector<std::string> &fileKeys ){
     /* Find the list of TTrees in a file */
     fileKeys.clear();
 
-    TList *list = file->GetListOfKeys();
+    TList* list = file->GetListOfKeys();
     TIter iter(list->MakeIterator());
     while(TObject* obj = iter()){
         TKey* key = (TKey*)obj;
         std::string keyname( key->GetName() );
-        fileKeys.push_back(keyname);
+
+        // Check if this is a directory that contains TTrees
+        try {
+            TDirectory* dir = (TDirectory*)file->Get(keyname.c_str());
+            TList* sublist  = dir->GetListOfKeys();
+            TIter subiter(sublist->MakeIterator());
+            while (TObject* subobj = subiter()){
+                TKey* key = (TKey*)subobj;
+                std::string subkeyname( key->GetName() );
+                fileKeys.push_back(keyname+"/"+subkeyname);
+            }
+        }
+        catch (...){
+            fileKeys.push_back(keyname);
+        }
     }
 
     return;

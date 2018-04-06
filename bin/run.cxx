@@ -197,8 +197,17 @@ int main(int argc, char** argv) {
 
             // -- Make new Tree in Root file
             miniTree miniTTree(config);          // initialize TTree for new file
-            if (makeTTree)
-                miniTTree.initialize( myReader.GetTree(), *outputFile );
+            if (makeTTree){
+                // Setup subdirectories, if they exist
+                std::string subdir("");
+                std::size_t found = treename.find("/");
+                if (found!=std::string::npos){
+                    outputFile->cd();
+                    subdir = treename.substr(0,found);
+                    gDirectory->mkdir(subdir.c_str());
+                }
+                miniTTree.initialize( myReader.GetTree(), *outputFile, subdir );
+            }
 
             // -- Number of Entries to Process -- //
             maxEntriesToRun = myReader.GetEntries(true);

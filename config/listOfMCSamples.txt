@@ -1,1 +1,2 @@
-root://cmseos.fnal.gov//store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_tree_ttbarGEN_99.root
+/uscms_data/d3/demarley/ttbar/CMSSW_9_4_4/src/ttbarAC_skim/ttbarAC_skim/test/ttbarAC_outtree_ttbar.root
+#root://cmseos.fnal.gov//store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_tree_ttbarGEN_99.root
