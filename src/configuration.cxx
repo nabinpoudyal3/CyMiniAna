@@ -235,12 +235,14 @@ std::string configuration::getConfigOption( std::string item ){
 
 
 bool configuration::checkPrimaryDataset(const std::vector<std::string>& files){
-    /* Check if filename is in list of files */
+    /* Check if filename is in list of files 
+       6 April 2018: It is possible the ntuples have incorrect metadata information.
+                     Keeping m_mapOfSamples/m_mapOfPrimaryDatasets in case something needs to be updated/fixed
+    */
     bool inListOfFiles(false);
     for (auto& x : files){
-        inListOfFiles = (m_filename.find(x)!=std::string::npos);
-        if (inListOfFiles){
-            m_primaryDataset = m_mapOfPrimaryDatasets.at(x);
+        if (m_mapOfPrimaryDatasets.at(x)==m_sample.primaryDataset){
+            inListOfFiles = true;
             break;
         }
     }
@@ -251,11 +253,31 @@ bool configuration::checkPrimaryDataset(const std::vector<std::string>& files){
 
 void configuration::readMetadata(TFile& file){
     /* Read metadata TTree */
-    TTree* metadata = (TTree*)file.Get("tree/metadata");
-    metadata->GetEntry(0);
+    TTreeReader metadata("tree/metadata", &file);
 
-    m_primaryDataset = metadata->p
+    TTreeReaderValue<std::string> primaryDataset(metadata, "primaryDataset");
+    TTreeReaderValue<float> xsection(metadata, "xsection");
+    TTreeReaderValue<float> kfactor(metadata, "kfactor");
+    TTreeReaderValue<float> sumOfWeights(metadata, "sumOfWeights");
+    TTreeReaderValue<unsigned int> NEvents(metadata, "NEvents");
+
+    metadata.Next();
+
+    m_sample = {};
+    m_sample.primaryDataset = *primaryDataset;
+    m_sample.XSection = *xsection;
+    m_sample.KFactor  = *kfactor;
+    m_sample.NEvents  = *NEvents;
+    m_sample.sumOfWeights = *sumOfWeights;
+
+    m_primaryDataset = *primaryDataset;
+    m_NTotalEvents   = *NEvents;
+
+    cma::DEBUG("CONFIGURATION : Primary dataset = "+m_primaryDataset);
+
+    return;
 }
+
 
 void configuration::inspectFile( TFile& file ){
     /* Compare filenames to determine file type */
@@ -264,7 +286,7 @@ void configuration::inspectFile( TFile& file ){
     m_isWjets = false;
     m_isSingleTop    = false;
     m_primaryDataset = "";
-    m_NTotalEvents = 0;
+    m_NTotalEvents   = 0;
 
     readMetadata(file);
 
@@ -277,7 +299,7 @@ void configuration::inspectFile( TFile& file ){
 
     // get the metadata
     cma::DEBUG("CONFIGURATION : Found primary dataset = "+m_primaryDataset);
-    if (m_primaryDataset.size()>0) m_NTotalEvents = m_mapOfSamples.at(m_primaryDataset).NEvents;
+    if (m_primaryDataset.size()>0) m_NTotalEvents = m_sample.NEvents;
     else{
         cma::WARNING("CONFIGURATION : Primary dataset name not found, checking the map");
         cma::WARNING("CONFIGURATION : - isMC = "+std::to_string(m_isMC));

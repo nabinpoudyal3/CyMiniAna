@@ -71,6 +71,7 @@ class configuration {
 
     // functions about the file
     bool checkPrimaryDataset(const std::vector<std::string>& files);
+    void readMetadata(TFile& file);
     virtual void inspectFile( TFile& file );
     std::vector<std::string> filesToProcess() {return m_filesToProcess;}
     void setFilename(std::string fileName);
@@ -96,7 +97,7 @@ class configuration {
     // information for event weights
     std::string metadataFile() {return m_metadataFile;}
     std::map<std::string,Sample> mapOfSamples(){return m_mapOfSamples;}
-    Sample sample(){return m_mapOfSamples.at(m_primaryDataset);}
+    Sample sample(){return m_sample;}
     virtual double LUMI() {return m_LUMI;}
 
     // weight systematics
@@ -227,6 +228,7 @@ class configuration {
     std::string m_listOfWeightSystematicsFile;
     std::string m_listOfWeightVectorSystematicsFile;
 
+    Sample m_sample;                               // struct of information for current sample
     std::map<std::string,Sample> m_mapOfSamples;   // map of Sample structs
     std::map<std::string, float> m_XSection;       // map file to XSection
     std::map<std::string, float> m_KFactor;        // map file to KFactor
@@ -266,10 +268,29 @@ class configuration {
         {"wjets1","WJetsToLNu_Pt-100To250_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
         {"wjets2","WJetsToLNu_Pt-250To400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
         {"wjets3","WJetsToLNu_Pt-400To600_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
-        {"wjets4","WJetsToLNu_Pt-600ToInf_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"}
+        {"wjets4","WJetsToLNu_Pt-600ToInf_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
+        {"qcd","QCD_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_mu_pt0080","QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_mu_pt0120","QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_mu_pt0170","QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_mu_pt0300","QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_mu_pt0470","QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_mu_pt0600","QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_mu_pt0800","QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_mu_pt1000","QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_el_pt0080","QCD_Pt-80to120_EMEnriched_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_el_pt0120","QCD_Pt-120to170_EMEnriched_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_el_pt0170","QCD_Pt-170to300_EMEnriched_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_el_pt0300","QCD_Pt-300toInf_EMEnriched_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_b_pt080","QCD_Pt_80to170_bcToE_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_b_pt170","QCD_Pt_170to250_bcToE_TuneCUETP8M1_13TeV_pythia8"},
+        {"qcd_b_pt250","QCD_Pt_250toInf_bcToE_TuneCUETP8M1_13TeV_pythia8"},
     };
 
-    std::vector<std::string> m_qcdFiles   = {"qcd"};
+    std::vector<std::string> m_qcdFiles   = {"qcd","qcd_mu_pt0080","qcd_mu_pt0120","qcd_mu_pt0170","qcd_mu_pt0300",
+                                             "qcd_mu_pt0470","qcd_mu_pt0600","qcd_mu_pt0800","qcd_mu_pt1000",
+                                             "qcd_el_pt0080","qcd_el_pt0120","qcd_el_pt0170","qcd_el_pt0300",
+                                             "qcd_b_pt080","qcd_b_pt170","qcd_b_pt250"};
     std::vector<std::string> m_ttbarFiles = {"ttbarGOOD","ttbarGEN"};
     std::vector<std::string> m_wjetsFiles = {"wjets1","wjets2","wjets3","wjets4"};
     std::vector<std::string> m_singleTopFiles = {"singletop_schan","singletop_tWchan_antitop",

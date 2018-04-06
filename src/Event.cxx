@@ -194,7 +194,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
         m_mc_phi = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENphi");
         m_mc_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENenergy");
         m_mc_pdgId  = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENid");
-        m_mc_status = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENstatus");
+        m_mc_status = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENstatus");
         m_mc_isHadTop = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENisHadTop");
       }
 /*

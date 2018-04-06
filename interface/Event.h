@@ -363,7 +363,7 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_mc_phi;
     TTreeReaderValue<std::vector<float>> * m_mc_e;
     TTreeReaderValue<std::vector<int>> * m_mc_pdgId;
-    TTreeReaderValue<std::vector<int>> * m_mc_status;
+    TTreeReaderValue<std::vector<float>> * m_mc_status;
     TTreeReaderValue<std::vector<int>> * m_mc_isHadTop;
     TTreeReaderValue<std::vector<int>> * m_mc_parent_index;
     TTreeReaderValue<std::vector<int>> * m_mc_child0_index;
