@@ -21,6 +21,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
   m_fileName("SetMe"),
   m_dileptonTtbar(nullptr){
     m_isMC     = m_config->isMC();
+    m_useTruth = m_config->useTruth();
     m_grid     = m_config->isGridFile();             // file directly from EDM->FlatNtuple step
     m_treeName = m_ttree.GetTree()->GetName();       // for systematics
     m_fileName = m_config->filename();               // for accessing file metadata
@@ -29,6 +30,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_isZeroLeptonAnalysis = m_config->isZeroLeptonAnalysis();
     m_isOneLeptonAnalysis  = m_config->isOneLeptonAnalysis();
     m_isTwoLeptonAnalysis  = m_config->isTwoLeptonAnalysis();
+    m_mapOfContainment     = m_config->mapOfPartonContainment(); // containment map for truth tops matched to jets
 
     m_useJets       = m_config->useJets();
     m_useLargeRJets = m_config->useLargeRJets();
@@ -142,9 +144,18 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_xsection     = 1;//m_config->XSectionMap( m_fileName );
       m_kfactor      = 1;//m_config->KFactorMap(  m_fileName );
       m_sumOfWeights = 1;//m_config->sumWeightsMap( m_fileName );
+
+      if (m_config->isTtbar()){
+        m_mc_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENpt");
+        m_mc_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENeta");
+        m_mc_phi = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENphi");
+        m_mc_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENenergy");
+        m_mc_pdgId  = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENid");
+        m_mc_status = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENstatus");
+        m_mc_isHadTop = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENisHadTop");
+      }
 /*
       m_mc_ht = new TTreeReaderValue<float>(m_ttree,"evt_Gen_Ht");
-      m_mc_pdgId;
 
       m_truth_jet_pt  = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_GenJetPt");
       m_truth_jet_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"jetAK4CHS_GenJetEta");
@@ -197,7 +208,7 @@ void Event::initialize_eventWeights(){
 
     // systematics from the nominal tree that are floats
     for (const auto& nom_syst : m_listOfWeightSystematics){
-        if (!m_config->useLeptons() && nom_syst.find("leptonSF")!=std::string::npos)
+        if (!m_useLeptons && nom_syst.find("leptonSF")!=std::string::npos)
             continue;
         m_weightSystematicsFloats[nom_syst] = new TTreeReaderValue<float>(m_ttree,nom_syst.c_str());
     }
@@ -267,25 +278,25 @@ void Event::execute(Long64_t entry){
     cma::DEBUG("EVENT : Setup weights ");
 
     // Truth Information
-    if (m_config->useTruth() && m_config->isMC()){
+    if (m_useTruth){
         initialize_truth();
         cma::DEBUG("EVENT : Setup truth information ");
     }
 
     // Leptons
-    if (m_config->useLeptons()){
+    if (m_useLeptons){
         initialize_leptons();
         cma::DEBUG("EVENT : Setup leptons ");
     }
 
     // Jets
-    if (m_config->useJets()){
+    if (m_useJets){
         initialize_jets();
         cma::DEBUG("EVENT : Setup small-R jets ");
     }
 
     // Large-R Jets
-    if (m_config->useLargeRJets()){
+    if (m_useLargeRJets){
         initialize_ljets();
         cma::DEBUG("EVENT : Setup large-R jets ");
     }
@@ -296,7 +307,7 @@ void Event::execute(Long64_t entry){
 
 
     // Neutrinos
-    if (m_config->useNeutrinos()){
+    if (m_useNeutrinos){
         // relies on kinematic reconstruction, unless the information is saved in root file
         initialize_neutrinos();
         cma::DEBUG("EVENT : Setup neutrinos ");
@@ -351,6 +362,78 @@ void Event::ttbarReconstruction(){
 
 void Event::initialize_truth(){
     /* Setup struct of truth information */
+    m_truth_partons.clear();
+    unsigned int nPartons( (*m_mc_pt)->size() );
+    cma::DEBUG("EVENT : N Partons = "+std::to_string(nPartons));
+
+    // Collect truth top information into one value
+    unsigned int t_idx(0);  // keeping track of tops in m_truth_tops
+    m_truth_tops.clear();
+
+    // loop over truth partons
+    unsigned int p_idx(0);
+    for (unsigned int i=0; i<nPartons; i++){
+        if ((*m_mc_status)->at(i)<60) continue;
+
+        Parton parton;
+        parton.p4.SetPtEtaPhiE((*m_mc_pt)->at(i),(*m_mc_eta)->at(i),(*m_mc_phi)->at(i),(*m_mc_e)->at(i));
+
+        int pdgId = (*m_mc_pdgId)->at(i);
+        unsigned int abs_pdgId = std::abs(pdgId);
+        cma::DEBUG("EVENT : pdgId = "+std::to_string(pdgId));
+
+        parton.pdgId = pdgId;
+
+        // simple booleans for type
+        parton.isTop = ( abs_pdgId==6 );
+        parton.isW   = ( abs_pdgId==24 );
+        parton.isLepton = ( abs_pdgId>=11 && abs_pdgId<=16 );
+        parton.isQuark  = ( abs_pdgId<7 );
+
+        if (parton.isLepton){
+            parton.isTau  = ( abs_pdgId==15 ) ? 1 : 0;
+            parton.isMuon = ( abs_pdgId==13 ) ? 1 : 0;
+            parton.isElectron = ( abs_pdgId==11 ) ? 1 : 0;
+            parton.isNeutrino = ( abs_pdgId==12 || abs_pdgId==14 || abs_pdgId==16 ) ? 1 : 0;
+        }
+        else if (parton.isQuark){
+            parton.isLight  = ( abs_pdgId<5 ) ? 1 : 0;
+            parton.isBottom = ( abs_pdgId==5 ) ? 1 : 0;
+        }
+
+        parton.index      = p_idx;                    // index in vector of truth_partons
+        parton.top_index  = -1;                       // index in truth_tops vector
+        parton.containment = 0;                       // value for containment calculation
+
+        // build truth top structs
+        // in truth parton record, the top should arrive before its children
+        TruthTop top;
+
+        if (parton.isTop){
+            cma::DEBUG("EVENT : is top "+std::to_string((*m_mc_isHadTop)->size()));
+            top.Wdecays.clear();    // for storing W daughters
+            top.daughters.clear();  // for storing non-W/bottom daughters
+
+            top.Top       = parton.index;
+            top.isTop     = (pdgId>0);
+            top.isAntiTop = (pdgId<0);
+            top.isHadronic = (*m_mc_isHadTop)->at(p_idx);
+            top.isLeptonic = !(*m_mc_isHadTop)->at(p_idx);
+            parton.top_index   = t_idx;
+            parton.containment = m_mapOfContainment.at("FULL");   // only considering truth tops right now, not the decay products
+            if (parton.pdgId<0) parton.containment *= -1;         // negative value for anti-tops
+            m_truth_tops.push_back(top);   // store tops now, add information from children in future iterations
+            t_idx++;
+        }
+
+        // store for later access
+        m_truth_partons.push_back( parton );
+        p_idx++;
+    } // end loop over truth partons
+
+    m_truthMatchingTool->setTruthPartons(m_truth_partons);
+    m_truthMatchingTool->setTruthTops(m_truth_tops);
+
     return;
 }
 
@@ -440,7 +523,16 @@ void Event::initialize_ljets(){
         ljet.isGood = isGood;
         ljet.index  = idx;
 
-        if (isGood && ljet.p4.Pt()<400) std::cout << " LARGE R JET SNUCK THROUGH " << std::endl;
+        // Truth-matching to jet
+        ljet.truth_partons.clear();
+        if (m_useTruth && m_config->isTtbar()) {
+            cma::DEBUG("EVENT : Truth match AK8 subjets");  // match subjets (and then the AK8 jet) to truth tops
+
+            // First AK8 subjet
+            m_truthMatchingTool->matchJetToTruthTop(ljet);  // match to partons
+
+            cma::DEBUG("EVENT : ++ Ljet had top = "+std::to_string(ljet.isHadTop)+" for truth top "+std::to_string(ljet.matchId));
+        } // end truth matching ljet to partons
 
         m_ljets.push_back(ljet);
         idx++;
@@ -554,7 +646,7 @@ void Event::initialize_kinematics(){
     m_ST = 0.0;
 
     // Get hadronic transverse energy
-    if (m_config->useJets()){
+    if (m_useJets){
         // include small-R jet pT
         for (auto &small_jet : m_jets ){
             m_HT += small_jet.p4.Pt();
@@ -574,7 +666,7 @@ void Event::initialize_kinematics(){
     m_ST += m_HT;
     m_ST += m_met.p4.Pt();
 
-    if (m_config->useLeptons()){
+    if (m_useLeptons){
         for (const auto& lep : m_leptons)
             m_ST += lep.p4.Pt(); 
     }
@@ -787,7 +879,7 @@ void Event::finalize(){
     delete m_runNumber;
     delete m_lumiblock;
 
-    if (m_config->useJets()){
+    if (m_useJets){
       delete m_jet_pt;
       delete m_jet_eta;
       delete m_jet_phi;
@@ -795,7 +887,7 @@ void Event::finalize(){
       delete m_jet_bdisc;
     }
 
-    if (m_config->useLargeRJets()){
+    if (m_useLargeRJets){
       delete m_ljet_pt;
       delete m_ljet_eta;
       delete m_ljet_phi;
@@ -811,7 +903,7 @@ void Event::finalize(){
       delete m_ljet_subjet1_bdisc;
     }
 
-    if (m_config->useLeptons()){
+    if (m_useLeptons){
       delete m_el_pt;
       delete m_el_eta;
       delete m_el_phi;
@@ -838,13 +930,22 @@ void Event::finalize(){
     delete m_HLT_TkMu50;
 */
     if (m_isMC){
-      //delete m_weight_mc;
-      //delete m_weight_pileup;
-      //delete m_weight_pileup_UP;
-      //delete m_weight_pileup_DOWN;
+      if (m_config->isTtbar()){
+        delete m_mc_pt;
+        delete m_mc_eta;
+        delete m_mc_phi;
+        delete m_mc_e;
+        delete m_mc_pdgId;
+        delete m_mc_status;
+        delete m_mc_isHadTop;
+      }
+/*
+        delete m_weight_mc;
+        delete m_weight_pileup;
+        delete m_weight_pileup_UP;
+        delete m_weight_pileup_DOWN;
 
-      if (m_config->useTruth()){
-/*        delete m_mc_ht;
+        delete m_mc_ht;
 
         delete m_truth_jet_pt;
         delete m_truth_jet_eta;
@@ -860,10 +961,11 @@ void Event::finalize(){
         delete m_truth_ljet_subjet0_bdisc;
         delete m_truth_ljet_subjet1_charge;
         delete m_truth_ljet_subjet1_bdisc;
-*/      } // end useTruth
+*/
     } // end isMC
 
     return;
 }
 
 // THE END
+

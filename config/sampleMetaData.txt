@@ -1,5 +1,8 @@
 # AN2016_255_v5.pdf
-# Primary Dataset XSection sumWeights KFactor NEvents
+# PrimaryDataset XSection sumWeights KFactor NEvents
+SingleMuon 1 1 1 1
+SingleElectron 1 1 1 1
+JetHT 1 1 1 1
 QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8 106033.6648 1 1 1
 QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8 25190.51514 1 1 1
 QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8 8654.49315 1 1 1

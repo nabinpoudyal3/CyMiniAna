@@ -136,6 +136,7 @@ class Event {
     std::string m_fileName;
     bool m_grid;
     bool m_isMC;
+    bool m_useTruth;
     long long m_entry;
     long long m_truth_entry;
 
@@ -195,7 +196,10 @@ class Event {
     std::vector<Electron> m_truth_electrons;
     std::vector<Neutrino> m_truth_neutrinos;
     std::vector<Ljet> m_truth_ljets;
-    std::vector<Jet>  m_truth_jets;
+    std::vector<Jet> m_truth_jets;
+    std::vector<Parton> m_truth_partons;
+    std::vector<TruthTop> m_truth_tops;
+    std::map<std::string,int> m_mapOfContainment;
 
     // b-tagged calo jets with various WP
     std::map<std::string, std::vector<int> > m_btag_jets;
@@ -326,9 +330,10 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_mc_pt;
     TTreeReaderValue<std::vector<float>> * m_mc_eta;
     TTreeReaderValue<std::vector<float>> * m_mc_phi;
-    TTreeReaderValue<std::vector<float>> * m_mc_m;
+    TTreeReaderValue<std::vector<float>> * m_mc_e;
     TTreeReaderValue<std::vector<int>> * m_mc_pdgId;
     TTreeReaderValue<std::vector<int>> * m_mc_status;
+    TTreeReaderValue<std::vector<int>> * m_mc_isHadTop;
     TTreeReaderValue<std::vector<int>> * m_mc_parent_index;
     TTreeReaderValue<std::vector<int>> * m_mc_child0_index;
     TTreeReaderValue<std::vector<int>> * m_mc_child1_index;

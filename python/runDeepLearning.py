@@ -1,6 +1,6 @@
 """
 Created:        12 November  2016
-Last Updated:   25 February  2018
+Last Updated:   27 March     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -12,10 +12,6 @@ Script for running the deep learning implementation
 To run:
 $ python python/runDeepLearning.py config/mlconfig.txt
 -- the second argument is the text file with configurations for the NN/setup
-
- {"none",0},    // :: NONE = QCD (background)
- {"QB",1},      // :: QB-Q = Signal AK8(QB) + AK4(Q)
- {"W",2},       // :: QQ-B = Signal AK8(W)  + AK4(B)
 """
 import os
 import sys
@@ -82,6 +78,8 @@ hep_data_name = config.hep_data.split('/')[-1].split('.')[0]
 ## Setup Deep Learning class
 dnn = DeepLearning()
 
+dnn.target_names  = ["top","antitop"]
+dnn.target_values = [0,1]
 dnn.hep_data   = config.hep_data
 dnn.model_name = config.dnn_data
 dnn.verbose_level = config.verbose_level
