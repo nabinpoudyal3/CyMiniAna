@@ -383,12 +383,13 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     Lepton lep = m_leptons.at(0);
 
     // cut1 :: triggers -- ejets is lepton==electron else mujets
-    bool passTrig(true);
+    unsigned int passTrig(0);
     std::vector<std::string> oneLeptonTriggers = (lep.isElectron) ? m_ejetsTriggers : m_mujetsTriggers;
-    for (const auto& trig : oneLeptonTriggers)
-        if (!m_triggers.at(trig)) passTrig = false;
+    for (const auto& trig : oneLeptonTriggers){
+        if (m_triggers.at(trig)) passTrig++;
+    }
 
-    if (!passTrig)
+    if (passTrig<1)
         return false;
     else{
         fillCutflows(cutflow_bin+1);
@@ -435,8 +436,6 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
         pass = true;
     }
 
-    if (mujets) cma::WARNING("EVENTSELECTION : MuJets Event, NMuons = "+std::to_string(m_NMuons));
-
     if (ljets){
         // Do the selection based on which lepton flavor we have in the event
         if (m_NElectrons==1) pass = ejetsSelection(cutflow_bin+6,lep);
@@ -444,10 +443,7 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     }
     else{
         // Only do the el (mu) selection if the user request e+jets (mu+jets)
-        if (m_NElectrons==1)
-            pass = (ejets) ? ejetsSelection(cutflow_bin+6,lep) : false;
-        else  // m_NMuons==1
-            pass = (mujets) ? mujetsSelection(cutflow_bin+6) : false;
+        pass = (ejets) ? ejetsSelection(cutflow_bin+6,lep) : mujetsSelection(cutflow_bin+6);
     }
 
     return pass;

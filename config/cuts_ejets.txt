@@ -1,6 +1,6 @@
 FILTERS > 1
-TRIGGER > 1
 N_LEP == 1
+TRIGGER > 1
 N_AK8 >= 1
 N_AK4 >= 2
 DR_AK4_LEP > 0.3

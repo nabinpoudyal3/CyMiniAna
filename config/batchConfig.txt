@@ -1,10 +1,11 @@
 date today
 output_dir eos
-eos_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/$TODAY
-files config/listOfBatchFiles_ttbarGEN-ljets.txt
+eos_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/ttbar/$TODAY
+eos_tarball_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/
+files config/listOfTtbarFiles.txt
 username demarley
-executable runML
+executable run
 test False
 submit True
 verbose True
-config config/cmaConfigML.txt
+config config/cmaConfig.txt
