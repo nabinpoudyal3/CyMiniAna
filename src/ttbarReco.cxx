@@ -82,7 +82,7 @@ void ttbarReco::execute(std::vector<Ljet>& ljets){
 void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, std::vector<Ljet>& ljets){
     /* Build top quarks system 
        - lepton
-       - AK4 near lepton
+       - AK4 near lepton (2D cut)
          > highest pT
        - AK8 away from lepton
          > Most 'top-like' = highest BEST_t score
@@ -107,8 +107,10 @@ void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, st
         float ak4_pt(0);
 
         for (auto& jet : jets){
-            float dr = jet.p4.DeltaR(lep.p4);
-            if (0.3<dr && dr<M_HALF_PI && jet.p4.Pt() > ak4_pt){
+            float dr    = jet.p4.DeltaR(lep.p4);
+            float ptrel = jet.p4.Perp( lep.p4.Vect() );
+            //if (0.3<dr && dr<M_HALF_PI && jet.p4.Pt() > ak4_pt){
+            if ( (dr>0.4 || ptrel>25) && jet.p4.Pt() > ak4_pt){        // 2D cut instead of DeltaR window
                 ak4_pt = jet.p4.Pt();
                 ak4candidate = jet.index;
             }

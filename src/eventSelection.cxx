@@ -357,8 +357,23 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
     */
     bool pass(false);
 
+
+    // selection based on lepton -- e+jets or mu+jets
+    // only do selection if the user requested a specific
+    // lepton flavor
+    // e.g., if user selected "ejets", don't do mu+jets selection!
+    bool ljets  = m_selection.compare("ljets")==0;    // general "lepton+jets" selection
+    bool ejets  = m_selection.compare("ejets")==0;
+    bool mujets = m_selection.compare("mujets")==0;
+
+
     // cut0 :: One lepton
-    if ( m_NLeptons != 1 )     // NElectrons+m_NMuons
+    bool nLeptons(false);
+    if (ejets)       nLeptons = (m_NElectrons==1 && m_NMuons==0);
+    else if (mujets) nLeptons = (m_NMuons==1 && m_NElectrons==0);
+    else if (ljets)  nLeptons = (m_NLeptons==1);
+
+    if ( !nLeptons )
         return false;          // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin);
@@ -420,13 +435,7 @@ bool eventSelection::oneLeptonSelection(double cutflow_bin){
         pass = true;
     }
 
-    // selection based on lepton -- e+jets or mu+jets
-    // only do selection if the user requested a specific
-    // lepton flavor
-    // e.g., if user selected "ejets", don't do mu+jets selection!
-    bool ljets  = m_selection.compare("ljets")==0;    // general "lepton+jets" selection
-    bool ejets  = m_selection.compare("ejets")==0;
-    bool mujets = m_selection.compare("mujets")==0;
+    if (mujets) cma::WARNING("EVENTSELECTION : MuJets Event, NMuons = "+std::to_string(m_NMuons));
 
     if (ljets){
         // Do the selection based on which lepton flavor we have in the event

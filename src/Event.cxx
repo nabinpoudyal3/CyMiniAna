@@ -649,7 +649,7 @@ void Event::initialize_leptons(){
         mu.p4.SetPtEtaPhiE( (*m_mu_pt)->at(i),(*m_mu_eta)->at(i),(*m_mu_phi)->at(i),(*m_mu_e)->at(i));
         bool isMedium = (*m_mu_id_medium)->at(i);
 
-        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.1 && isMedium);
+        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium);
         if (!isGood) continue;
 
         mu.charge = (*m_mu_charge)->at(i);
