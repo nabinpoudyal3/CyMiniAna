@@ -264,14 +264,30 @@ void configuration::readMetadata(TFile& file){
     metadata.Next();
 
     m_sample = {};
-    m_sample.primaryDataset = *primaryDataset;
-    m_sample.XSection = *xsection;
-    m_sample.KFactor  = *kfactor;
-    m_sample.NEvents  = *NEvents;
-    m_sample.sumOfWeights = *sumOfWeights;
+    std::string pd  = *primaryDataset;
+    std::size_t pos = pd.find_first_of("/");
+    if (pos==0){
+        // bad name for metadata -- need to use map to get metadata
+        // given something like '/ttbar/run2/.../', want 'ttbar'
+        std::size_t found = pd.find_first_of("/",pos+1);
+        pd = pd.substr(pos+1,found-1);
 
-    m_primaryDataset = *primaryDataset;
-    m_NTotalEvents   = *NEvents;
+        if (m_mapOfSamples.find(pd)==m_mapOfSamples.end()) return;
+        m_sample = m_mapOfSamples.at(pd);
+
+        m_primaryDataset = m_sample.primaryDataset;
+        m_NTotalEvents   = m_sample.NEvents;
+    }
+    else{
+        m_sample.primaryDataset = *primaryDataset;
+        m_sample.XSection = *xsection;
+        m_sample.KFactor  = *kfactor;
+        m_sample.NEvents  = *NEvents;
+        m_sample.sumOfWeights = *sumOfWeights;
+
+        m_primaryDataset = *primaryDataset;
+        m_NTotalEvents   = *NEvents;
+    }
 
     cma::DEBUG("CONFIGURATION : Primary dataset = "+m_primaryDataset);
 

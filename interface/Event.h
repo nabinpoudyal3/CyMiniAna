@@ -65,6 +65,8 @@ class Event {
     void initialize_weights();
     void initialize_kinematics();
     void initialize_truth();
+    void initialize_filters();
+    void initialize_triggers();
 
     // Get physics information
     std::vector<Lepton> leptons() const {return m_leptons;}
@@ -72,7 +74,7 @@ class Event {
     std::vector<Muon> muons() const {return m_muons;}
     std::vector<Neutrino> neutrinos() const {return m_neutrinos;}
     std::vector<Ljet> ljets() const {return m_ljets;}
-    std::vector<Jet>  jets() const {return m_jets;}
+    std::vector<Jet> jets() const {return m_jets;}
 
     virtual MET met() const {return m_met;}
     virtual float HT() const {return m_HT;}
@@ -102,6 +104,9 @@ class Event {
     virtual float xsection() const {return m_xsection;}
     virtual float kfactor() const {return m_kfactor;}
     virtual float sumOfWeights() const {return m_sumOfWeights;}
+
+    std::map<std::string,unsigned int> filters() const {return m_filters;}
+    std::map<std::string,unsigned int> triggers() const {return m_triggers;}
 
     // kinematic reconstruction, ML
     void getDilepton();
@@ -225,6 +230,8 @@ class Event {
     std::map<std::string,TTreeReaderValue<float> * > m_weightSystematicsVectorFloats;
     std::vector<std::string> m_listOfWeightSystematics;
 
+    std::map<std::string,unsigned int> m_filters;
+    std::map<std::string,unsigned int> m_triggers;
 
     // ***********************************
     // TTree variables [all possible ones]
@@ -363,7 +370,7 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_mc_phi;
     TTreeReaderValue<std::vector<float>> * m_mc_e;
     TTreeReaderValue<std::vector<int>> * m_mc_pdgId;
-    TTreeReaderValue<std::vector<float>> * m_mc_status;
+    TTreeReaderValue<std::vector<int>> * m_mc_status;
     TTreeReaderValue<std::vector<int>> * m_mc_isHadTop;
     TTreeReaderValue<std::vector<int>> * m_mc_parent_index;
     TTreeReaderValue<std::vector<int>> * m_mc_child0_index;

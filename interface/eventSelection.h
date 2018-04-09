@@ -112,6 +112,14 @@ class eventSelection{
     float m_ht;
     float m_st;
 
+    std::vector<std::string> m_zeroLeptonTriggers;
+    std::vector<std::string> m_ejetsTriggers;
+    std::vector<std::string> m_mujetsTriggers;
+    std::vector<std::string> m_dileptonTriggers;
+
+    std::map<std::string,unsigned int> m_triggers;
+    std::map<std::string,unsigned int> m_filters;
+
     unsigned int m_NLeptons;
     unsigned int m_NElectrons;
     unsigned int m_NMuons;

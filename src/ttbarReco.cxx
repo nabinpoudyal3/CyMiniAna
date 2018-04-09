@@ -79,7 +79,7 @@ void ttbarReco::execute(std::vector<Ljet>& ljets){
 
 
 // single lepton
-void ttbarReco::execute(std::vector<Electron>& electrons, std::vector<Muon>& muons, std::vector<Jet>& jets, std::vector<Ljet>& ljets){
+void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, std::vector<Ljet>& ljets){
     /* Build top quarks system 
        - lepton
        - AK4 near lepton
@@ -90,12 +90,10 @@ void ttbarReco::execute(std::vector<Electron>& electrons, std::vector<Muon>& muo
     m_ttbar1L = {};
 
     // Setup lepton (only 1 in the single lepton analysis)
-    cma::DEBUG("TTBARRECO : building ttbar with "+std::to_string(muons.size())+" muons, "+std::to_string(electrons.size())+" electrons");
+    cma::DEBUG("TTBARRECO : building ttbar with "+std::to_string(leptons.size())+" leptons");
     Lepton lep;
-    if (muons.size()>0)
-        lep = muons.at(0);
-    else if (electrons.size()>0)
-        lep = electrons.at(0);
+    if (leptons.size()>0)
+        lep = leptons.at(0);
     else
         lep.p4.SetPtEtaPhiE(0,0,0,0);   // this event will fail the selection anway, use dummy value
 

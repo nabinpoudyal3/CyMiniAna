@@ -194,7 +194,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
         m_mc_phi = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENphi");
         m_mc_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENenergy");
         m_mc_pdgId  = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENid");
-        m_mc_status = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENstatus");
+        m_mc_status = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENstatus");
         m_mc_isHadTop = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENisHadTop");
       }
 /*
@@ -314,6 +314,12 @@ void Event::execute(Long64_t entry){
     initialize_weights();
     cma::DEBUG("EVENT : Setup weights ");
 
+    // Filters
+    initialize_filters();
+
+    // Triggers
+    initialize_triggers();
+
     // Truth Information
     if (m_useTruth){
         initialize_truth();
@@ -385,13 +391,48 @@ void Event::ttbarReconstruction(){
         m_ttbar0L = m_ttbarRecoTool->ttbar0L();
     }
     else if (m_isOneLeptonAnalysis){
-        m_ttbarRecoTool->execute(m_electrons,m_muons,m_jets,m_ljets);
+        m_ttbarRecoTool->execute(m_leptons,m_jets,m_ljets);
         m_ttbar1L = m_ttbarRecoTool->ttbar1L();
     }
     else if (m_isTwoLeptonAnalysis){
         m_ttbarRecoTool->execute(m_electrons,m_muons,m_jets);
         m_ttbar2L = m_ttbarRecoTool->ttbar2L();
     }
+
+    return;
+}
+
+
+void Event::initialize_filters(){
+    /* Setup the filters */
+    m_filters.clear();
+
+    m_filters["goodVertices"] = **m_Flag_goodVertices;
+    m_filters["eeBadScFilter"] = **m_Flag_eeBadScFilter;
+    m_filters["HBHENoiseFilter"] = **m_Flag_HBHENoiseFilter;
+    m_filters["HBHENoiseIsoFilter"] = **m_Flag_HBHENoiseIsoFilter;
+    m_filters["globalTightHalo2016Filter"] = **m_Flag_globalTightHalo2016Filter;
+    m_filters["EcalDeadCellTriggerPrimitiveFilter"] = **m_Flag_EcalDeadCellTriggerPrimitiveFilter;
+
+    return;
+}
+
+
+void Event::initialize_triggers(){
+    /* Setup triggers */
+    m_triggers.clear();
+
+    m_triggers["HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50"] = **m_HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50;
+    m_triggers["HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165"] = **m_HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165;
+    m_triggers["HLT_Ele115_CaloIdVT_GsfTrkIdT"]    = **m_HLT_Ele115_CaloIdVT_GsfTrkIdT;
+    m_triggers["HLT_Mu40_Eta2P1_PFJet200_PFJet50"] = **m_HLT_Mu40_Eta2P1_PFJet200_PFJet50;
+    m_triggers["HLT_Mu50"]    = **m_HLT_Mu50;
+    m_triggers["HLT_TkMu50"]  = **m_HLT_TkMu50;
+    m_triggers["HLT_PFHT800"] = **m_HLT_PFHT800;
+    m_triggers["HLT_PFHT900"] = **m_HLT_PFHT900;
+    m_triggers["HLT_AK8PFJet450"] = **m_HLT_AK8PFJet450;
+    m_triggers["HLT_PFHT700TrimMass50"]  = **m_HLT_PFHT700TrimMass50;
+    m_triggers["HLT_PFJet360TrimMass30"] = **m_HLT_PFJet360TrimMass30;
 
     return;
 }
@@ -606,13 +647,14 @@ void Event::initialize_leptons(){
     for (unsigned int i=0; i<nMuons; i++){
         Lepton mu;
         mu.p4.SetPtEtaPhiE( (*m_mu_pt)->at(i),(*m_mu_eta)->at(i),(*m_mu_phi)->at(i),(*m_mu_e)->at(i));
+        bool isMedium = (*m_mu_id_medium)->at(i);
 
-        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.1);
+        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.1 && isMedium);
         if (!isGood) continue;
 
         mu.charge = (*m_mu_charge)->at(i);
         mu.loose  = (*m_mu_id_loose)->at(i);
-        mu.medium = (*m_mu_id_medium)->at(i);
+        mu.medium = isMedium;
         mu.tight  = (*m_mu_id_tight)->at(i);
         mu.iso    = (*m_mu_iso)->at(i);
         mu.isGood = isGood;
@@ -628,8 +670,9 @@ void Event::initialize_leptons(){
     for (unsigned int i=0; i<nElectrons; i++){
         Lepton el;
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
+        bool isTightNoIso = (*m_el_id_tight_noIso)->at(i);
 
-        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1);
+        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1 && isTightNoIso);
         if (!isGood) continue;
 
         el.charge = (*m_el_charge)->at(i);
@@ -638,7 +681,7 @@ void Event::initialize_leptons(){
         el.tight  = (*m_el_id_tight)->at(i);
         el.loose_noIso  = (*m_el_id_loose_noIso)->at(i);
         el.medium_noIso = (*m_el_id_medium_noIso)->at(i);
-        el.tight_noIso  = (*m_el_id_tight_noIso)->at(i);
+        el.tight_noIso  = isTightNoIso;
         el.isGood = isGood;
 
         el.isMuon = false;

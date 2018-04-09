@@ -62,6 +62,11 @@ class configuration {
     float CSVv2T() {return m_CSVv2T;}
 
 
+    std::vector<std::string> zeroLeptonTriggers() {return m_zeroLeptonTriggers;}
+    std::vector<std::string> ejetsTriggers() {return m_ejetsTriggers;}
+    std::vector<std::string> mujetsTriggers() {return m_mujetsTriggers;}
+    std::vector<std::string> dileptonTriggers() {return m_dileptonTriggers;}
+
     // functions about the TTree
     virtual bool isNominalTree();
     virtual bool isNominalTree( const std::string &tree_name );
@@ -218,6 +223,18 @@ class configuration {
     float m_CSVv2L=0.5426;
     float m_CSVv2M=0.8484;
     float m_CSVv2T=0.9535;
+
+    std::vector<std::string> m_filters = {"goodVertices",
+        "eeBadScFilter",
+        "HBHENoiseFilter",
+        "HBHENoiseIsoFilter",
+        "globalTightHalo2016Filter",
+        "EcalDeadCellTriggerPrimitiveFilter"};
+
+    std::vector<std::string> m_zeroLeptonTriggers = {"HLT_PFHT800","HLT_PFHT900","HLT_AK8PFJet450","HLT_PFHT700TrimMass50","HLT_PFJet360TrimMass30"};
+    std::vector<std::string> m_ejetsTriggers  = {"HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50","HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165","HLT_Ele115_CaloIdVT_GsfTrkIdT"};
+    std::vector<std::string> m_mujetsTriggers = {"HLT_Mu40_Eta2P1_PFJet200_PFJet50","HLT_Mu50","HLT_TkMu50"};
+    std::vector<std::string> m_dileptonTriggers = {};
 
     std::vector<std::string> m_filesToProcess;
     std::vector<std::string> m_treeNames;
