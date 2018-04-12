@@ -100,6 +100,7 @@ def extract(str_value, start_='{', stop_='}'):
 
 def to_csv(filename,data):
     """Write data to CSV file"""
+    if not filename.endswith(".csv"): filename += ".csv"
     f = open(filename,"w")
     for d in data:
         f.write(d)
@@ -117,10 +118,7 @@ def file2list(filename):
 
 def str2bool(param):
     """Convert a string to a boolean"""
-    if param in ['true','True','1']:
-        return True
-    else:
-        return False
+    return (param in ['true','True','1'])
 
 
 class VERBOSE(object):
@@ -174,4 +172,12 @@ class VERBOSE(object):
             print " {0} :: {1}".format(level,message)
         return
 
+    def HELP(self):
+        """Help message"""
+        print " CyMiniAna Deep Learning "
+        print " To run, execute the command: "
+        print " $ python python/runDeepLearning.py <config> "
+        print " where <config> is a text file that outlines the configuration "
+
 ## THE END ##
+
