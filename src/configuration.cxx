@@ -59,6 +59,13 @@ configuration::configuration(const std::string &configFile) :
     m_KFactor.clear();
     m_AMI.clear();
     m_map_config.clear();
+
+    m_isQCD   = false;
+    m_isTtbar = false;
+    m_isWjets = false;
+    m_isSingleTop    = false;
+    m_primaryDataset = "";
+    m_NTotalEvents   = 0;
   }
 
 configuration::~configuration() {}
@@ -84,8 +91,8 @@ void configuration::initialize() {
     // -- map of defaultConfigs defined in header (can't use 'verbose' tools, not defined yet!)
     for (const auto& defaultConfig : m_defaultConfigs){
         if ( m_map_config.find(defaultConfig.first) == m_map_config.end() ){ // item isn't in config file
-            std::cout << " WARNING :: CONFIG : Configuration " << defaultConfig.first << " not defined" << std::endl;
-            std::cout << " WARNING :: CONFIG : Setting value to default " << defaultConfig.second << std::endl;
+            std::cout << " WARNING :: CONFIG : Configuration " << defaultConfig.first << 
+                         " not defined, set to default " << defaultConfig.second <<  std::endl;
             m_map_config[defaultConfig.first] = defaultConfig.second;
         }
     }
@@ -235,17 +242,63 @@ std::string configuration::getConfigOption( std::string item ){
 
 
 bool configuration::checkPrimaryDataset(const std::vector<std::string>& files){
-    /* Check if filename is in list of files */
+    /* Check if filename is in list of files 
+       6 April 2018: It is possible the ntuples have incorrect metadata information.
+                     Keeping m_mapOfSamples/m_mapOfPrimaryDatasets in case something needs to be updated/fixed
+    */
     bool inListOfFiles(false);
     for (auto& x : files){
-        inListOfFiles = (m_filename.find(x)!=std::string::npos);
-        if (inListOfFiles){
-            m_primaryDataset = m_mapOfPrimaryDatasets.at(x);
+        if (m_mapOfPrimaryDatasets.at(x)==m_sample.primaryDataset){
+            inListOfFiles = true;
             break;
         }
     }
 
     return inListOfFiles;
+}
+
+
+void configuration::readMetadata(TFile& file){
+    /* Read metadata TTree */
+    TTreeReader metadata("tree/metadata", &file);
+
+    TTreeReaderValue<std::string> primaryDataset(metadata, "primaryDataset");
+    TTreeReaderValue<float> xsection(metadata, "xsection");
+    TTreeReaderValue<float> kfactor(metadata, "kfactor");
+    TTreeReaderValue<float> sumOfWeights(metadata, "sumOfWeights");
+    TTreeReaderValue<unsigned int> NEvents(metadata, "NEvents");
+
+    metadata.Next();
+
+    m_sample = {};
+    std::string pd  = *primaryDataset;
+    std::size_t pos = pd.find_first_of("/");
+    if (pos==0){
+        // bad name for metadata -- need to use map to get metadata
+        // given something like '/ttbar/run2/.../', want 'ttbar'
+        std::size_t found = pd.find_first_of("/",pos+1);
+        pd = pd.substr(pos+1,found-1);
+
+        if (m_mapOfSamples.find(pd)==m_mapOfSamples.end()) return;
+        m_sample = m_mapOfSamples.at(pd);
+
+        m_primaryDataset = m_sample.primaryDataset;
+        m_NTotalEvents   = m_sample.NEvents;
+    }
+    else{
+        m_sample.primaryDataset = *primaryDataset;
+        m_sample.XSection = *xsection;
+        m_sample.KFactor  = *kfactor;
+        m_sample.NEvents  = *NEvents;
+        m_sample.sumOfWeights = *sumOfWeights;
+
+        m_primaryDataset = *primaryDataset;
+        m_NTotalEvents   = *NEvents;
+    }
+
+    cma::DEBUG("CONFIGURATION : Primary dataset = "+m_primaryDataset);
+
+    return;
 }
 
 
@@ -256,7 +309,9 @@ void configuration::inspectFile( TFile& file ){
     m_isWjets = false;
     m_isSingleTop    = false;
     m_primaryDataset = "";
-    m_NTotalEvents = 0;
+    m_NTotalEvents   = 0;
+
+    readMetadata(file);
 
     m_isQCD   = checkPrimaryDataset(m_qcdFiles);            // check if file is QCD
     m_isTtbar = checkPrimaryDataset(m_ttbarFiles);          // check if file is ttbar
@@ -267,7 +322,7 @@ void configuration::inspectFile( TFile& file ){
 
     // get the metadata
     cma::DEBUG("CONFIGURATION : Found primary dataset = "+m_primaryDataset);
-    if (m_primaryDataset.size()>0) m_NTotalEvents = m_mapOfSamples.at(m_primaryDataset).NEvents;
+    if (m_primaryDataset.size()>0) m_NTotalEvents = m_sample.NEvents;
     else{
         cma::WARNING("CONFIGURATION : Primary dataset name not found, checking the map");
         cma::WARNING("CONFIGURATION : - isMC = "+std::to_string(m_isMC));
@@ -281,7 +336,6 @@ void configuration::inspectFile( TFile& file ){
             } // end if the filename contains this primary dataset
         } // end loop over map of samples (to access metadata info)
     } // end else
-
 
     // Protection against accessing truth information that may not exist
     if (!m_isMC && m_useTruth){
@@ -301,6 +355,24 @@ void configuration::setTreename(std::string treeName){
 
 void configuration::setFilename(std::string fileName){
     m_filename = fileName;
+    m_useTruth = cma::str2bool( getConfigOption("useTruth") );
+
+    if (fileName.find("ttbar")!=std::string::npos){ 
+        m_isMC    = true;
+        m_isTtbar = true;
+    }
+    else{
+        m_isMC    = false;
+        m_isTtbar = false;
+    }
+
+    // Protection against accessing truth information that may not exist
+    if (!m_isMC && m_useTruth){
+        cma::WARNING("CONFIGURATION : 'useTruth=true' but 'isMC=false'");
+        cma::WARNING("CONFIGURATION : Setting 'useTruth' to false");
+        m_useTruth = false;
+    }
+
     return;
 }
 

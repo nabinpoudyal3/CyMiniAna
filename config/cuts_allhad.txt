@@ -1,2 +1,4 @@
+FILTERS > 1
+TRIGGER > 1
 N_LEP == 0
 N_AK8 >= 2

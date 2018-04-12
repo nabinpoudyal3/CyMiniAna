@@ -37,6 +37,7 @@ class BatchSubmission(object):
         self.eos_tarball_path  = '/store/user/lpctop/ttbarAC/'
         self.local_output_path = ''
 
+        self.batch_subdir = ''
         self.cfg_filename = "batch/batchConfig_{0}.txt" # CyMiniAna config file per job
         self.filename     = ''
 
@@ -49,7 +50,11 @@ class BatchSubmission(object):
         self.unique_id_base = [self.tmp_ntuple]
         self.unique_id_name = "_".join(self.unique_id_base)
         self.unique_id_path = "/".join(self.unique_id_base)
-        self.unique_id_batch_path = "batch/{0}".format(self.unique_id_path)
+        if self.batch_subdir:
+            self.unique_id_batch_path = "batch/{0}/{1}".format(self.batch_subdir,self.unique_id_path)
+        else:
+            self.unique_id_batch_path = "batch/{0}".format(self.unique_id_path)
+
 
         self.vb = util.VERBOSE()
         self.vb.level = self.verbose_level
@@ -150,7 +155,7 @@ class BatchSubmission(object):
                 os.makedirs(self.unique_id_batch_path)
 
             ## Put the single root file into a text file
-            self.filename = "batch/{0}/listOfFiles.txt".format(self.unique_id_path)
+            self.filename = "{0}/listOfFiles.txt".format(self.unique_id_batch_path)
             self.writeNtuple2File(minisl_ntuple)
 
             self.vb.INFO("BATCH SUBMISSION : {0}".format(minisl_ntuple))
@@ -164,7 +169,7 @@ class BatchSubmission(object):
     def submit_job(self):
         """Submit the job"""
         # -- Write the CyMiniAnaAC configuration file
-        self.cfg_filename = "batch/{0}/cmaConfig.txt".format(self.unique_id_path)
+        self.cfg_filename = "{0}/cmaConfig.txt".format(self.unique_id_batch_path)
         self.writeConfiguration()
         self.vb.INFO("BATCH SUBMISSION : Config filename = {0}".format(self.cfg_filename))
 

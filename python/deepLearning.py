@@ -1,7 +1,6 @@
-
 """
 Created:        11 November  2016
-Last Updated:   15 February  2018
+Last Updated:   11 April     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -163,9 +162,9 @@ class DeepLearning(object):
 
 
     ## Single functions to run all of the necessary pieces
-    def runTraining(self):
+    def runTraining(self,extra_branches=[]):
         """Train NN model"""
-        self.load_hep_data(['ljet_contain'])
+        self.load_hep_data(extra_branches)
         self.build_model()
 
         # hard-coded :/
@@ -250,18 +249,12 @@ class DeepLearning(object):
             tmp_target = self.df[ self.df['target']==i ]
             targets.append(tmp_target)
 
-        training_df = self.df[ self.df['ljet_contain']!=0 ]   # check using truth tops instead of data
-        training_df = training_df.sample(frac=1)             # shuffle entries
 
-        col_name = 'ljet_contain'
-        mask1 = training_df.ljet_contain == -5  # anti-top; target = 1
-        mask2 = training_df.ljet_contain == 5   # top; target = 0
-        training_df.loc[mask1,col_name] = 1
-        training_df.loc[mask2,col_name] = 0
+        # Access features and labels from dataframe
+        X = self.df[self.features].values
+        Y = self.df['target'].values
 
-        X = training_df[self.features].values  # self.df[self.features].values
-        Y = training_df['ljet_contain'].values       # self.df['target'].values
-
+        # Setup k-fold process
         kfold = StratifiedKFold(n_splits=self.kfold_splits, shuffle=True, random_state=seed)
         nsplits = kfold.get_n_splits(X,Y)
         cvpredictions = []                 # compare outputs from each cross-validation
@@ -343,11 +336,23 @@ class DeepLearning(object):
         @param variables2plot    If there are extra variables to plot, 
                                  that aren't features of the NN, include them here
         """
-        file    = uproot.open(self.hep_data)
-        data    = file[self.treename]
-        self.df = data.pandas.df( self.features+['target']+variables2plot )
+        file = uproot.open(self.hep_data)
+        data = file[self.treename]
+        dataframe = data.pandas.df( self.features+['target']+variables2plot )
 
         self.metadata = file['metadata']   # names of samples, target values, etc.
+
+        applySelection = False
+        if applySelection:
+            # special treatment (add some selection after making the ntuples)
+            # this is hard-coded because it is user specific for now,
+            # may build in way to do this more easily
+            BEST_top  = self.df['ljet_BEST_t']
+            BEST_jet  = self.df['ljet_BEST_j']
+            mask      = BEST_top / (BEST_top+BEST_jet) >0.8
+            dataframe = dataframe[mask]
+
+        self.df = dataframe
 
         return
 
@@ -448,4 +453,3 @@ class DeepLearning(object):
 
 
 ## THE END ##
-

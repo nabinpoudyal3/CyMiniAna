@@ -24,7 +24,7 @@ class ttbarReco {
     void execute(std::vector<Ljet>& ljets);
 
     // single lepton
-    void execute(std::vector<Electron>& electrons, std::vector<Muon>& muons, std::vector<Jet>& jets, std::vector<Ljet>& ljets);
+    void execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, std::vector<Ljet>& ljets);
 
     // dilepton
     void execute(std::vector<Electron>& electrons, std::vector<Muon>& muons, std::vector<Jet>& jets);

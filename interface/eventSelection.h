@@ -34,10 +34,13 @@ class eventSelection{
     // Run once at the start of the job to setup the cuts
     virtual void initialize(const std::string& selection, const std::string& cutsfile);
     virtual void initialize(const std::string &cutsfile);
+
+    virtual void finalize();
+
     virtual void identifySelection();
 
     // Run for every tree (before the event loop)
-    void setCutflowHistograms(TH1D& cutflow, TH1D& cutflow_unweighted);
+    void setCutflowHistograms(TFile& outputFile);
 
     // Run for every event (in every systematic) that needs saving
     virtual bool applySelection(const Event& event);
@@ -53,6 +56,7 @@ class eventSelection{
     bool oneLeptonSelection(double cutflow_bin);
     bool ejetsSelection(double cutflow_bin, const Lepton& lep);
     bool mujetsSelection(double cutflow_bin);
+    bool cwoalaSelection(double cutflow_bin);
 
     // Dilepton selections
     bool twoLeptonSelection(double cutflow_bin);
@@ -86,8 +90,8 @@ class eventSelection{
     std::vector<Cut> m_cuts;
 
     // cutflow histograms
-    TH1D m_cutflow;
-    TH1D m_cutflow_unw;
+    TH1D* m_cutflow;
+    TH1D* m_cutflow_unw;
 
     // booleans for each selection
     bool m_dummySelection;
@@ -95,6 +99,7 @@ class eventSelection{
     bool m_isOneLeptonAnalysis;
     bool m_isTwoLeptonAnalysis;
 
+    bool m_isCWoLaAnalysis;
     bool m_allHadDNNSelection;
 
     // physics information
@@ -103,11 +108,21 @@ class eventSelection{
     std::vector<Jet> m_jets;
     std::vector<Muon> m_muons;
     std::vector<Electron> m_electrons;
+    std::vector<Lepton> m_leptons;
     std::vector<Neutrino> m_neutrinos;
     MET m_met;
     float m_ht;
     float m_st;
 
+    std::vector<std::string> m_zeroLeptonTriggers;
+    std::vector<std::string> m_ejetsTriggers;
+    std::vector<std::string> m_mujetsTriggers;
+    std::vector<std::string> m_dileptonTriggers;
+
+    std::map<std::string,unsigned int> m_triggers;
+    std::map<std::string,unsigned int> m_filters;
+
+    unsigned int m_NLeptons;
     unsigned int m_NElectrons;
     unsigned int m_NMuons;
     unsigned int m_NJets;

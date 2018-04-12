@@ -71,9 +71,7 @@ int main(int argc, char** argv) {
 
     // event selection
     eventSelection evtSel( config );
-    evtSel.initialize( selection, config.cutsfiles().at(0) ); // need event selection and cutsfiles names
-    unsigned int ncuts = evtSel.numberOfCuts();               // number of cuts in selection
-    std::vector<std::string> cutNames = evtSel.cutNames();    // names of cuts
+    evtSel.initialize(selection, config.cutsfiles().at(0) ); // need event selection and cutsfiles names
 
 
     // --------------- //
@@ -97,14 +95,16 @@ int main(int argc, char** argv) {
 
         cma::DEBUG("RUNML : set file name and inspect ");
         config.setFilename( filename );   // Use the filename to determine primary dataset and information about the sample
-        config.inspectFile( *file );      // Determine information about the input file (metadata)
-        Sample s = config.sample();       // load the Sample struct (xsection,kfactor,etc)
+//        config.inspectFile( *file );      // Determine information about the input file (metadata)
+//        Sample s = config.sample();       // load the Sample struct (xsection,kfactor,etc)
 
+        cma::DEBUG("RUNML : get list of keys ");
         std::vector<std::string> fileKeys;
         cma::getListOfKeys(file,fileKeys);      // keep track of ttrees in file
 
 
         // -- Output file -- //
+        cma::DEBUG("RUNML : setup output directory ");
         struct stat dirBuffer;
         std::string outpath = outpathBase+"/"+selection+customDirectory;
         if ( !(stat((outpath).c_str(),&dirBuffer)==0 && S_ISDIR(dirBuffer.st_mode)) ){
@@ -122,35 +122,16 @@ int main(int argc, char** argv) {
         std::unique_ptr<TFile> outputFile(TFile::Open( fullOutputFilename.c_str(), "RECREATE"));
         cma::INFO("RUNML :   >> Saving to "+fullOutputFilename);
 
-
         histogrammer4ML histMaker(config,"ML");      // initialize histogrammer
         histMaker.initialize( *outputFile );
 
-        // -- Cutflow histograms
-        std::map<std::string, TH1D*>  h_cutflows;            // map of cutflow histograms (weights applied)
-        std::map<std::string, TH1D*>  h_cutflows_unweighted; // map of cutflow histograms (raw # of events)
-
+        evtSel.setCutflowHistograms( *outputFile );
 
         // check that the ttree exists in this file before proceeding
         if (std::find(fileKeys.begin(), fileKeys.end(), treename) == fileKeys.end()){
             cma::INFO("RUNML : TTree "+treename+" is not present in this file, continuing to next TTree");
             continue;
         }
-
-        // -- Cutflow histogram [initialize and label bins]
-        h_cutflows[treename] = new TH1D( (treename+"_cutflow").c_str(),(treename+"_cutflow").c_str(),ncuts+1,0,ncuts+1);
-        h_cutflows_unweighted[treename] = new TH1D( (treename+"_cutflow_unweighted").c_str(),(treename+"_cutflow_unweighted").c_str(),ncuts+1,0,ncuts+1);
-
-        h_cutflows[treename]->GetXaxis()->SetBinLabel(1,"INITIAL");
-        h_cutflows_unweighted[treename]->GetXaxis()->SetBinLabel(1,"INITIAL");
-
-        for (unsigned int c=1;c<=ncuts;++c){
-            h_cutflows[treename]->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
-            h_cutflows_unweighted[treename]->GetXaxis()->SetBinLabel(c+1,cutNames.at(c-1).c_str());
-        }
-
-        // -- Pass cutflow histograms to event selection class
-        evtSel.setCutflowHistograms(*h_cutflows.at(treename),*h_cutflows_unweighted.at(treename));
 
         // -- Load TTree to loop over
         cma::INFO("RUNML :      TTree "+treename);
@@ -206,39 +187,42 @@ int main(int argc, char** argv) {
 
                 // For ML, we are training on boosted top quarks in data!
                 // Only save features of the AK8 to the output ntuple/histograms
+                // didn't save metadata -- set these values to 1 for now
                 std::map<std::string,double> features2save;
-                features2save["xsection"] = s.XSection;
-                features2save["kfactor"]  = s.KFactor;
-                features2save["sumOfWeights"] = s.sumOfWeights;
-                features2save["nominal_weight"] = event.nominal_weight();
+                features2save["xsection"] = 1.; //s.XSection;
+                features2save["kfactor"]  = 1.; //s.KFactor;
+                features2save["sumOfWeights"] = 1.; //s.sumOfWeights;
+                features2save["nominal_weight"] = 1.; //event.nominal_weight();
 
                 Ttbar1L tt = event.ttbar1L();             // setup for CWoLa (large-R jet from l+jets events)
                 Ljet ljet = tt.ljet;
 
                 // Quality cuts on the jets
-                if (ljet.features.at("ljet_subjet0_bdisc")<0 || ljet.features.at("ljet_subjet1_bdisc")<0) continue; 
-                if (std::abs(ljet.features.at("ljet_subjet0_charge"))>20 || std::abs(ljet.features.at("ljet_subjet1_charge"))>20) continue; 
+                // positive CSVv2 values, and subjet charges that aren't really large
+                if (ljet.features.at("ljet_subjet0_bdisc")>0 && ljet.features.at("ljet_subjet1_bdisc")>0 && 
+                    std::abs(ljet.features.at("ljet_subjet0_charge"))<20 && std::abs(ljet.features.at("ljet_subjet1_charge"))<20){
 
-                for (const auto& x : ljet.features){
-                    features2save[x.first] = x.second;
-                }
-                // extra features for plotting
-                features2save["ljet_BEST_t"] = ljet.BEST_t;
-                features2save["ljet_BEST_w"] = ljet.BEST_w;
-                features2save["ljet_BEST_z"] = ljet.BEST_z;
-                features2save["ljet_BEST_h"] = ljet.BEST_h;
-                features2save["ljet_BEST_j"] = ljet.BEST_j;
-                features2save["ljet_SDmass"] = ljet.softDropMass;
-                features2save["ljet_tau1"]   = ljet.tau1;
-                features2save["ljet_tau2"]   = ljet.tau2;
-                features2save["ljet_tau3"]   = ljet.tau3;
-                features2save["ljet_tau21"]  = ljet.tau21;
-                features2save["ljet_tau32"]  = ljet.tau32;
-                features2save["ljet_isHadTop"] = ljet.isHadTop*1.0;
-                features2save["ljet_contain"] = ljet.containment;
+                    for (const auto& x : ljet.features){
+                        features2save[x.first] = x.second;
+                    }
+                    // extra features for plotting
+                    features2save["ljet_BEST_t"] = ljet.BEST_t;
+                    features2save["ljet_BEST_w"] = ljet.BEST_w;
+                    features2save["ljet_BEST_z"] = ljet.BEST_z;
+                    features2save["ljet_BEST_h"] = ljet.BEST_h;
+                    features2save["ljet_BEST_j"] = ljet.BEST_j;
+                    features2save["ljet_SDmass"] = ljet.softDropMass;
+                    features2save["ljet_tau1"]   = ljet.tau1;
+                    features2save["ljet_tau2"]   = ljet.tau2;
+                    features2save["ljet_tau3"]   = ljet.tau3;
+                    features2save["ljet_tau21"]  = ljet.tau21;
+                    features2save["ljet_tau32"]  = ljet.tau32;
+                    features2save["ljet_isHadTop"] = ljet.isHadTop*1.0;
+                    features2save["ljet_contain"] = ljet.containment;
 
-                miniTTree.saveEvent(features2save);
-                histMaker.fill(features2save);
+                    miniTTree.saveEvent(features2save);
+                    histMaker.fill(features2save);
+                } // end quality cut on AK8
             }
 
             // iterate the entry and number of events processed

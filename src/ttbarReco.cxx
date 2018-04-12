@@ -79,10 +79,10 @@ void ttbarReco::execute(std::vector<Ljet>& ljets){
 
 
 // single lepton
-void ttbarReco::execute(std::vector<Electron>& electrons, std::vector<Muon>& muons, std::vector<Jet>& jets, std::vector<Ljet>& ljets){
+void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, std::vector<Ljet>& ljets){
     /* Build top quarks system 
        - lepton
-       - AK4 near lepton
+       - AK4 near lepton (2D cut)
          > highest pT
        - AK8 away from lepton
          > Most 'top-like' = highest BEST_t score
@@ -90,12 +90,10 @@ void ttbarReco::execute(std::vector<Electron>& electrons, std::vector<Muon>& muo
     m_ttbar1L = {};
 
     // Setup lepton (only 1 in the single lepton analysis)
-    cma::DEBUG("TTBARRECO : building ttbar with "+std::to_string(muons.size())+" muons, "+std::to_string(electrons.size())+" electrons");
+    cma::DEBUG("TTBARRECO : building ttbar with "+std::to_string(leptons.size())+" leptons");
     Lepton lep;
-    if (muons.size()>0)
-        lep = muons.at(0);
-    else if (electrons.size()>0)
-        lep = electrons.at(0);
+    if (leptons.size()>0)
+        lep = leptons.at(0);
     else
         lep.p4.SetPtEtaPhiE(0,0,0,0);   // this event will fail the selection anway, use dummy value
 
@@ -109,8 +107,10 @@ void ttbarReco::execute(std::vector<Electron>& electrons, std::vector<Muon>& muo
         float ak4_pt(0);
 
         for (auto& jet : jets){
-            float dr = jet.p4.DeltaR(lep.p4);
-            if (0.3<dr && dr<M_HALF_PI && jet.p4.Pt() > ak4_pt){
+            float dr    = jet.p4.DeltaR(lep.p4);
+            float ptrel = jet.p4.Perp( lep.p4.Vect() );
+            //if (0.3<dr && dr<M_HALF_PI && jet.p4.Pt() > ak4_pt){
+            if ( (dr>0.4 || ptrel>25) && jet.p4.Pt() > ak4_pt){        // 2D cut instead of DeltaR window
                 ak4_pt = jet.p4.Pt();
                 ak4candidate = jet.index;
             }

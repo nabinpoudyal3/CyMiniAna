@@ -22,12 +22,12 @@ miniTree::~miniTree() {}
 
 
 
-void miniTree::initialize(TTree* t, TFile& outputFile) {
+void miniTree::initialize(TTree* t, TFile& outputFile, const std::string directory) {
     /* 
        Setup the new tree 
        't' represents the TTree from the original file
     */
-    outputFile.cd();
+    outputFile.cd(directory.c_str());
     m_oldTTree = t;
 
     m_ttree = m_oldTTree->CloneTree(0);  // clone the tree (branches) but copy no data

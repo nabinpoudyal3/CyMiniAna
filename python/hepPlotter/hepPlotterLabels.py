@@ -88,10 +88,12 @@ def variable_labels():
     variables['ljet_phi']   = Variable(binning=hist1d(20, -2.,    2.), label=r'Large-R Jet $\phi$')
     variables['ljet_m']     = Variable(binning=hist1d(40,  0.,  400.), label=r'Large-R Jet '+_mass)
     variables['ljet_pt']    = Variable(binning=hist1d(14,200., 1500.), label=r'Large-R Jet p'+_T)
-    variables['ljet_tau1']  = Variable(binning=hist1d(10,  0.,   0.6), label=r'$\tau_{\text{1}}$')
-    variables['ljet_tau2']  = Variable(binning=hist1d(10,  0.,   0.5), label=r'$\tau_{\text{2}}$')
-    variables['ljet_tau21'] = Variable(binning=hist1d(11, 00.,   1.1), label=r'$\tau_{\text{21}}$')
-    variables['ljet_tau3']  = Variable(binning=hist1d(10,  0.,   0.6), label=r'$\tau_{\text{3}}$')
+    variables['ljet_BEST_t']= Variable(binning=hist1d(10,  0.,   1.0), label=r'BEST(top)')
+    variables['ljet_BEST_j']= Variable(binning=hist1d(10,  0.,   1.0), label=r'BEST(jet)')
+    variables['ljet_tau1']  = Variable(binning=hist1d(10,  0.,   1.0), label=r'$\tau_{\text{1}}$')
+    variables['ljet_tau2']  = Variable(binning=hist1d(10,  0.,   1.0), label=r'$\tau_{\text{2}}$')
+    variables['ljet_tau21'] = Variable(binning=hist1d(11,  0.,   1.1), label=r'$\tau_{\text{21}}$')
+    variables['ljet_tau3']  = Variable(binning=hist1d(10,  0.,   1.0), label=r'$\tau_{\text{3}}$')
     variables['ljet_tau32'] = Variable(binning=hist1d(11,  0.,   1.1), label=r'$\tau_{\text{32}}$')
     variables['ljet_softDropMass'] = Variable(binning=hist1d(40,0.,400.), label=r'Large-R Jet '+_mass)
     variables['ljet_charge'] = Variable(binning=hist1d(80,  -5.,   5.), label=r'Large-R Jet Charge')
@@ -110,11 +112,18 @@ def variable_labels():
     variables['ljet_subjet_1_charge_Qneg'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 1 charge')
     variables['ljet_subjet_1_bdisc_Qneg']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 1 b-disc.')
 
-    variables['ljet_subjet0_charge'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 0 charge')
-    variables['ljet_subjet0_bdisc']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 0 b-disc.')
-    variables['ljet_subjet1_charge'] = Variable(binning=hist1d(50,-5,5), label=r'Large-R Jet Subjet 1 charge')
-    variables['ljet_subjet1_bdisc']  = Variable(binning=hist1d(10, 0,1), label=r'Large-R Jet Subjet 1 b-disc.')
-    variables['ljet_contain'] = Variable(binning=hist1d(11,-5.5,5.5), label=r'Large-R Jet Containment')
+    variables['ljet_subjet0_charge'] = Variable(binning=hist1d(50,-5,5),  label=r'Large-R Jet Subjet 0 charge')
+    variables['ljet_subjet0_bdisc']  = Variable(binning=hist1d(10, 0,1),  label=r'Large-R Jet Subjet 0 b-disc.')
+    variables['ljet_subjet0_mass']   = Variable(binning=hist1d(20, 0,200),label=r'Large-R Jet Subjet 0 '+_mass)
+    variables['ljet_subjet0_mrel']   = Variable(binning=hist1d(10, 0,1),  label=r'Large-R Jet Subjet 0 Relative '+_mass)
+    variables['ljet_subjet0_ptrel']  = Variable(binning=hist1d(10, 0,1),  label=r'Large-R Jet Subjet 0 Relative p'+_T)
+    variables['ljet_subjet1_charge'] = Variable(binning=hist1d(50,-5,5),  label=r'Large-R Jet Subjet 1 charge')
+    variables['ljet_subjet1_bdisc']  = Variable(binning=hist1d(10, 0,1),  label=r'Large-R Jet Subjet 1 b-disc.')
+    variables['ljet_subjet1_mass']   = Variable(binning=hist1d(20, 0,200),label=r'Large-R Jet Subjet 1 '+_mass)
+    variables['ljet_subjet1_mrel']   = Variable(binning=hist1d(10, 0,1),  label=r'Large-R Jet Subjet 1 Relative '+_mass)
+    variables['ljet_subjet1_ptrel']  = Variable(binning=hist1d(10, 0,1),  label=r'Large-R Jet Subjet 1 Relative p'+_T)
+    variables['ljet_subjets_deltaQ'] = Variable(binning=hist1d(100,-10,10),  label=r'$\Delta$Q (Large-R Jet Subjets)')
+    variables['ljet_contain']        = Variable(binning=hist1d(11,-5.5,5.5), label=r'Large-R Jet Containment')
 
     variables['jet_pt']  =   Variable(binning=hist1d(10,25., 500.),  label=r'Small-R Jet p'+_T)
     variables['jet_eta'] =   Variable(binning=hist1d(10,-2.5,  2.5), label=r'Small-R Jet '+_eta)
@@ -230,5 +239,4 @@ if __name__ == '__main__':
     print "Do not execute this file, only import it."
 
 
-## The End. ##
-
+## THE END ##

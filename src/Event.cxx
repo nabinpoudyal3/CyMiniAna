@@ -40,6 +40,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_DNNinference  = m_config->DNNinference();            // use DNN to predict values
     m_DNNtraining   = m_config->DNNtraining();             // load DNN features (save/use later)
     m_getDNN        = (m_DNNinference || m_DNNtraining);   // CWoLa
+    m_useDNN        = m_config->useDNN();                  // Access CWoLa from TTree
     m_kinematicReco = m_config->kinematicReco();           // build the ttbar system
 
     // b-tagging working points
@@ -49,27 +50,49 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
 
     //** Access branches from Tree **//
-    m_eventNumber  = new TTreeReaderValue<unsigned int>(m_ttree,"eventNum");
-    m_runNumber    = new TTreeReaderValue<unsigned int>(m_ttree,"runNum");
-    m_lumiblock    = new TTreeReaderValue<unsigned int>(m_ttree,"lumiNum");
+    m_eventNumber  = new TTreeReaderValue<unsigned long long>(m_ttree,"eventNumber");
+    m_runNumber    = new TTreeReaderValue<unsigned int>(m_ttree,"runNumber");
+    m_lumiblock    = new TTreeReaderValue<unsigned int>(m_ttree,"lumiblock");
 
-/*
-    m_HLT_Ele45_WPLoose_Gsf          = new TTreeReaderValue<int>(m_ttree,"HLT_Ele45_WPLoose_Gsf");
-    m_HLT_Ele45_WPLoose_Gsf_prescale = new TTreeReaderValue<int>(m_ttree,"HLT_Ele45_WPLoose_Gsf_prescale");
-    m_HLT_Mu50            = new TTreeReaderValue<int>(m_ttree,"HLT_Mu50");
-    m_HLT_Mu50_prescale   = new TTreeReaderValue<int>(m_ttree,"HLT_Mu50_prescale");
-    m_HLT_TkMu50          = new TTreeReaderValue<int>(m_ttree,"HLT_TkMu50");
-    m_HLT_TkMu50_prescale = new TTreeReaderValue<int>(m_ttree,"HLT_TkMu50_prescale");
-*/
+    m_npv = new TTreeReaderValue<unsigned int>(m_ttree,"npv");
+    m_rho = new TTreeReaderValue<float>(m_ttree,"rho");
+    m_true_pileup = new TTreeReaderValue<unsigned int>(m_ttree,"true_pileup");
+
+    /** Triggers **/
+    m_HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50");
+    m_HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165");
+    m_HLT_Ele115_CaloIdVT_GsfTrkIdT    = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Ele115_CaloIdVT_GsfTrkIdT");
+    m_HLT_Mu40_Eta2P1_PFJet200_PFJet50 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Mu40_Eta2P1_PFJet200_PFJet50");
+    m_HLT_Mu50    = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_Mu50");
+    m_HLT_TkMu50  = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_TkMu50");
+    m_HLT_PFHT800 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_PFHT800");
+    m_HLT_PFHT900 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_PFHT900");
+    m_HLT_AK8PFJet450 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_AK8PFJet450");
+    m_HLT_PFHT700TrimMass50  = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_PFHT700TrimMass50");
+    m_HLT_PFJet360TrimMass30 = new TTreeReaderValue<unsigned int>(m_ttree,"HLT_PFJet360TrimMass30");
+    //m_HLT_Ele45_WPLoose_Gsf = new TTreeReaderValue<int>(m_ttree,"HLT_Ele45_WPLoose_Gsf");
+    //m_HLT_TkMu50 = new TTreeReaderValue<int>(m_ttree,"HLT_TkMu50");
+
+    /** Filters **/
+    m_Flag_goodVertices  = new TTreeReaderValue<unsigned int>(m_ttree,"Flag_goodVertices");
+    m_Flag_eeBadScFilter = new TTreeReaderValue<unsigned int>(m_ttree,"Flag_eeBadScFilter");
+    m_Flag_HBHENoiseFilter    = new TTreeReaderValue<unsigned int>(m_ttree,"Flag_HBHENoiseFilter");
+    m_Flag_HBHENoiseIsoFilter = new TTreeReaderValue<unsigned int>(m_ttree,"Flag_HBHENoiseIsoFilter");
+    m_Flag_globalTightHalo2016Filter = new TTreeReaderValue<unsigned int>(m_ttree,"Flag_globalTightHalo2016Filter");
+    m_Flag_EcalDeadCellTriggerPrimitiveFilter = new TTreeReaderValue<unsigned int>(m_ttree,"Flag_EcalDeadCellTriggerPrimitiveFilter");
 
     /** JETS **/
     if (m_useJets){
       // small-R jet information
-      m_jet_pt   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4pt");
-      m_jet_eta  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4eta");
-      m_jet_phi  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4phi");
-      m_jet_m    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4mass");
-      m_jet_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4bDisc");
+      m_jet_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4pt");
+      m_jet_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4eta");
+      m_jet_phi = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4phi");
+      m_jet_m   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4mass");
+      m_jet_bdisc    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4bDisc");
+      m_jet_deepCSV  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4deepCSV");
+      m_jet_area     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4area");
+      m_jet_uncorrPt = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4uncorrPt");
+      m_jet_uncorrE  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4uncorrE");
     }
 
     if (m_useLargeRJets){
@@ -82,18 +105,28 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau1");
       m_ljet_tau2   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau2");
       m_ljet_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau3");
+      m_ljet_area   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8area");
       m_ljet_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge");
-      m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8ChargeSubjet1");
-      m_ljet_subjet0_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8bDiscSubjet1");
-      m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8ChargeSubjet2");
-      m_ljet_subjet1_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8bDiscSubjet2");
+      m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge");
+      m_ljet_subjet0_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0bDisc");
+      m_ljet_subjet0_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0deepCSV");
+      m_ljet_subjet0_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0pt");
+      m_ljet_subjet0_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0mass");
+      m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge");
+      m_ljet_subjet1_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1bDisc");
+      m_ljet_subjet1_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1deepCSV");
+      m_ljet_subjet1_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1pt");
+      m_ljet_subjet1_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1mass");
 
-      m_ljet_BEST_class = new TTreeReaderValue<std::vector<float>>(m_ttree,"BESTclass");
-      m_ljet_BEST_t = new TTreeReaderValue<std::vector<float>>(m_ttree,"BESTProb_t");
-      m_ljet_BEST_w = new TTreeReaderValue<std::vector<float>>(m_ttree,"BESTProb_W");
-      m_ljet_BEST_z = new TTreeReaderValue<std::vector<float>>(m_ttree,"BESTProb_Z");
-      m_ljet_BEST_h = new TTreeReaderValue<std::vector<float>>(m_ttree,"BESTProb_H");
-      m_ljet_BEST_j = new TTreeReaderValue<std::vector<float>>(m_ttree,"BESTProb_j");
+      m_ljet_BEST_class = new TTreeReaderValue<std::vector<int>>(m_ttree,"AK8BEST_class");
+      m_ljet_BEST_t = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_t");
+      m_ljet_BEST_w = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_w");
+      m_ljet_BEST_z = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_z");
+      m_ljet_BEST_h = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_h");
+      m_ljet_BEST_j = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_j");
+
+      m_ljet_uncorrPt = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8uncorrPt");
+      m_ljet_uncorrE  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8uncorrE");
     }
 
 
@@ -104,8 +137,13 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_el_phi = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELphi");
       m_el_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELenergy");
       m_el_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELcharge");
-      m_el_iso = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELiso");
-      m_el_id  = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELid");
+      //m_el_iso = new TTreeReaderValue<std::vector<float>>(m_ttree,"ELiso");
+      m_el_id_loose  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELlooseID");
+      m_el_id_medium = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELmediumID");
+      m_el_id_tight  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELtightID");
+      m_el_id_loose_noIso  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELlooseIDnoIso");
+      m_el_id_medium_noIso = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELmediumIDnoIso");
+      m_el_id_tight_noIso  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"ELtightIDnoIso");
 
       m_mu_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUpt");
       m_mu_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUeta");
@@ -113,7 +151,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_mu_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUenergy");
       m_mu_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUcharge");
       m_mu_iso = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUcorrIso");
-      m_mu_id  = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUlooseID");
+      m_mu_id_loose  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUlooseID");
+      m_mu_id_medium = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUmediumID");
+      m_mu_id_tight  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUtightID");
     }
 
     if (!m_kinematicReco && m_useNeutrinos){
@@ -132,6 +172,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_met_met  = new TTreeReaderValue<float>(m_ttree,"METpt");
     m_met_phi  = new TTreeReaderValue<float>(m_ttree,"METphi");
 
+    m_HTAK8    = new TTreeReaderValue<float>(m_ttree,"HTak8");
+    m_HTAK4    = new TTreeReaderValue<float>(m_ttree,"HTak4");
+
     // set some event weights and access necessary branches
     m_xsection       = 1.0;
     m_kfactor        = 1.0;
@@ -140,7 +183,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
     // MC information
     if (m_isMC){
-//      m_weight_mc    = 1;//new TTreeReaderValue<float>(m_ttree,"evt_Gen_Weight");
+      //m_weight_mc    = 1;//new TTreeReaderValue<float>(m_ttree,"evt_Gen_Weight");
       m_xsection     = 1;//m_config->XSectionMap( m_fileName );
       m_kfactor      = 1;//m_config->KFactorMap(  m_fileName );
       m_sumOfWeights = 1;//m_config->sumWeightsMap( m_fileName );
@@ -156,12 +199,10 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       }
 /*
       m_mc_ht = new TTreeReaderValue<float>(m_ttree,"evt_Gen_Ht");
-
       m_truth_jet_pt  = new TTreeReaderValue<float>(m_ttree,"jetAK4CHS_GenJetPt");
       m_truth_jet_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"jetAK4CHS_GenJetEta");
       m_truth_jet_phi = new TTreeReaderValue<std::vector<float>>(m_ttree,"jetAK4CHS_GenJetPhi");
       m_truth_jet_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"jetAK4CHS_GenJetCharge");
-
       m_truth_ljet_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree,"jetAK8CHS_GenJetPt");
       m_truth_ljet_eta = new TTreeReaderValue<std::vector<float>>(m_ttree,"jetAK8CHS_GenJetEta");
       m_truth_ljet_phi = new TTreeReaderValue<std::vector<float>>(m_ttree,"jetAK8CHS_GenJetPhi");
@@ -172,22 +213,18 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     } // end isMC
 
 
-
     // Truth matching tool
     m_truthMatchingTool = new truthMatching(cmaConfig);
     m_truthMatchingTool->initialize();
 
     // DNN material
     m_deepLearningTool = new deepLearning(cmaConfig);
-    if (!m_getDNN && m_useDNN)  // always false for now
+    if (!m_getDNN && m_useDNN)
         m_dnn_score = new TTreeReaderValue<float>(m_ttree,"ljet_CWoLa");
 
 
     // Kinematic reconstruction algorithms
     m_ttbarRecoTool = new ttbarReco(cmaConfig);
-    // m_semileptonTtbar = new semileptonTtbarReco(m_config);  // semi-leptonic ttbar kinematic reco
-    // m_allhadTtbar = new allhadTtbarReco(m_config);          // all-hadronic ttbar kinematic reco
-    //m_dileptonTtbar = new dileptonTtbarReco(cmaConfig, configuration::run2_13tev_2016_25ns, 2, true);
 } // end constructor
 
 
@@ -277,6 +314,12 @@ void Event::execute(Long64_t entry){
     initialize_weights();
     cma::DEBUG("EVENT : Setup weights ");
 
+    // Filters
+    initialize_filters();
+
+    // Triggers
+    initialize_triggers();
+
     // Truth Information
     if (m_useTruth){
         initialize_truth();
@@ -348,13 +391,48 @@ void Event::ttbarReconstruction(){
         m_ttbar0L = m_ttbarRecoTool->ttbar0L();
     }
     else if (m_isOneLeptonAnalysis){
-        m_ttbarRecoTool->execute(m_electrons,m_muons,m_jets,m_ljets);
+        m_ttbarRecoTool->execute(m_leptons,m_jets,m_ljets);
         m_ttbar1L = m_ttbarRecoTool->ttbar1L();
     }
     else if (m_isTwoLeptonAnalysis){
         m_ttbarRecoTool->execute(m_electrons,m_muons,m_jets);
         m_ttbar2L = m_ttbarRecoTool->ttbar2L();
     }
+
+    return;
+}
+
+
+void Event::initialize_filters(){
+    /* Setup the filters */
+    m_filters.clear();
+
+    m_filters["goodVertices"] = **m_Flag_goodVertices;
+    m_filters["eeBadScFilter"] = **m_Flag_eeBadScFilter;
+    m_filters["HBHENoiseFilter"] = **m_Flag_HBHENoiseFilter;
+    m_filters["HBHENoiseIsoFilter"] = **m_Flag_HBHENoiseIsoFilter;
+    m_filters["globalTightHalo2016Filter"] = **m_Flag_globalTightHalo2016Filter;
+    m_filters["EcalDeadCellTriggerPrimitiveFilter"] = **m_Flag_EcalDeadCellTriggerPrimitiveFilter;
+
+    return;
+}
+
+
+void Event::initialize_triggers(){
+    /* Setup triggers */
+    m_triggers.clear();
+
+    m_triggers["HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50"] = **m_HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50;
+    m_triggers["HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165"] = **m_HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165;
+    m_triggers["HLT_Ele115_CaloIdVT_GsfTrkIdT"]    = **m_HLT_Ele115_CaloIdVT_GsfTrkIdT;
+    m_triggers["HLT_Mu40_Eta2P1_PFJet200_PFJet50"] = **m_HLT_Mu40_Eta2P1_PFJet200_PFJet50;
+    m_triggers["HLT_Mu50"]    = **m_HLT_Mu50;
+    m_triggers["HLT_TkMu50"]  = **m_HLT_TkMu50;
+    m_triggers["HLT_PFHT800"] = **m_HLT_PFHT800;
+    m_triggers["HLT_PFHT900"] = **m_HLT_PFHT900;
+    m_triggers["HLT_AK8PFJet450"] = **m_HLT_AK8PFJet450;
+    m_triggers["HLT_PFHT700TrimMass50"]  = **m_HLT_PFHT700TrimMass50;
+    m_triggers["HLT_PFJet360TrimMass30"] = **m_HLT_PFJet360TrimMass30;
 
     return;
 }
@@ -460,7 +538,12 @@ void Event::initialize_jets(){
         bool isGood(jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
         if (!isGood) continue;
 
-        jet.bdisc  = (*m_jet_bdisc)->at(i);
+        jet.bdisc    = (*m_jet_bdisc)->at(i);
+        jet.deepCSV  = (*m_jet_deepCSV)->at(i);
+        jet.area     = (*m_jet_area)->at(i);
+        jet.uncorrE  = (*m_jet_uncorrE)->at(i);
+        jet.uncorrPt = (*m_jet_uncorrPt)->at(i);
+
         jet.index  = idx;
         jet.isGood = isGood;
 
@@ -486,8 +569,8 @@ void Event::initialize_ljets(){
 
     // Define CWoLa classification based on lepton charge (only single lepton events)
     int target(-1);
-    if (m_config->isOneLeptonAnalysis() && (m_electrons.size()+m_muons.size())>0){
-        int charge = (m_electrons.size()>0) ? m_electrons.at(0).charge : m_muons.at(0).charge;
+    if (m_config->isOneLeptonAnalysis() && m_leptons.size()>0){
+        int charge = m_leptons.at(0).charge;
         target = (charge>0) ? 1:0;
     }
 
@@ -516,12 +599,20 @@ void Event::initialize_ljets(){
 
         ljet.subjet0_bdisc  = (*m_ljet_subjet0_bdisc)->at(i);
         ljet.subjet0_charge = (*m_ljet_subjet0_charge)->at(i);
+        ljet.subjet0_mass   = (*m_ljet_subjet0_mass)->at(i);
+        ljet.subjet0_pt     = (*m_ljet_subjet0_pt)->at(i);
         ljet.subjet1_bdisc  = (*m_ljet_subjet1_bdisc)->at(i);
         ljet.subjet1_charge = (*m_ljet_subjet1_charge)->at(i);
+        ljet.subjet1_mass   = (*m_ljet_subjet1_mass)->at(i);
+        ljet.subjet1_pt     = (*m_ljet_subjet1_pt)->at(i);
 
         ljet.target = target;
         ljet.isGood = isGood;
         ljet.index  = idx;
+
+        ljet.area     = (*m_ljet_area)->at(i);
+        ljet.uncorrE  = (*m_ljet_uncorrE)->at(i);
+        ljet.uncorrPt = (*m_ljet_uncorrPt)->at(i);
 
         // Truth-matching to jet
         ljet.truth_partons.clear();
@@ -551,44 +642,56 @@ void Event::initialize_leptons(){
     m_emu  = false;
 
     m_leptons.clear();
-    m_electrons.clear();
-    m_muons.clear();
+    m_electrons.clear();  // not using right now
+    m_muons.clear();      // not using right now
 
     // Muons
     unsigned int nMuons = (*m_mu_pt)->size();
-    m_muons.clear();
 
     for (unsigned int i=0; i<nMuons; i++){
-        Muon mu;
+        Lepton mu;
         mu.p4.SetPtEtaPhiE( (*m_mu_pt)->at(i),(*m_mu_eta)->at(i),(*m_mu_phi)->at(i),(*m_mu_e)->at(i));
+        bool isMedium = (*m_mu_id_medium)->at(i);
 
-        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.1);
+        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium);
         if (!isGood) continue;
 
         mu.charge = (*m_mu_charge)->at(i);
-        mu.id  = (*m_mu_id)->at(i);
-        mu.iso = (*m_mu_iso)->at(i);
+        mu.loose  = (*m_mu_id_loose)->at(i);
+        mu.medium = isMedium;
+        mu.tight  = (*m_mu_id_tight)->at(i);
+        mu.iso    = (*m_mu_iso)->at(i);
         mu.isGood = isGood;
 
-        m_muons.push_back(mu);
+        mu.isMuon = true;
+        mu.isElectron = false;
+
+        m_leptons.push_back(mu);
     }
 
     // Electrons
     unsigned int nElectrons = (*m_el_pt)->size();
-    m_electrons.clear();
     for (unsigned int i=0; i<nElectrons; i++){
-        Electron el;
+        Lepton el;
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
+        bool isTightNoIso = (*m_el_id_tight_noIso)->at(i);
 
-        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1);
+        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1 && isTightNoIso);
         if (!isGood) continue;
 
         el.charge = (*m_el_charge)->at(i);
-        el.id  = (*m_el_id)->at(i);
-        el.iso = (*m_el_iso)->at(i);
+        el.loose  = (*m_el_id_loose)->at(i);
+        el.medium = (*m_el_id_medium)->at(i);
+        el.tight  = (*m_el_id_tight)->at(i);
+        el.loose_noIso  = (*m_el_id_loose_noIso)->at(i);
+        el.medium_noIso = (*m_el_id_medium_noIso)->at(i);
+        el.tight_noIso  = isTightNoIso;
         el.isGood = isGood;
 
-        m_electrons.push_back(el);
+        el.isMuon = false;
+        el.isElectron = true;
+
+        m_leptons.push_back(el);
     }
 
     return;
@@ -607,11 +710,13 @@ void Event::initialize_neutrinos(){
     Neutrino nu1;
     Neutrino nu2;
 
-    if (m_neutrinoReco){}  // reconstruct neutrinos!
+    if (m_neutrinoReco){
+        // reconstruct neutrinos!
         if (m_isOneLeptonAnalysis){
         }
         else if (m_isTwoLeptonAnalysis){
         }
+    }
     else{
         // Assign neutrinos from root file
     }
@@ -642,6 +747,9 @@ void Event::initialize_weights(){
 
 void Event::initialize_kinematics(){
     /* Kinematic variables (HT, ST, MET) */
+    m_HT_ak4 = **m_HTAK4;
+    m_HT_ak8 = **m_HTAK8;
+
     m_HT = 0.0;
     m_ST = 0.0;
 
@@ -885,6 +993,10 @@ void Event::finalize(){
       delete m_jet_phi;
       delete m_jet_m;
       delete m_jet_bdisc;
+      delete m_jet_deepCSV;
+      delete m_jet_area;
+      delete m_jet_uncorrPt;
+      delete m_jet_uncorrE;
     }
 
     if (m_useLargeRJets){
@@ -899,8 +1011,17 @@ void Event::finalize(){
       delete m_ljet_SDmass;
       delete m_ljet_subjet0_charge;
       delete m_ljet_subjet0_bdisc;
+      delete m_ljet_subjet0_deepCSV;
+      delete m_ljet_subjet0_pt;
+      delete m_ljet_subjet0_mass;
       delete m_ljet_subjet1_charge;
       delete m_ljet_subjet1_bdisc;
+      delete m_ljet_subjet1_deepCSV;
+      delete m_ljet_subjet1_pt;
+      delete m_ljet_subjet1_mass;
+      delete m_ljet_area;
+      delete m_ljet_uncorrPt;
+      delete m_ljet_uncorrE;
     }
 
     if (m_useLeptons){
@@ -909,8 +1030,13 @@ void Event::finalize(){
       delete m_el_phi;
       delete m_el_e;
       delete m_el_charge;
-      delete m_el_iso;
-      delete m_el_id;
+      //delete m_el_iso;
+      delete m_el_id_loose;
+      delete m_el_id_medium;
+      delete m_el_id_tight;
+      delete m_el_id_loose_noIso;
+      delete m_el_id_medium_noIso;
+      delete m_el_id_tight_noIso;
 
       delete m_mu_pt;
       delete m_mu_eta;
@@ -918,17 +1044,34 @@ void Event::finalize(){
       delete m_mu_e;
       delete m_mu_charge;
       delete m_mu_iso;
-      delete m_mu_id;
+      delete m_mu_id_loose;
+      delete m_mu_id_medium;
+      delete m_mu_id_tight;
     }
 
-    delete m_met_met;          // met_Pt
-    delete m_met_phi;          // met_Phi
+    delete m_met_met;
+    delete m_met_phi;
+    delete m_HTAK8;
+    delete m_HTAK4;
 
-/*
-    delete m_HLT_Ele45_WPLoose_Gsf;
+    delete m_HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50;
+    delete m_HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165;
+    delete m_HLT_Ele115_CaloIdVT_GsfTrkIdT;
+    delete m_HLT_Mu40_Eta2P1_PFJet200_PFJet50;
     delete m_HLT_Mu50;
-    delete m_HLT_TkMu50;
-*/
+    delete m_HLT_PFHT800;
+    delete m_HLT_PFHT900;
+    delete m_HLT_AK8PFJet450;
+    delete m_HLT_PFHT700TrimMass50;
+    delete m_HLT_PFJet360TrimMass30;
+
+    delete m_Flag_goodVertices;
+    delete m_Flag_eeBadScFilter;
+    delete m_Flag_HBHENoiseFilter;
+    delete m_Flag_HBHENoiseIsoFilter;
+    delete m_Flag_globalTightHalo2016Filter;
+    delete m_Flag_EcalDeadCellTriggerPrimitiveFilter;
+
     if (m_isMC){
       if (m_config->isTtbar()){
         delete m_mc_pt;

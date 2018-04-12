@@ -1,6 +1,6 @@
 """
 Created:        12 November  2016
-Last Updated:   27 March     2018
+Last Updated:   11 April     2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -35,6 +35,10 @@ cmaDir = os.path.expandvars('$CYMINIANADIR')
 vb     = util.VERBOSE()
 
 ## Set configuration options ##
+if len(sys.argv)<2:
+    vb.HELP()
+    sys.exit(1)
+
 config = Config(sys.argv[1])
 vb.level = config.verbose_level
 vb.initialize()
@@ -113,8 +117,8 @@ else:
 dnn.output_dir = output
 
 if not os.path.isdir(output):
-    vb.WARNING("RUN : '{0}' does not exist ".format(output))
-    vb.WARNING("RUN :       Creating the directory. ")
+    vb.INFO("RUN : '{0}' does not exist ".format(output))
+    vb.INFO("RUN :       Creating the directory. ")
     os.system( 'mkdir -p {0}'.format(output) )
 else:
     vb.INFO("RUN :  Saving output to {0}".format(output))
@@ -127,22 +131,23 @@ dnn.initialize()
 
 
 if config.runTraining:
-
     vb.INFO("RUN :  > Build the NN")
+
     # set properties of the NN
-    dnn.runTraining()
+    dnn.runTraining(['ljet_BEST_t','ljet_BEST_j']) # add extra attributes to plot
 
     ## -- Save information on the NN to a text file to reference later
     outputFile = open(dnn.output_dir+'/ABOUT.txt','w')
     outputFile.write(" * NN Setup * \n")
-    outputFile.write(" NN Summary: \n")
-    outputFile.write("\n NN parameters: \n")
 
+    outputFile.write("\n > NN parameters: \n")
     for NN_parameter in NN_parameters:
-        outputFile.write( NN_parameter+": "+str(getattr(dnn,NN_parameter))+"\n" )
-    outputFile.write( "\n NN Features: \n" )
+        outputFile.write( "   >> {0}: {1}\n".format(NN_parameter,getattr(dnn,NN_parameter)))
+
+    outputFile.write( "\n > NN Features: \n" )
     for feature in dnn.features:
-        outputFile.write("  >> "+feature+"\n" )
+        outputFile.write("   >> "+feature+"\n" )
+
     outputFile.close()
 
 
@@ -152,4 +157,3 @@ if config.runInference:
 
 
 ## END ##
-

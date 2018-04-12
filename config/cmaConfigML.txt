@@ -16,9 +16,9 @@ calcWeightSystematics false
 selection none
 cutsfile config/cuts_none.txt
 treenames config/treenames.txt
-treename eventVars
-#inputfile config/listOfMCSamples.txt
-inputfile config/mltest.txt
+treename tree/eventVars
+inputfile config/listOfCWoLa.txt
+#inputfile config/mltest.txt
 useDNN true
 DNNinference false
 DNNtraining true
