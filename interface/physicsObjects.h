@@ -102,8 +102,12 @@ struct Ljet : Jet{
     std::vector<Jet> subjets;
     float subjet0_charge;
     float subjet0_bdisc;
+    float subjet0_mass;
+    float subjet0_pt;
     float subjet1_charge;
     float subjet1_bdisc;
+    float subjet1_mass;
+    float subjet1_pt;
 
     int target;
     std::map<std::string, double> features;  // store features in map to easily access later

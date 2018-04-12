@@ -36,6 +36,7 @@ eventSelection::eventSelection(configuration &cmaConfig, const std::string &leve
   m_isZeroLeptonAnalysis(false),
   m_isOneLeptonAnalysis(false),
   m_isTwoLeptonAnalysis(false),
+  m_isCWoLaAnalysis(false),
   m_allHadDNNSelection(false){
     m_cuts.resize(0);
     m_cutflowNames.clear();
@@ -102,6 +103,7 @@ void eventSelection::identifySelection(){
     m_isZeroLeptonAnalysis = m_selection.compare("allhad")==0;
     m_isOneLeptonAnalysis  = (m_selection.compare("ejets")==0 || m_selection.compare("mujets")==0 || m_selection.compare("ljets")==0);
     m_isTwoLeptonAnalysis  = m_selection.compare("dilepton")==0;
+    m_isCWoLaAnalysis      = m_selection.compare("cwola")==0;
 
     return;
 }
@@ -225,6 +227,11 @@ bool eventSelection::applySelection(const Event &event) {
         passSelection = oneLeptonSelection(first_bin+2);
     }
 
+    else if (m_isCWoLaAnalysis){
+        m_ttbar1L = event.ttbar1L();
+        passSelection = (first_bin+2);
+    }
+
     // -- Dilepton analysis
     else if (m_isTwoLeptonAnalysis){
         m_ttbar2L = event.ttbar2L();
@@ -251,6 +258,30 @@ bool eventSelection::allHadDNNSelection(double cutflow_bin){
     }
 
     // truth information?
+
+    return pass;
+}
+
+
+bool eventSelection::cwoalaSelection(double cutflow_bin){
+    /* Check if event passes selection */
+    bool pass(false);
+
+    // cut0 :: 1 b-tag
+    Jet leptop_ak4  = m_ttbar1L.jet;
+    Ljet hadtop_ak8 = m_ttbar1L.ljet;
+
+    bool btagged(false);
+    if (leptop_ak4.bdisc>0.5803) btagged=true;
+    if (hadtop_ak8.subjet0_bdisc>0.5803) btagged=true;
+    if (hadtop_ak8.subjet1_bdisc>0.5803) btagged=true;
+
+    if ( !btagged )     // m_ljets.size()<2
+        pass = false;
+    else{
+        fillCutflows(cutflow_bin);
+        pass = true;
+    }
 
     return pass;
 }

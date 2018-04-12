@@ -50,6 +50,7 @@ batch.submit     = cfg['submit']           # do/don't submit jobs, just testing 
 batch.verbose    = cfg['verbose']          # lots of print statements
 batch.config     = cfg['config']           # configuration file to use
 batch.file       = cfg['files']            # individual root files to process
+batch.batch_subdir = cfg['subdir']         # sub-directory for storing batch scripts
 
 ## Setup output
 eos_path       = cfg['eos_path'].replace("$TODAY",date)   # '/store/user/demarley/'+date

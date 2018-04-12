@@ -569,8 +569,8 @@ void Event::initialize_ljets(){
 
     // Define CWoLa classification based on lepton charge (only single lepton events)
     int target(-1);
-    if (m_config->isOneLeptonAnalysis() && (m_electrons.size()+m_muons.size())>0){
-        int charge = (m_electrons.size()>0) ? m_electrons.at(0).charge : m_muons.at(0).charge;
+    if (m_config->isOneLeptonAnalysis() && m_leptons.size()>0){
+        int charge = m_leptons.at(0).charge;
         target = (charge>0) ? 1:0;
     }
 
@@ -599,8 +599,12 @@ void Event::initialize_ljets(){
 
         ljet.subjet0_bdisc  = (*m_ljet_subjet0_bdisc)->at(i);
         ljet.subjet0_charge = (*m_ljet_subjet0_charge)->at(i);
+        ljet.subjet0_mass   = (*m_ljet_subjet0_mass)->at(i);
+        ljet.subjet0_pt     = (*m_ljet_subjet0_pt)->at(i);
         ljet.subjet1_bdisc  = (*m_ljet_subjet1_bdisc)->at(i);
         ljet.subjet1_charge = (*m_ljet_subjet1_charge)->at(i);
+        ljet.subjet1_mass   = (*m_ljet_subjet1_mass)->at(i);
+        ljet.subjet1_pt     = (*m_ljet_subjet1_pt)->at(i);
 
         ljet.target = target;
         ljet.isGood = isGood;

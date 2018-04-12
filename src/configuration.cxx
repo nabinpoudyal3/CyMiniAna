@@ -59,6 +59,13 @@ configuration::configuration(const std::string &configFile) :
     m_KFactor.clear();
     m_AMI.clear();
     m_map_config.clear();
+
+    m_isQCD   = false;
+    m_isTtbar = false;
+    m_isWjets = false;
+    m_isSingleTop    = false;
+    m_primaryDataset = "";
+    m_NTotalEvents   = 0;
   }
 
 configuration::~configuration() {}
@@ -330,7 +337,6 @@ void configuration::inspectFile( TFile& file ){
         } // end loop over map of samples (to access metadata info)
     } // end else
 
-
     // Protection against accessing truth information that may not exist
     if (!m_isMC && m_useTruth){
         cma::WARNING("CONFIGURATION : 'useTruth=true' but 'isMC=false'");
@@ -349,6 +355,24 @@ void configuration::setTreename(std::string treeName){
 
 void configuration::setFilename(std::string fileName){
     m_filename = fileName;
+    m_useTruth = cma::str2bool( getConfigOption("useTruth") );
+
+    if (fileName.find("ttbar")!=std::string::npos){ 
+        m_isMC    = true;
+        m_isTtbar = true;
+    }
+    else{
+        m_isMC    = false;
+        m_isTtbar = false;
+    }
+
+    // Protection against accessing truth information that may not exist
+    if (!m_isMC && m_useTruth){
+        cma::WARNING("CONFIGURATION : 'useTruth=true' but 'isMC=false'");
+        cma::WARNING("CONFIGURATION : Setting 'useTruth' to false");
+        m_useTruth = false;
+    }
+
     return;
 }
 

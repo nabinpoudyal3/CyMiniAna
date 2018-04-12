@@ -62,10 +62,12 @@ void histogrammer4ML::bookHists(){
         // Features
         histogrammer::init_hist("ljet_charge-"+target+"_"+m_name,  100,-5, 5);
         histogrammer::init_hist("ljet_subjet0_bdisc-"+target+"_"+m_name, 100, 0.0, 1.0);
-        histogrammer::init_hist("ljet_subjet0_pTrel-"+target+"_"+m_name, 100, 0.0, 1.0);
+        histogrammer::init_hist("ljet_subjet0_mass-"+target+"_"+m_name,  200, 0.0, 200.0);
+        histogrammer::init_hist("ljet_subjet0_ptrel-"+target+"_"+m_name, 100, 0.0, 1.0);
         histogrammer::init_hist("ljet_subjet0_charge-"+target+"_"+m_name,100,  -5,   5);
         histogrammer::init_hist("ljet_subjet1_bdisc-"+target+"_"+m_name, 100, 0.0, 1.0);
-        histogrammer::init_hist("ljet_subjet1_pTrel-"+target+"_"+m_name, 100, 0.0, 1.0);
+        histogrammer::init_hist("ljet_subjet1_mass-"+target+"_"+m_name,  200, 0.0, 200.0);
+        histogrammer::init_hist("ljet_subjet1_ptrel-"+target+"_"+m_name, 100, 0.0, 1.0);
         histogrammer::init_hist("ljet_subjet1_charge-"+target+"_"+m_name,100,  -5,   5);
     }
 
@@ -96,10 +98,12 @@ void histogrammer4ML::fill( const std::map<std::string,double> features, double 
 
     histogrammer::fill("ljet_charge-"+target+"_"+m_name, features.at("ljet_charge"), weight);
     histogrammer::fill("ljet_subjet0_bdisc-"+target+"_"+m_name,  features.at("ljet_subjet0_bdisc"),  weight);
-    histogrammer::fill("ljet_subjet0_pTrel-"+target+"_"+m_name,  features.at("ljet_subjet0_pTrel"),  weight);
+    histogrammer::fill("ljet_subjet0_mass-"+target+"_"+m_name,   features.at("ljet_subjet0_mass"),   weight);
+    histogrammer::fill("ljet_subjet0_ptrel-"+target+"_"+m_name,  features.at("ljet_subjet0_ptrel"),  weight);
     histogrammer::fill("ljet_subjet0_charge-"+target+"_"+m_name, features.at("ljet_subjet0_charge"), weight);
     histogrammer::fill("ljet_subjet1_bdisc-"+target+"_"+m_name,  features.at("ljet_subjet1_bdisc"),  weight);
-    histogrammer::fill("ljet_subjet1_pTrel-"+target+"_"+m_name,  features.at("ljet_subjet1_pTrel"),  weight);
+    histogrammer::fill("ljet_subjet1_mass-"+target+"_"+m_name,   features.at("ljet_subjet1_mass"),   weight);
+    histogrammer::fill("ljet_subjet1_ptrel-"+target+"_"+m_name,  features.at("ljet_subjet1_ptrel"),  weight);
     histogrammer::fill("ljet_subjet1_charge-"+target+"_"+m_name, features.at("ljet_subjet1_charge"), weight);
 
     cma::DEBUG("HISTOGRAMMER : End histograms");

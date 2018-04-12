@@ -41,10 +41,16 @@ void flatTree4ML::initialize(TFile& outputFile) {
     // Features
     m_ttree->Branch( "target", &m_target, "target/I" );  // target value (.e.g, 0 or 1)
     m_ttree->Branch( "ljet_charge",  &m_ljet_charge,  "ljet_charge/F" );
-    m_ttree->Branch( "ljet_subjet0_bdisc",  &m_ljet_subjet0_bdisc,   "ljet_subjet0_bdisc/F" );
+    m_ttree->Branch( "ljet_subjet0_bdisc",  &m_ljet_subjet0_bdisc,  "ljet_subjet0_bdisc/F" );
     m_ttree->Branch( "ljet_subjet0_charge", &m_ljet_subjet0_charge, "ljet_subjet0_charge/F" );
-    m_ttree->Branch( "ljet_subjet1_bdisc",  &m_ljet_subjet1_bdisc,   "ljet_subjet1_bdisc/F" );
+    m_ttree->Branch( "ljet_subjet0_mass",   &m_ljet_subjet0_mass,   "ljet_subjet0_mass/F" );
+    m_ttree->Branch( "ljet_subjet0_mrel",   &m_ljet_subjet0_mrel,   "ljet_subjet0_mrel/F" );
+    m_ttree->Branch( "ljet_subjet0_ptrel",  &m_ljet_subjet0_ptrel,  "ljet_subjet0_ptrel/F" );
+    m_ttree->Branch( "ljet_subjet1_bdisc",  &m_ljet_subjet1_bdisc,  "ljet_subjet1_bdisc/F" );
     m_ttree->Branch( "ljet_subjet1_charge", &m_ljet_subjet1_charge, "ljet_subjet1_charge/F" );
+    m_ttree->Branch( "ljet_subjet1_mass",   &m_ljet_subjet1_mass,   "ljet_subjet1_mass/F" );
+    m_ttree->Branch( "ljet_subjet1_mrel",   &m_ljet_subjet1_mrel,   "ljet_subjet1_mrel/F" );
+    m_ttree->Branch( "ljet_subjet1_ptrel",  &m_ljet_subjet1_ptrel,  "ljet_subjet1_ptrel/F" );
 
     // AK8
     m_ttree->Branch( "ljet_BEST_t", &m_ljet_BEST_t, "ljet_BEST_t/F" );
@@ -88,8 +94,14 @@ void flatTree4ML::saveEvent(const std::map<std::string,double> features) {
     m_ljet_charge = features.at("ljet_charge");
     m_ljet_subjet0_bdisc  = features.at("ljet_subjet0_bdisc");
     m_ljet_subjet0_charge = features.at("ljet_subjet0_charge");
+    m_ljet_subjet0_mass   = features.at("ljet_subjet0_mass");
+    m_ljet_subjet0_mrel   = features.at("ljet_subjet0_mrel");
+    m_ljet_subjet0_ptrel  = features.at("ljet_subjet0_ptrel");
     m_ljet_subjet1_bdisc  = features.at("ljet_subjet1_bdisc");
     m_ljet_subjet1_charge = features.at("ljet_subjet1_charge");
+    m_ljet_subjet1_mass   = features.at("ljet_subjet1_mass");
+    m_ljet_subjet1_mrel   = features.at("ljet_subjet1_mrel");
+    m_ljet_subjet1_ptrel  = features.at("ljet_subjet1_ptrel");
 
     m_ljet_BEST_t = features.at("ljet_BEST_t");
     m_ljet_BEST_w = features.at("ljet_BEST_w");

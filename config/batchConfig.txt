@@ -1,8 +1,9 @@
 date today
 output_dir eos
-eos_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/ttbar/$TODAY
+eos_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/SingleMuonG/$TODAY
+subdir SingleMuonG
 eos_tarball_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/
-files config/listOfTtbarFiles.txt
+files config/listOfSingleMuonGFiles.txt
 username demarley
 executable run
 test False

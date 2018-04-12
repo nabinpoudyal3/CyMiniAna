@@ -78,11 +78,15 @@ class flatTree4ML {
 
     float m_ljet_charge;
     float m_ljet_subjet0_bdisc;
-    float m_ljet_subjet0_pTrel;
     float m_ljet_subjet0_charge;
+    float m_ljet_subjet0_mass;
+    float m_ljet_subjet0_mrel;
+    float m_ljet_subjet0_ptrel;
     float m_ljet_subjet1_bdisc;
-    float m_ljet_subjet1_pTrel;
     float m_ljet_subjet1_charge;
+    float m_ljet_subjet1_mass;
+    float m_ljet_subjet1_mrel;
+    float m_ljet_subjet1_ptrel;
 
     /**** Metadata ****/
     // which sample has which target value

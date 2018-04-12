@@ -56,6 +56,7 @@ class eventSelection{
     bool oneLeptonSelection(double cutflow_bin);
     bool ejetsSelection(double cutflow_bin, const Lepton& lep);
     bool mujetsSelection(double cutflow_bin);
+    bool cwoalaSelection(double cutflow_bin);
 
     // Dilepton selections
     bool twoLeptonSelection(double cutflow_bin);
@@ -98,6 +99,7 @@ class eventSelection{
     bool m_isOneLeptonAnalysis;
     bool m_isTwoLeptonAnalysis;
 
+    bool m_isCWoLaAnalysis;
     bool m_allHadDNNSelection;
 
     // physics information
