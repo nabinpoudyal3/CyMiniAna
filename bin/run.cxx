@@ -60,10 +60,10 @@ int main(int argc, char** argv) {
     configuration config(argv[1]);                                   // configuration file
     config.initialize();
 
-    int nEvents         = config.nEventsToProcess();                 // requested number of events to run
-    std::string outpathBase = config.outputFilePath();               // directory for output files
-    std::string outpath = config.outputFilePath();                   // directory for output files
-    unsigned long long firstEvent       = config.firstEvent();       // first event to begin running over
+    long long nEvents(config.nEventsToProcess());                    // requested number of events to run
+    std::string outpath(config.outputFilePath());                    // directory for output files
+    std::string outpathBase(config.outputFilePath());                // directory for output files (base name to modify)
+    unsigned long long firstEvent(config.firstEvent());              // first event to begin running over
     std::vector<std::string> filenames  = config.filesToProcess();
     std::vector<std::string> treenames  = config.treeNames();
     std::vector<std::string> selections = config.selections();
@@ -138,11 +138,34 @@ int main(int argc, char** argv) {
 
         // check the file type
         config.setFilename( filename );      // set the filename for the configuration
-        config.inspectFile( *file );         // check the type of file this is
+        config.inspectFile( *file );         // check the type of file being processed
 
         std::vector<std::string> fileKeys;
         cma::getListOfKeys(file,fileKeys);   // keep track of ttrees in file
 
+        // Clone metadata tree
+        TTree * metadata_ttree;
+        TTree * original_metadata_ttree;
+        std::string metadata_treename("tree/metadata");  // hard-coded for now
+        // check that the ttree exists in this file before proceeding
+        if (std::find(fileKeys.begin(), fileKeys.end(), metadata_treename) != fileKeys.end()){
+            original_metadata_ttree = (TTree*)file->Get(metadata_treename.c_str());
+            outputFile->cd();
+            // Setup subdirectory, if necessary
+            std::string subdir("");
+            std::size_t found = metadata_treename.find("/");
+            if (found!=std::string::npos){
+                subdir = metadata_treename.substr(0,found);
+                gDirectory->mkdir(subdir.c_str());
+            }
+            outputFile->cd(subdir.c_str());
+            metadata_ttree = original_metadata_ttree->CloneTree(-1);
+        }
+        else{
+            cma::INFO("RUN : TTree '"+metadata_treename+"' is not present in this file");
+        }
+
+        // Setup outputs
         histogrammer histMaker(config);      // initialize histogrammer
         efficiency effMaker(config);         // initialize efficiency class
         if (makeHistograms)
@@ -175,7 +198,7 @@ int main(int argc, char** argv) {
                 if (found!=std::string::npos){
                     outputFile->cd();
                     subdir = treename.substr(0,found);
-                    gDirectory->mkdir(subdir.c_str());
+                    if (!outputFile->GetDirectory(subdir.c_str())) gDirectory->mkdir(subdir.c_str());
                 }
                 miniTTree.initialize( myReader.GetTree(), *outputFile, subdir );
             }
