@@ -264,6 +264,14 @@ struct Sample {
     float KFactor;
     float sumOfWeights;
     unsigned int NEvents;
+
+    void clear(){
+        primaryDataset = "";
+        XSection = 1.;
+        KFactor  = 1.;
+        sumOfWeights = 1.;
+        NEvents = 0;
+    }
 };
 
 

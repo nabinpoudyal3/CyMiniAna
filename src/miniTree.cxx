@@ -1,11 +1,10 @@
 /*
 Created:        --
-Last Updated:   28 August   2017
+Last Updated:   12 April 2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
 Texas A&M University
-
 -----
 
 Create and fill TTree.
@@ -22,43 +21,67 @@ miniTree::~miniTree() {}
 
 
 
-void miniTree::initialize(TTree* t, TFile& outputFile, const std::string directory) {
-    /* 
-       Setup the new tree 
-       't' represents the TTree from the original file
+void miniTree::initialize(TTree* t, TFile& outputFile, const std::string directory, const int cloneFactor) {
+    /* Setup the new tree
+
+       @param t    TTree from the original file
+       @param directory    Directory the tree may be stored under
+       @param cloneFactor  Value used in cloning the tree 
+                           (0=clone no events, just branch names; -1=clone all data)
     */
     outputFile.cd(directory.c_str());
     m_oldTTree = t;
 
-    m_ttree = m_oldTTree->CloneTree(0);  // clone the tree (branches) but copy no data
+    m_ttree = m_oldTTree->CloneTree(cloneFactor);
+    cma::getListOfBranches(m_oldTTree,m_listOfBranches);
 
-    /*** setup new branches here ***/
-    // values based on the selection(s)
-    m_passSelection.resize( m_selections.size() );
+    createBranches();
+    disableBranches();
+
+    return;
+}
+
+
+void miniTree::createBranches(){
+    /* Setup new branches if they don't already exist! */
+    m_passSelection.resize( m_selections.size() );     // values based on the selection(s)
     unsigned int ss(0);
     for (const auto& sel : m_selections){
+        if (branch_exists(sel)) continue;
         m_passSelection.at(ss) = 0;
         m_ttree->Branch( sel.c_str(), &m_passSelection.at(ss), (sel+"/i").c_str() ); // unsigned int 0,1
         ss++;
     }
 
-    m_ttree->Branch( "BESTProb_t_j", &m_BEST_t_j );
-    if ( m_config->DNNinference() )
+    if (!branch_exists("BESTProb_t_j"))
+        m_ttree->Branch( "BESTProb_t_j", &m_BEST_t_j );
+    if ( m_config->DNNinference() && !branch_exists("DNN"))
         m_ttree->Branch( "DNN", &m_dnn, "DNN/F" );
 
 
-    if (m_config->isOneLeptonAnalysis()){
+    if (m_config->isOneLeptonAnalysis() && !branch_exists("leptop_jet") && !branch_exists("hadtop_ljet")){
         m_ttree->Branch( "leptop_jet",  &m_leptop_jet,  "leptop_jet/I" );   // index of AK4 jet in leptonic top candidate
         m_ttree->Branch( "hadtop_ljet", &m_hadtop_ljet, "hadtop_ljet/I" );  // index of AK8 jet as hadronic top candidate
     }
 
-
-    /*** disable branches here ***/
-    // m_ttree->SetBranchStatus("", 0);
-
     return;
-} // end initialize
+}
 
+
+bool miniTree::branch_exists(const std::string& br){
+    /* Check if branch exists in the tree already 
+       > True if it exists; False if it does not exist
+    */
+    return (std::find(m_listOfBranches.begin(), m_listOfBranches.end(), br) != m_listOfBranches.end());
+}
+
+
+void miniTree::disableBranches(){
+    /* Disable branches in output file 
+       > m_ttree->SetBranchStatus(branch, 0);
+    */
+    return;
+} 
 
 
 void miniTree::saveEvent(Event& event, const std::vector<unsigned int>& evtsel_decisions) {

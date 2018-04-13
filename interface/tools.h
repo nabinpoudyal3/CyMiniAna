@@ -38,7 +38,8 @@ namespace cma{
     /* Split a string with some delimiter (comma) */
     void split(const std::string &s, char delim, std::vector<std::string> &elems);
 
-    /* Get the list of TTrees in a file */
+    /* Get the list of Branches in TTree / TTrees in file */
+    void getListOfBranches( TTree* tree, std::vector<std::string>& treeBranches );
     void getListOfKeys( TFile* file, std::vector<std::string> &fileKeys );
 
     /* calculate values for normalizing monte carlo samples */

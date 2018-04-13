@@ -49,6 +49,7 @@ configuration::configuration(const std::string &configFile) :
   m_matchTruthToReco(true),
   m_kinematicReco(true),
   m_jet_btag_wkpt("SetMe"),
+  m_recalculateMetadata(false),
   m_calcWeightSystematics(false),
   m_listOfWeightSystematicsFile("SetMe"),
   m_listOfWeightVectorSystematicsFile("SetMe"){
@@ -258,24 +259,27 @@ bool configuration::checkPrimaryDataset(const std::vector<std::string>& files){
 }
 
 
-void configuration::readMetadata(TFile& file){
+void configuration::readMetadata(TFile& file,const std::string& metadataTreeName){
     /* Read metadata TTree */
-    TTreeReader metadata("tree/metadata", &file);
+    m_sample.clear();
+    if (metadataTreeName.size()<1) return;  // no metadata tree to read
+
+    TTreeReader metadata(metadataTreeName.c_str(), &file);
 
     TTreeReaderValue<std::string> primaryDataset(metadata, "primaryDataset");
     TTreeReaderValue<float> xsection(metadata, "xsection");
-    TTreeReaderValue<float> kfactor(metadata, "kfactor");
-    TTreeReaderValue<float> sumOfWeights(metadata, "sumOfWeights");
+    TTreeReaderValue<float> kfactor(metadata,  "kfactor");
+    TTreeReaderValue<float> sumOfWeights(metadata,   "sumOfWeights");
     TTreeReaderValue<unsigned int> NEvents(metadata, "NEvents");
 
     metadata.Next();
 
-    m_sample = {};
     std::string pd  = *primaryDataset;
     std::size_t pos = pd.find_first_of("/");
     if (pos==0){
         // bad name for metadata -- need to use map to get metadata
         // given something like '/ttbar/run2/.../', want 'ttbar'
+        m_recalculateMetadata = true;
         std::size_t found = pd.find_first_of("/",pos+1);
         pd = pd.substr(pos+1,found-1);
 
@@ -286,6 +290,9 @@ void configuration::readMetadata(TFile& file){
         m_NTotalEvents   = m_sample.NEvents;
     }
     else{
+        // the metadata in the file can probably be trusted
+        m_recalculateMetadata = false;
+
         m_sample.primaryDataset = *primaryDataset;
         m_sample.XSection = *xsection;
         m_sample.KFactor  = *kfactor;
@@ -302,7 +309,7 @@ void configuration::readMetadata(TFile& file){
 }
 
 
-void configuration::inspectFile( TFile& file ){
+void configuration::inspectFile( TFile& file, const std::string& metadataTreeName ){
     /* Compare filenames to determine file type */
     m_isQCD   = false;
     m_isTtbar = false;
@@ -310,8 +317,9 @@ void configuration::inspectFile( TFile& file ){
     m_isSingleTop    = false;
     m_primaryDataset = "";
     m_NTotalEvents   = 0;
+    m_recalculateMetadata = false;
 
-    readMetadata(file);
+    readMetadata(file,metadataTreeName);                    // access metadata; recalculate if necessary
 
     m_isQCD   = checkPrimaryDataset(m_qcdFiles);            // check if file is QCD
     m_isTtbar = checkPrimaryDataset(m_ttbarFiles);          // check if file is ttbar
@@ -355,24 +363,6 @@ void configuration::setTreename(std::string treeName){
 
 void configuration::setFilename(std::string fileName){
     m_filename = fileName;
-    m_useTruth = cma::str2bool( getConfigOption("useTruth") );
-
-    if (fileName.find("ttbar")!=std::string::npos){ 
-        m_isMC    = true;
-        m_isTtbar = true;
-    }
-    else{
-        m_isMC    = false;
-        m_isTtbar = false;
-    }
-
-    // Protection against accessing truth information that may not exist
-    if (!m_isMC && m_useTruth){
-        cma::WARNING("CONFIGURATION : 'useTruth=true' but 'isMC=false'");
-        cma::WARNING("CONFIGURATION : Setting 'useTruth' to false");
-        m_useTruth = false;
-    }
-
     return;
 }
 
@@ -383,7 +373,7 @@ bool configuration::isNominalTree(){
 bool configuration::isNominalTree( const std::string &tree_name ){
     /* Check if tree is a nominal one */
     bool isNominal(false);
-    if (tree_name.compare("nominal")==0 || tree_name.compare("Nominal")==0)
+    if (tree_name.compare("tree/eventVars")==0 || tree_name.compare("eventVars")==0)
         isNominal = true;
     else
         isNominal = false;

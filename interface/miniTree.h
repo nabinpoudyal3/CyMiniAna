@@ -31,7 +31,11 @@ class miniTree {
     virtual ~miniTree();
 
     // Run once at the start of the job;
-    virtual void initialize(TTree * t, TFile& outputFile, const std::string directory);
+    virtual void initialize(TTree * t, TFile& outputFile, const std::string directory, const int cloneFactor=0);
+    virtual void createBranches();
+    virtual void disableBranches();
+
+    bool branch_exists(const std::string& br);
 
     // Run for every event (in every systematic) that needs saving;
     virtual void saveEvent(Event &event, const std::vector<unsigned int>& evtsel_decisions=std::vector<unsigned int>());
@@ -47,6 +51,7 @@ class miniTree {
     configuration * m_config;
 
     std::vector<std::string> m_selections;
+    std::vector<std::string> m_listOfBranches;
 
     // new branches defined here 
     float m_dnn;

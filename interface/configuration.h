@@ -76,9 +76,10 @@ class configuration {
 
     // functions about the file
     bool checkPrimaryDataset(const std::vector<std::string>& files);
-    void readMetadata(TFile& file);
-    virtual void inspectFile( TFile& file );
+    void readMetadata(TFile& file, const std::string& metadataTreeName);
+    virtual void inspectFile( TFile& file, const std::string& metadataTreeName="" );
     std::vector<std::string> filesToProcess() {return m_filesToProcess;}
+    bool recalculateMetadata() {return m_recalculateMetadata;}
     void setFilename(std::string fileName);
     std::string filename(){ return m_filename;}
     std::string primaryDataset(){ return m_primaryDataset;}
@@ -236,6 +237,7 @@ class configuration {
     std::vector<std::string> m_mujetsTriggers = {"HLT_Mu40_Eta2P1_PFJet200_PFJet50","HLT_Mu50","HLT_TkMu50"};
     std::vector<std::string> m_dileptonTriggers = {};
 
+    bool m_recalculateMetadata;
     std::vector<std::string> m_filesToProcess;
     std::vector<std::string> m_treeNames;
 
