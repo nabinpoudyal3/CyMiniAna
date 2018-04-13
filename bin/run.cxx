@@ -36,11 +36,12 @@ Basic steering macro for running CyMiniAna
 #include <unistd.h>
 #include <boost/algorithm/string/join.hpp>
 
+#include "Analysis/CyMiniAna/interface/tools.h"
 #include "Analysis/CyMiniAna/interface/configuration.h"
 #include "Analysis/CyMiniAna/interface/Event.h"
 #include "Analysis/CyMiniAna/interface/eventSelection.h"
 #include "Analysis/CyMiniAna/interface/miniTree.h"
-#include "Analysis/CyMiniAna/interface/tools.h"
+#include "Analysis/CyMiniAna/interface/metadataTree.h"
 #include "Analysis/CyMiniAna/interface/histogrammer.h"
 #include "Analysis/CyMiniAna/interface/efficiency.h"
 
@@ -117,6 +118,7 @@ int main(int argc, char** argv) {
             cma::WARNING("RUN :     Continuing to next file. ");
             continue;
         }
+        config.setFilename( filename );      // set the filename for the configuration
 
 
         // -- Output file -- //
@@ -136,33 +138,38 @@ int main(int argc, char** argv) {
         std::unique_ptr<TFile> outputFile(TFile::Open( fullOutputFilename.c_str(), "RECREATE"));
         cma::INFO("RUN :   >> Saving to "+fullOutputFilename);
 
-        // check the file type
-        config.setFilename( filename );      // set the filename for the configuration
-        config.inspectFile( *file );         // check the type of file being processed
-
+        // Inspecting the file
         std::vector<std::string> fileKeys;
-        cma::getListOfKeys(file,fileKeys);   // keep track of ttrees in file
+        cma::getListOfKeys(file,fileKeys);                  // keep track of ttrees in file
+
+        std::string metadata_treename("tree/metadata");     // hard-coded for now
+        std::vector<std::string> metadata_names;
+        cma::split(metadata_treename, '/', metadata_names);
+        if (std::find(fileKeys.begin(), fileKeys.end(), metadata_treename) == fileKeys.end())
+            metadata_treename = "";  // metadata TTree doesn't exist, set this so "config" won't look for it
+        config.inspectFile( *file,metadata_treename );      // check the type of file being processed
 
         // Clone metadata tree
-        TTree * metadata_ttree;
         TTree * original_metadata_ttree;
-        std::string metadata_treename("tree/metadata");  // hard-coded for now
-        // check that the ttree exists in this file before proceeding
-        if (std::find(fileKeys.begin(), fileKeys.end(), metadata_treename) != fileKeys.end()){
+        metadataTree metadata_ttree(config);
+
+        if (metadata_treename.size()>0){
             original_metadata_ttree = (TTree*)file->Get(metadata_treename.c_str());
-            outputFile->cd();
             // Setup subdirectory, if necessary
-            std::string subdir("");
-            std::size_t found = metadata_treename.find("/");
-            if (found!=std::string::npos){
-                subdir = metadata_treename.substr(0,found);
-                gDirectory->mkdir(subdir.c_str());
+            std::string subdir;
+            if (metadata_names.size()>1){
+                subdir = metadata_names.at(0);
+                if (!outputFile->GetDirectory(subdir.c_str())) gDirectory->mkdir(subdir.c_str());
             }
-            outputFile->cd(subdir.c_str());
-            metadata_ttree = original_metadata_ttree->CloneTree(-1);
+            // clone if metadata is okay, rewrite if bad
+            bool recalculateMetadata = config.recalculateMetadata();    // call after 'inspectFile()'
+            Sample s = config.sample();
+            metadata_ttree.initialize(original_metadata_ttree,*outputFile,subdir,recalculateMetadata);
+            metadata_ttree.saveMetaData(s);
         }
         else{
             cma::INFO("RUN : TTree '"+metadata_treename+"' is not present in this file");
+            metadata_ttree.initialize(original_metadata_ttree,*outputFile,"",0);
         }
 
         // Setup outputs
