@@ -52,12 +52,14 @@ class Histogram(object):
         self.label  = ''
         self.weight = None
         self.data   = None
+        self.stack  = False              # ability to stack some plots, not all
         self.ratio_denominator = False
         self.ratio_numerator   = False
         self.uncertainty       = None
-        self.isErrobar = []
-        self.yerrors = OrderedDict()
-
+        self.isErrobar  = False  # plt.errorbar()
+        self.isLinePlot = False  # basic plt.plot()
+        self.yerrors    = None
+        self.plotData   = None   # the data prepared for the plot (maybe slightly modified)
 
 
 
@@ -73,7 +75,7 @@ class HepPlotter(object):
             print " Exiting. "
             sys.exit(1)
 
-        # customizable options
+        # customizable options for the figure
         self.typeOfPlot = typeOfPlot.lower()  # histogram or efficiency plot (ignore capitals)
         self.dimensions = dimensions  # number of dimensions in histogram
         self.ratio_plot = False       # plot a ratio of things
@@ -81,7 +83,6 @@ class HepPlotter(object):
         self.stacked    = False       # stack plots (1D only)
         self.binning    = 20          # integer for number of bins, or list for non-uniform bins
         self.rebin      = 1           # rebin root histograms
-        self.label_size = 20          # size of label for text on plots
         self.normed     = False       # normalize histogram
         self.logplot    = False       # plot on log scale
         self.underflow  = False       # plot the underflow
@@ -97,7 +98,7 @@ class HepPlotter(object):
         self.drawEffDist    = False    # draw the physics distribution for efficiency (jet_pt for jet trigger)
         self.x_label        = 'x'
         self.y_label        = 'y'
-        self.y_ratio_label  = 'y ratio'
+        self.y_ratio_label  = 'ratio'
         self.extra_text     = hpl.PlotText()
         self.minor_ticks    = True
         self.lumi           = '14.7'
@@ -117,6 +118,12 @@ class HepPlotter(object):
         # Arguments for plotting uncertainties [color = kGreen-8 , alpha=0.5]
         self.p_hatch_args    = {'hatch':'','color':'#99cc99','edgecolor':'none','alpha':0.5}
         self.yMaxScaleValues = {"histogram":1.3,"efficiency":1.3}
+
+
+        self.ratio_ylims = {'ymin':{'ratio':0.5,'significance':0.0},
+                            'ymax':{'ratio':1.5,'significance':None}}
+        self.ratio_yticks = {'ratio':np.asarray([0.6,1.0,1.4]),
+                             'significance':[0,1,2]}
 
         return
 
@@ -144,13 +151,18 @@ class HepPlotter(object):
         return
 
 
-    def setValue(self,h,argument,default_value):
+    def setValue(self,h,argument,default_value,arg_other=''):
         """Set default value if the argument is not set by user"""
         val = None
         try:
-            val = kwargs['normed']
+            val = kwargs[argument]
         except KeyError: 
-            val = default_value
+            if arg_other:
+                try: 
+                    val = kwargs[arg_other]
+                except KeyError: 
+                    val = default_value
+            else: val = default_value
 
         setattr(h,argument,val)
 
@@ -169,15 +181,18 @@ class HepPlotter(object):
         self.setValue( hist,'normed',False )
         self.setValue( hist,'linecolor','k' )
         self.setValue( hist,'color','k' )
-        self.setValue( hist,'linestyle','solid' )
-        self.setValue( hist,'linewidth',2 )
-        self.setValue( hist,'histtype','step' )      # draw_type
+        self.setValue( hist,'linestyle','solid','ls' )
+        self.setValue( hist,'linewidth',2,'lw' )
+        self.setValue( hist,'draw_type','step' )
         self.setValue( hist,'label','' )
         self.setValue( hist,'yerror',None )
         self.setValue( hist,'weight',None )
         self.setValue( hist,'fmt','o' )
-        self.setValue( hist,'mec',hist.linecolor )
-        self.setValue( hist,'mfc',hist.color )
+        self.setValue( hist,'mec',hist.linecolor,'markeredgecolor' )
+        self.setValue( hist,'mfc',hist.color,'markerfacecolor' )
+        self.setValue( hist,'isErrorbar',False )
+        self.setValue( hist,'isLinePlot',False )
+        self.setValue( hist,'stack',self.stacked )
 
         return
 
@@ -196,6 +211,7 @@ class HepPlotter(object):
                    -- hist:     https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html
                    -- hist2d:   https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist2d.html
                    -- errorbar: https://matplotlib.org/api/_as_gen/matplotlib.pyplot.errorbar.html
+                   -- lineplot: https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html
         """
         hist = Histogram()
         hist.name = name
@@ -238,37 +254,24 @@ class HepPlotter(object):
         """
         Execute the plot.
         return the Figure object to the user (they can edit it if they please)
+        Many options set in 'cms' style file
         """
-        if self.dimensions == 1: this_figure = self.plot_hist1d()
-        else:                    this_figure = self.plot_hist2d()
-
-        return this_figure
-
-
-
-    def plot_hist1d(self):
-        """Plot a 1D histogram.  Many options set in 'cms' style file"""
-        self.ratio_ylims  = {}
-        self.ratio_yticks = {}
-
+        # Setup the figure
         fig      = None
         self.ax1 = None
         self.ax2 = None
+
         if self.ratio_plot:
             fig = plt.figure()
             gs  = matplotlib.gridspec.GridSpec(2,1,height_ratios=[3,1])
             self.ax1 = fig.add_subplot(gs[0])
             self.ax2 = fig.add_subplot(gs[1],sharex=self.ax1)
             plt.setp(self.ax1.get_xticklabels(),visible=False)
-
-            self.ratio_ylims = {'ymin':{'ratio':0.5,'significance':0.0},
-                                'ymax':{'ratio':1.5,'significance':None}}
-            self.ratio_yticks = {'ratio':np.asarray([0.6,1.0,1.4]),
-                                 'significance':self.ax2.get_yticks()[::2]}
         else:
             fig,self.ax1 = plt.subplots()
 
 
+        ## -- Efficiency specific items
         if self.typeOfPlot=="efficiency":
             # draw horizontal lines to guide the eye
             self.ax1.axhline(y=0.25,color='lightgray',ls='--',lw=1,zorder=0)
@@ -280,87 +283,45 @@ class HepPlotter(object):
                 self.draw_physics_eff()   # Twin axis :: Draw physics distribution with efficiency curve
 
 
-        ## -- Loop over histograms
+        ## -- Loop over objects to plot
         binning     = None
-        y_lim_value = None    # weird protection against the axis autoscaling to values smaller than previously drawn histograms
-                              # I can't find the source
+        y_lim_value = None    # protection against the axis autoscaling to values smaller than previously drawn histograms
         max_value   = 0.0
         bottomEdge  = None    # for stacking plots (use this instead of the 'stack' argument
-                              # so that all plots can be made in one for-loop
+                              # so that all plots can be made in one for-loop)
+
         for n,name in enumerate(self.names):
-
             h_hist     = self.histograms[name]
-            data       = h_hist.data['data']
-            error      = h_hist.data['error']
-            bin_center = h_hist.data['center']
-            bin_width  = h_hist.data['width']
-            binning    = h_hist.data['bins']
 
-
-            if name in self.errorbarplot:
-                if self.kwargs[name].get("normed") and self.kwargs[name]["normed"]:
-                    # Normalize data to then draw errorbar plot (option not supported by matplotlib)
-                    data, bin_edges = np.histogram(bin_center,bins=binning,weights=data,normed=True)
-
-                data  = np.array([i if i else float('NaN') for i in data])  # hide empty values
-                NaN_values = np.isnan(data)
-
-                p,c,b = self.ax1.errorbar(bin_center,data,yerr=error,fmt=h_hist.fmt,
-                                          mfc=h_hist.mfc,mec=h_hist.mec,label=h_hist.label,
-                                          zorder=100,**h_hist.kwarg)
-                # record data for later
-                data[NaN_values] = 0
-                h_hist.plotData  = data
+            if h_hist.isErrorbar:
+                self.draw_errorbar_plot(h_hist)
+            elif h_hist.isLinePlot:
+                self.draw_line_plot(h_hist)
             else:
-                if self.draw_types[name]=='step':
-                    # Hack for changing legend for step histograms (make a line instead of a rectangle)
-                    this_label      = None
-                    histStep_pseudo = self.ax1.plot([],[],color=h_hist.linecolor,
-                                               lw=h_hist.linewidth,ls=h_hist.linestyle,
-                                               label=h_hist.label)
+                if self.dimensions==1:
+                    self.draw_histogram(h_hist)
                 else:
-                    this_label = h_hist.label
-
-                # Make the histogram
-                data,b,p = self.ax1.hist(bin_center,bins=binning,weights=data,lw=h_hist.linewidth,
-                                 histtype=h_hist.draw_type,bottom=bottomEdge,
-                                 ls=h_hist.linestyle,log=h_hist.logplot,color=h_hist.color,
-                                 edgecolor=h_hist.linecolor,label=this_label,
-                                 **h_hist.kwarg)
-                if self.stacked:
-                    if bottomEdge is None:
-                        bottomEdge  = data
-                    else:
-                        bottomEdge += data
-
-                # record data for later
-                h_hist.plotData = data
-
-                # draw uncertainties -- use GetBinError() or just np.sqrt()
-                # only using this for histograms because errorbar has a yerr option
-                if self.drawStatUncertainty and self.drawUncertaintyTopFig:
-                    self.plotUncertainty(self.ax1,pltname=name,normalize=False)
+                    self.draw_histogram2D(h_hist)
 
             # record tallest point for scaling plot
-            if max(data) > max_value:
-                max_value = max(data)
+            this_max = max(h_hist.data['data'])
+            if this_max > max_value:
+                max_value = this_max
             if y_lim_value is None or y_lim_value < self.ax1.get_ylim()[1]:   # only increase the autoscale of the y-axis limit
                 y_lim_value = self.ax1.get_ylim()[1]
-                
-        ## End loop over data
 
-        self.binning = np.array(binning) # re-set binning for this instance of hepPlotter
 
+        ## AXES
         # y-axis
         if self.ymaxScale is None:
             self.ymaxScale = self.yMaxScaleValues[self.typeOfPlot]
-        self.ax1.set_ylim(0.,self.ymaxScale*y_lim_value)
+        self.ax1.set_ylim(ymax=self.ymaxScale*y_lim_value)
         self.ax1.set_yticks(self.ax1.get_yticks()[1:])
-        self.ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
-        self.setYAxis(self.ax1)
+        #self.ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+        self.setAxis(self.ax1,ax="y",label=self.y_label)
 
         # x-axis
-        self.ax1.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+        #self.ax1.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         if self.xlim is not None:
             plt.xlim(self.xlim)
 
@@ -369,47 +330,127 @@ class HepPlotter(object):
             self.drawRatio()
             x_axis = self.ax2
 
-        self.setXAxis(x_axis)
+        self.setAxis(x_axis,ax="x",label=self.x_label)
 
         # axis ticks
-        self.setAxisTickMarks()
+        self.setMinorAxisTickMarks()
 
-        # CMS label
-        if self.CMSlabel is not None:
-            self.text_labels()
+        ## CMS && Text labels
+        if self.CMSlabel is not None or len(self.extra_text.texts)>0:
+            self.writeText()
 
-        # Legend
-        handles,labels = self.ax1.get_legend_handles_labels() # for re-ordering, if needed
-        leg = self.ax1.legend(handles,labels,numpoints=1,
-                              ncol=self.numLegendColumns,loc=self.legendLoc)
-        leg.draw_frame(False)
+        ## Legend
+        self.drawLegend()
 
         return fig
 
 
+    def drawLegend(self):
+        """Draw legend"""
+        handles,labels = self.ax1.get_legend_handles_labels() # for re-ordering, if needed
+        leg = self.ax1.legend(handles,labels,ncol=self.numLegendColumns,loc=self.legendLoc)  # no ax2 legend, for now
+
+        return
+
+
+    def getAxes(self):
+        """Return the axes to the user"""
+        if self.ratio_plot:
+            return self.ax1,self.ax2
+        else:
+            return self.ax1
+
+
+    def draw_line_plot(self,h):
+        """Draw basic plt.plot()"""
+        self.ax1.plot(h.data['center'],h.data['data'],**h.kwarg)
+
+        return
+
+
+    def draw_errorbar_plot(self,h):
+        """Draw errorbar plot"""
+        if h.normed:
+            # Normalize data using hist then draw errorbar plot (option not supported by matplotlib)
+            data, bin_edges = np.histogram(bin_center,bins=binning,weights=data,normed=True)
+
+        data = np.array([i if i else float('NaN') for i in data])  # hide empty values
+        NaN_values = np.isnan(data)
+
+        p,c,b = self.ax1.errorbar(bin_center,data,yerr=error,fmt=h_hist.fmt,
+                                  mfc=h_hist.mfc,mec=h_hist.mec,label=h_hist.label,
+                                  zorder=100,**h_hist.kwarg)
+        # record data for later
+        data[NaN_values] = 0
+        h_hist.plotData  = data
+
+        return
+
+
+    def draw_histogram(self,h,axis=None):
+        """Draw histogram"""
+        if h.draw_type=='step':
+            # Hack for changing legend for step histograms (make a line instead of a rectangle)
+            this_label      = None
+            histStep_pseudo = self.ax1.plot([],[],color=h_hist.linecolor,lw=h_hist.linewidth,ls=h_hist.linestyle,label=h_hist.label)
+        else:
+            this_label = h_hist.label
+
+        # Make the histogram
+        data,b,p = axis.hist(bin_center,bins=binning,weights=data,lw=h_hist.linewidth,
+                             histtype=h_hist.draw_type,bottom=bottomEdge,
+                             ls=h_hist.linestyle,log=h_hist.logplot,color=h_hist.color,
+                             edgecolor=h_hist.linecolor,label=this_label,
+                             **h_hist.kwargs)
+        if self.stacked or h.stack:
+            # raise the bottom edge for the next plot to stack on this one
+            if bottomEdge is None:
+                bottomEdge  = data
+            else:
+                bottomEdge += data
+
+        # record data for later
+        h.plotData = data
+
+        # draw uncertainties -- use GetBinError()
+        # only using this for histograms because errorbar has a yerr option
+        if self.drawStatUncertainty and self.drawUncertaintyTopFig:
+            self.plotUncertainty(self.ax1,pltname=name,normalize=False)
+
+        return
+
+
     def draw_physics_eff(self):
+        """Draw the corresponding physics distribution with an efficiency curve using twin axis"""
         axTwin = self.ax1.twinx()
         if self.ymaxScale is None:
             self.ymaxScale = self.yMaxScaleValues['efficiency']
-        ## Get the histogram
+        # Get the histogram
         for effData in self.effData:
-            h_effDist = self.hists2plot[effData]
+            h_effDist = self.histograms[effData]
+self.draw_histogram(h_effDist,axTwin)
+
             n,b,p = axTwin.hist(h_effDist['center'],bins=h_effDist['bins'],
                                 weights=h_effDist['data'],histtype='step',
                                 color=self.colors[effData],lw=self.linewidths[effData],
                                 label=self.labels[effData],**self.kwargs[effData])
+        # Suppress labels
+kwargs = {"fontsize":0}
+setAxis(axTwin,ax="y",kwargs)
+
         axTwin.set_ylabel("",fontsize=0,ha='right',va='top')
         axTwin.set_ylim(ymin=0.0,ymax=self.ymaxScale*max(n))
         # hide y-ticks
         axTwin.set_yticks( np.linspace(axTwin.get_yticks()[0],axTwin.get_yticks()[-1],len(self.ax1.get_yticks())) )
         axTwin.set_yticklabels([])
+
         self.ax1.set_zorder(axTwin.get_zorder()+1) # put ax in front of axTwin
         self.ax1.patch.set_visible(False)          # hide the 'canvas'
 
         return
 
 
-    def setColormap(self):
+    def setColormap(self,h):
         """Colormap setup for 2D plots"""
         linear_cmap_choice  = np.random.choice(["Reds","Blues","Greens"])
         default_cmap_choice = np.random.choice(["viridis","magma","inferno","plasma"])
@@ -426,11 +467,11 @@ class HepPlotter(object):
                 print " WARNING : Unsupported colormap '{0}'".format(self.colormap)
                 print "           Choosing the colormap based on data structure "
 
-            h_data = np.array(self.hists2plot[key]['data'])
-            x_bin_center = self.hists2plot[key]['center']['x']
-            y_bin_center = self.hists2plot[key]['center']['y']
-            binns_x = self.hists2plot[key]['bins']['x']
-            binns_y = self.hists2plot[key]['bins']['y']
+                h_data       = h.data['data']
+                x_bin_center = h.data['center']['x']
+                y_bin_center = h.data['center']['y']
+                binns_x      = h.data['bins']['x']
+                binns_y      = h.data['bins']['y']
 
                 hh,bb = np.histogram2d( x_bin_center,y_bin_center,bins=[binns_x,binns_y],weights=h_data )
                 self.colormap = hpt.getDataStructure( hh )
@@ -438,15 +479,13 @@ class HepPlotter(object):
         return
 
 
-    def plot_hist2d(self):
+    def draw_histogram2D(self,h,axis=None):
         """Plot a 2D histogram."""
-        fig,self.ax1 = plt.subplots()
-
-        h_data       = np.array(self.hists2plot[key]['data'])
-        binns_x      = self.hists2plot[key]['bins']['x']
-        binns_y      = self.hists2plot[key]['bins']['y']
-        x_bin_center = self.hists2plot[key]['center']['x']
-        y_bin_center = self.hists2plot[key]['center']['y']
+        h_data       = h.data['data']
+        binns_x      = h.data['bins']['x']
+        binns_y      = h.data['bins']['y']
+        x_bin_center = h.data['center']['x']
+        y_bin_center = h.data['center']['y']
 
         # Make the plot -- only one histogram at a time
         # Need to plot ratios in separate histogram
@@ -456,26 +495,16 @@ class HepPlotter(object):
 
         # Plot bin values, if requested
         if self.bin_yields:
-            self.printBinYields()
-
-        # Configure the labels
-        self.setYAxis(self.ax1)
-        self.setXAxis(self.ax1)
-        self.setAxisTickMarks()
+            self.printBinYields()   # only supported for 2D plots
 
         # Configure the colorbar
         cbar = plt.colorbar()
-        if self.logplot:
-            cbar.ax.set_yticklabels( [r"10$^{\text{%s}}$"%(hpt.extract(i.get_text())) for i in cbar.ax.get_yticklabels()] )
+     setAxis(cbar,ax='y')
 
-        if self.colorbar_title is not None:
-            cbar.ax.set_ylabel(self.colorbar_title)
+        if self.logplot: cbar.ax.set_yticklabels( [r"10$^{\text{%s}}$"%(hpt.extract(i.get_text())) for i in cbar.ax.get_yticklabels()] )
+        if self.colorbar_title is not None: cbar.ax.set_ylabel(self.colorbar_title)
 
-        # CMS label
-        if self.CMSlabel is not None:
-            self.text_labels()
-
-        return fig
+        return
 
 
 
@@ -485,24 +514,25 @@ class HepPlotter(object):
          Can handle plotting multiple ratios with one quantity,
          e.g., compare both up & down systs with nominal
         """
-        for i in self.names:
+        if self.ratio_type=='ratio':
+            self.ax2.axhline(y=1,ls='--',c='k',zorder=1) # draw once
+
+        for i in self.histograms:
             num_hists       = []   # list of histograms for numerator of ratio
             num_hists_names = []   # names of histograms in numerator of ratio
-            if self.ratio_den[i]:
-                den_hist = np.array( self.histograms[i] )
+
+            if i.ratio_den:
+                # This data is the denominator in ratio_plot
+                den_hist = i.plotData
                 try:
-                    num_hists.append( np.array(self.histograms[self.ratio_partner[i]]) )
-                    num_hists_names.append( self.ratio_partner[i] )
+                    num_hists.append( np.array(self.histograms[i.ratio_partner]) )
+                    num_hists_names.append( i.ratio_partner )
                 except TypeError: # unhashable type: 'list'
-                    for j in self.ratio_partner[i]:
+                    for j in i.ratio_partner:
                         num_hists.append( np.array(self.histograms[j]) )
                         num_hists_names.append( j )
             else: # only look at the 'ratio_den' terms to prevent plotting ratio twice
                 continue
-
-
-            if self.ratio_type=='ratio':
-                self.ax2.axhline(y=1,ls='--',c='k',zorder=1) # draw once
 
 
             for nh,num_hist in enumerate(num_hists):
@@ -510,54 +540,51 @@ class HepPlotter(object):
                 histName = num_hists_names[nh]
 
                 if self.ratio_type=="ratio":
-                    residual     = deepcopy( num_hist / den_hist )
-                    residual_err = deepcopy( self.hists2plot[histName]['error'] / den_hist ) # proper uncertainties even for "normalized" plots
+                    residual     = deepcopy( num_hist.plotData / den_hist )
+                    residual_err = deepcopy( num_hist.data['error'] / den_hist ) # proper uncertainties even for "normalized" plots
                 elif self.ratio_type == "significance":
-                    residual     = deepcopy( num_hist / np.sqrt(den_hist) )
+                    residual     = deepcopy( num_hist.plotData / np.sqrt(den_hist) )
                     residual_err = [0 for _ in residual] # don't know how to estimate this
                 else:
-                    print " WARNING :: Un-specified method for ratio plot "
-                    print "            Setting ratio equal to 1.0"
-                    residual     = np.ones( len(num_hist) )
+                    print " WARNING :: Un-specified method for ratio plot '{0}'. Setting ratio equal to 1.0".format(self.ratio_type)
+                    residual     = np.ones( len(num_hist.data['center']) )
                     residual_err = [0 for _ in residual]
 
                 # Obtain data points for drawing the ratio
-                bin_center = self.hists2plot[histName]['center']
-                bin_width  = self.hists2plot[histName]['width']
+                bin_center = num_hist.data['center']
+                bin_width  = num_hist.data['width']
 
-                if histName in self.errorbarplot:
-                    if self.linestyles[histName]=='solid':
-                        self.linestyles[histName] = 'o'
-                    lcolor = self.linecolors[histName]
+                if num_hist.isErrorbar:
+
+draw errorbar plot
                     self.ax2.errorbar(bin_center,residual,xerr=bin_width,yerr=residual_err,
-                                  capsize=0,fmt=self.linestyles[histName],
-                                  mec=lcolor,mfc=lcolor,color=lcolor,zorder=100)
+                                      fmt=num_hist.linestyle,mec=num_hist.mec,mfc=num_hist.mfc,zorder=100,**num_hist.kwarg)
+
+draw line plot
+
                 else:
+
+draw histogram
                     residual = np.array( [fabs(rr) if (not np.isnan(rr) and not np.isinf(rr)) else 0.0 for rr in residual] )
                     self.ax2.hist(bin_center,bins=self.binning,weights=residual,
-                                  edgecolor=self.linecolors[histName],lw=2,
-                                  color=self.colors[histName],ls=self.linestyles[histName],
-                                  histtype='step',zorder=100)
+                                  edgecolor=num_hist.linecolor,lw=num_hist.linewidth,
+                                  color=num_hist.color,ls=num_hist.linestyle,
+                                  histtype=num_hist.draw_type,zorder=100,**num_hist.kwarg)
 
             ## Simulation Uncertainties
             if self.drawStatUncertainty:
-                self.plotUncertainty(self.ax2,pltname=i,normalize=True)
+                self.plotUncertainty(self.ax2,pltname=i.name,normalize=True)
 
         ## Set the axis properties of the ratio y-axis
         self.ax2.set_ylim(ymin=self.ratio_ylims['ymin'][self.ratio_type],
                           ymax=self.ratio_ylims['ymax'][self.ratio_type])
         self.ratio_yticks['significance']=self.ax2.get_yticks()[::2]
-
-        self.ax2.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        self.ax2.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-
+        #self.ax2.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        #self.ax2.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         self.ax2.set_yticks(self.ratio_yticks[self.ratio_type])
-        tickLabels = self.setTickLabels(self.ax2.get_yticks())
-        self.ax2.set_yticklabels(tickLabels)
-        self.ax2.set_ylabel(self.y_ratio_label,ha='center',va='bottom')
+        self.setAxis(self.ax2,ax="y",label=self.y_ratio_label)
 
         return
-
 
 
     def plotUncertainty(self,axis,pltname='',normalize=False):
@@ -568,14 +595,15 @@ class HepPlotter(object):
         @param name        Name of sample to plot (access data from global dictionaries)
         @param normalize   draw on ratio plot (divide by total prediction)
         """
-        if self.yerrors[pltname] is None:
-            return
+        if not pltname: return
 
-        error   = self.uncertainties[pltname]
-        nominal = self.histograms[pltname]
+        h_hist  = self.histograms[pltname]
+        error   = h_hist.data['error']
+        nominal = h_hist.plotData
+        binning = h_hist.data['binning']
 
         # Draw errorbars that are rectangles for each bin
-        if self.yerrors[pltname]=='rectangle':
+        if h_hist.yerror=='rectangle':
             if normalize:
                 resid_unc = {'up': list(((nominal+error)/nominal).repeat(2)),
                              'dn': list(((nominal-error)/nominal).repeat(2))}
@@ -583,13 +611,13 @@ class HepPlotter(object):
                 resid_unc = {'up': list((nominal+error).repeat(2)),
                              'dn': list((nominal-error).repeat(2))}
 
-            fill_between_bins = self.binning   ## for plotting hatch uncertainty
-            fill_between_bins = [self.binning[0]]+list(fill_between_bins[1:-1].repeat(2))+[self.binning[-1]]
+            fill_between_bins = binning   ## for plotting hatch uncertainty
+            fill_between_bins = [binning[0]]+list(fill_between_bins[1:-1].repeat(2))+[binning[-1]]
 
             axis.fill_between(fill_between_bins,resid_unc['dn'],resid_unc['up'],
-                              zorder=10,color=self.colors[pltname],**self.kwargs[pltname])
+                              zorder=10,color=h_hist.color,**h_hist.kwarg)
         # Draw vertical line for errors
-        elif self.yerrors[pltname]=='line':
+        elif h_hist.yerror=='line':
             if normalize:
                 resid_unc = {'up': list(((nominal+error)/nominal)),
                              'dn': list(((nominal-error)/nominal))}
@@ -599,86 +627,61 @@ class HepPlotter(object):
 
             error      = [resid_unc['dn'],resid_unc['up']]
             data       = [1. for _ in nominal] if normalize else nominal
-            bin_center = 0.5*(self.binning[:-1]+self.binning[1:])
+            bin_center = 0.5*(binning[:-1]+binning[1:])
+
+draw errorbar plot
+
             p,c,b = self.ax1.errorbar(bin_center,data,yerr=error,
-                                     fmt=self.linestyles[pltname],color=self.colors[pltname],
-                                     zorder=100,**self.kwargs[pltname])
+                                     fmt=h_hist.fmt,color=h_hist.color,
+                                     zorder=100,**h_hist.kwarg)
 
         return
 
 
-    def setAxis(self,axis,ax=""):
-        """Draw labels for a given axis"""
+    def setAxis(self,axis,ax="",label='',ratio=False):
+        """Draw labels for a given x-/y-axis"""
         if not ax: return
+        if ax!="y" and ax!="x": return
 
         axis_ticks = None
-        yaxis = False
-
         if ax=="y":
-            yaxis = True
-            axis.set_ylabel(self.y_label,ha='right',va='bottom',position=(0,1))
+            axis.set_ylabel(label,ha='right',va='bottom',position=(0,1))
             axis_ticks = axis.get_yticks()
-        elif ax=="x":
-            axis.set_xlabel(self.x_label,ha='right',va='top',position=(1,0))
-            axis_ticks = axis.get_xticks()
-        else: # unsupported option
-            return
-
-        # Modify tick labels
-        if self.logplot:
-            logTickLabels = [r"10$^{\text{%s}}$"%(int(np.log10(i)) ) for i in axis_ticks]
-            if yaxis: axis.set_yticklabels(logTickLabels)
-            else:     axis.set_xticklabels(logTickLabels)
         else:
-            # Draw tick marks as integers or decimal values
-            axis_ticks_int = axis_ticks.astype(int)
-            if len(set(axis_ticks_int))==len(axis_ticks):
-                # all of the ticks are unique as integers so draw them as integers
-                if yaxis: axis.set_yticklabels(axis_ticks_int)
-                else:     axis.set_xticklabels(axis_ticks_int)
-            else:
-                # the ticks are not unique as integers, leave them as they are
-                axis_ticks = self.setTickLabels(axis_ticks)
-                if yaxis: axis.set_yticklabels(axis_ticks[0:-1])
-                else:     axis.set_xticklabels(axis_ticks)
+            axis.set_xlabel(label,ha='right',va='top',position=(1,0))
+            axis_ticks = axis.get_xticks()
+
+        # Modify tick labels and write in scientific notation (only for the upper frame)
+        if self.logplot and not ratio:
+            logTickLabels = [r"10$^{\text{%s}}$"%(int(np.log10(i)) ) for i in axis_ticks]
+            if ax=='y': axis.set_yticklabels(logTickLabels)
+            else:       axis.set_xticklabels(logTickLabels)
 
         return
 
 
-    def setYAxis(self,axis):
-        """Draw labels for a given axis"""
-        self.setAxis(axis,ax="y")
-        return
-
-
-    def setXAxis(self,axis):
-        """Draw labels for x-axis"""
-        self.setAxis(axis,ax="x")
-        return
-
-
-    def setAxisTickMarks(self):
+    def setMinorAxisTickMarks(self):
         """Setup axis ticks"""
-        if self.minor_ticks:
-            if not self.logplot:
-                self.ax1.yaxis.set_minor_locator(self.y1minorLocator) # causes 'tick number error' on logplot
-            self.ax1.xaxis.set_minor_locator(self.x1minorLocator)
+        if not self.minor_ticks: return
 
-            if self.ratio_plot:
-                self.ax2.xaxis.set_minor_locator(self.x2minorLocator)
-                self.ax2.yaxis.set_minor_locator(self.y2minorLocator)
+        if not self.logplot:
+            self.ax1.yaxis.set_minor_locator(self.y1minorLocator) # causes 'tick number error' on logplot
+        self.ax1.xaxis.set_minor_locator(self.x1minorLocator)
+
+        if self.ratio_plot:
+            self.ax2.xaxis.set_minor_locator(self.x2minorLocator)
+            self.ax2.yaxis.set_minor_locator(self.y2minorLocator)
 
         return
 
 
-
-    def text_labels(self):
-        """
-        Write the CMS, Energy, and LUMI labels
+    def writeText(self):
+        """Write the CMS, Energy, & LUMI labels + any extra text the user wants
+           This only writes text on self.ax1, nothing on self.ax2
         """
         if self.dimensions==2 and self.CMSlabel!='outer':
             print " WARNING :: You have chosen a label position "
-            print "            not considered for 2D plots. "
+            print "            unsupported for 2D plots. Unknown consequences! "
             print "            Please consider changing the "
             print "            parameter 'CMSlabel' to 'outer'."
 
@@ -723,7 +726,7 @@ class HepPlotter(object):
 
 
 
-    def printBinYields(self):
+    def printBinYields(self,h):
         """Print bin values inside the plots for each bin."""
         h_data       = None
         x_bin_center = None
@@ -732,35 +735,20 @@ class HepPlotter(object):
         binns_y      = None
 
         for key in self.names:
-            if key in self.effData: continue
-
-            h_data = np.array(self.hists2plot[key]['data'])
-            x_bin_center = self.hists2plot[key]['center']['x']
-            y_bin_center = self.hists2plot[key]['center']['y']
-            binns_x = self.hists2plot[key]['bins']['x']
-            binns_y = self.hists2plot[key]['bins']['y']
-
-        N = len(x_bin_center) # number of bins (a flattened list for both TH1/TH2)
+            h_data = h.data['data']
+            x_bin_center = h.data['center']['x']
+            y_bin_center = h.data['center']['y']
+            binns_x = h.data['bins']['x']
+            binns_y = h.data['bins']['y']
 
         text_colors = self.bin_yields_color
-        if text_colors is None:
-            text_colors = ['k' for _ in range(N)]
+        if text_colors is None: text_colors = ['k' for _ in x_bin_center]  # default option
 
-        for i in range(N):
-            self.ax1.text(x_bin_center[i],y_bin_center[i],
-                          "{0:.1f}".format(h_data[i]),
-                          ha='center',va='center',
-                          color=text_colors[i])
+        for i,bc in enumerate(x_bin_center):
+            self.ax1.text(bc,y_bin_center[i],"{0:.1f}".format(h_data[i]),
+                          ha='center',va='center',color=text_colors[i])
 
         return
-
-
-    def setTickLabels(self,values):
-        """Remove extra trailing characters"""
-        values = [str(i) for i in values]
-        len_ticklabels = min( [len(i) for i in values if len(i)>0] )
-        values = [i[:len_ticklabels] for i in values]
-        return values
 
 
     def savefig(self):
