@@ -18,8 +18,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
   m_config(&cmaConfig),
   m_ttree(myReader),
   m_treeName("SetMe"),
-  m_fileName("SetMe"),
-  m_dileptonTtbar(nullptr){
+  m_fileName("SetMe"){
     m_isMC     = m_config->isMC();
     m_useTruth = m_config->useTruth();
     m_grid     = m_config->isGridFile();             // file directly from EDM->FlatNtuple step
@@ -290,8 +289,6 @@ void Event::clear(){
     m_btag_jets_default.clear();
     m_weight_btag_default = 1.0;
     m_nominal_weight = 1.0;
-
-    m_dilepton = {};
 
     m_HT = 0;
     m_ST = 0;
@@ -783,51 +780,6 @@ void Event::initialize_kinematics(){
 }
 
 
-
-
-/*** GETTER FUNCTIONS ***/
-void Event::getDilepton(){
-    /* Organize information into struct */
-    m_dilepton = {};             // struct of information needed to build neutrinos
-
-    // Leptons
-    Lepton lepton_p;
-    Lepton lepton_n;
-    if (m_leptons.at(0).charge > 0){
-        lepton_p = m_leptons.at(0);
-        lepton_n = m_leptons.at(1);
-    }
-    else{
-        lepton_p = m_leptons.at(1);
-        lepton_n = m_leptons.at(0);
-    }
-
-    m_dilepton.lepton_pos = lepton_p;
-    m_dilepton.lepton_neg = lepton_n;
-
-    // MET
-    TVector2 dilep_met;
-    dilep_met.SetX( m_met.p4.X() );
-    dilep_met.SetY( m_met.p4.Y() );
-    m_dilepton.met = dilep_met;
-
-    // Jets
-    std::vector<Jet> bjets;
-    for (const auto& j : m_btag_jets_default){
-        bjets.push_back(m_jets.at(j));
-    }
-    m_dilepton.jets  = m_jets;
-    m_dilepton.bjets = bjets;
-
-    cma::DEBUG("EVENT : Dilepton");
-    cma::DEBUG("EVENT : met       = "+std::to_string(m_met.p4.Pt()));
-    cma::DEBUG("EVENT : lepton pT = "+std::to_string(m_leptons.at(0).p4.Pt()));
-    cma::DEBUG("EVENT : jet pT    = "+std::to_string(m_jets.at(0).p4.Pt()));
-
-    return;
-}
-
-
 void Event::getBtaggedJets( Jet& jet ){
     /* Determine the b-tagging */
     jet.isbtagged["L"] = false;
@@ -982,7 +934,6 @@ void Event::truth(){
 void Event::finalize(){
     // delete variables
     cma::DEBUG("EVENT : Finalize() ");
-    //delete m_dileptonTtbar;
     delete m_eventNumber;
     delete m_runNumber;
     delete m_lumiblock;

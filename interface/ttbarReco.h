@@ -5,10 +5,10 @@
 #include <map>
 #include <vector>
 
+#include "Analysis/CyMiniAna/interface/physicsObjects.h"
 #include "Analysis/CyMiniAna/interface/tools.h"
 #include "Analysis/CyMiniAna/interface/configuration.h"
-#include "Analysis/CyMiniAna/interface/physicsObjects.h"
-
+#include "Analysis/CyMiniAna/interface/dileptonTtbarReco.h"
 
 class ttbarReco {
   public:
@@ -39,6 +39,9 @@ class ttbarReco {
 
     std::map<std::string,int> m_mapContainment;
     std::map<std::string,int> m_targetMap;
+
+    dileptonTtbarReco* m_dileptonTtbar;
+    DileptonReco m_dilepton;
 
     float M_HALF_PI = M_PI*0.5;
 };
