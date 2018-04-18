@@ -1,0 +1,6 @@
+output_path fbu
+listOfSystematics config/listOfSystematics.txt
+histogram h_deltay
+data /store/group/lpctop/ttbarAC/flatNtuples/fbu/data.root
+bckg /store/group/lpctop/ttbarAC/flatNtuples/fbu/backgrounds.root
+ttbar /store/group/lpctop/ttbarAC/flatNtuples/fbu/ttbar.root
