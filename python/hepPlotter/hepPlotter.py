@@ -45,6 +45,7 @@ class Histogram(object):
     def __init__(self):
         self.name  = ''
         self.color = 'k' 
+        self.normed = False
         self.linecolor = 'k'
         self.linestyle = '-'
         self.linewidth = 2
@@ -69,7 +70,7 @@ class HepPlotter(object):
         @param typeOfPlot    Set the kind of plot: histogram or efficiency
         @param dimensions    Number of dimension for the histogram/efficiency: 1 or 2
         """
-        if not isinstance(dimensions,(int,long)):
+        if not isinstance(dimensions,(int,long)) or not dimensions in [1,2]:
             print " You have specified an unsupported type for 'dimension'"
             print " For the hepPlotter class, choose either 1 or 2 dimenions."
             print " Exiting. "
@@ -138,8 +139,10 @@ class HepPlotter(object):
 
         if self.format!='pdf': print " WARNING : Chosen format '{0}' may conflict with PDF backend"
 
-        ## 2D plot
-        if self.dimensions==2: self.setColormap()
+        ## 2D plot -- set some specific options
+        if self.dimensions==2:
+            self.setColormap()
+            if self.ratio_plot: self.ratio_plot = False
 
         # draw minor ticks in the 'right' places
         self.x1minorLocator = AutoMinorLocator()
@@ -178,7 +181,6 @@ class HepPlotter(object):
             setattr( hist,kw,kwargs[kw] )       # set user-defined coords
 
         # Set default attributes (if not set by the user)
-        self.setValue( hist,'normed',False )
         self.setValue( hist,'linecolor','k' )
         self.setValue( hist,'color','k' )
         self.setValue( hist,'linestyle','solid','ls' )
@@ -193,6 +195,8 @@ class HepPlotter(object):
         self.setValue( hist,'isErrorbar',False )
         self.setValue( hist,'isLinePlot',False )
         self.setValue( hist,'stack',self.stacked )
+
+        if not hist.normed and self.normed: hist.normed = True   # self.normed overrides the single option
 
         return
 
@@ -216,6 +220,8 @@ class HepPlotter(object):
         hist = Histogram()
         hist.name = name
 
+        setDefaults(hist,kwargs)
+
         # Internally process data -- convert to relevant format for plotting (ROOT->matplotlib)
         if self.typeOfPlot=="histogram" and isinstance(data,ROOT.TH1):
             # Make histogram plot with TH1/TH2
@@ -237,7 +243,6 @@ class HepPlotter(object):
             else:
                 h_data = hpt.data2list2D(data,weights=weights,normed=hist.normed,binning=self.binning)
 
-        setDefaults(hist,kwargs)
 
         hist.ratio_den  = ratio_den          # denominator in ratio
         hist.ratio_num  = ratio_num          # numerator in ratio
@@ -272,7 +277,7 @@ class HepPlotter(object):
 
 
         ## -- Efficiency specific items
-        if self.typeOfPlot=="efficiency":
+        if self.typeOfPlot=="efficiency" and self.dimensions==1:
             # draw horizontal lines to guide the eye
             self.ax1.axhline(y=0.25,color='lightgray',ls='--',lw=1,zorder=0)
             self.ax1.axhline(y=0.50,color='lightgray',ls='--',lw=1,zorder=0)
@@ -291,7 +296,7 @@ class HepPlotter(object):
                               # so that all plots can be made in one for-loop)
 
         for n,name in enumerate(self.names):
-            h_hist     = self.histograms[name]
+            h_hist = self.histograms[name]
 
             if h_hist.isErrorbar:
                 self.draw_errorbar_plot(h_hist)
@@ -300,15 +305,21 @@ class HepPlotter(object):
             else:
                 if self.dimensions==1:
                     self.draw_histogram(h_hist)
+        # draw uncertainties -- use GetBinError()
+        # only using this for histograms because errorbar has a yerr option
+        if self.drawStatUncertainty and self.drawUncertaintyTopFig:
+            self.plotUncertainty(self.ax1,pltname=name,normalize=False)
+
                 else:
                     self.draw_histogram2D(h_hist)
 
-            # record tallest point for scaling plot
-            this_max = max(h_hist.data['data'])
-            if this_max > max_value:
-                max_value = this_max
-            if y_lim_value is None or y_lim_value < self.ax1.get_ylim()[1]:   # only increase the autoscale of the y-axis limit
-                y_lim_value = self.ax1.get_ylim()[1]
+            if self.dimensions==1:
+                # record tallest point for scaling plot
+                this_max = max(h_hist.data['data'])
+                if this_max > max_value:
+                    max_value = this_max
+                if y_lim_value is None or y_lim_value < self.ax1.get_ylim()[1]:   # only increase the autoscale of the y-axis limit
+                    y_lim_value = self.ax1.get_ylim()[1]
 
 
         ## AXES
@@ -329,7 +340,6 @@ class HepPlotter(object):
         if self.ratio_plot:
             self.drawRatio()
             x_axis = self.ax2
-
         self.setAxis(x_axis,ax="x",label=self.x_label)
 
         # axis ticks
@@ -340,7 +350,7 @@ class HepPlotter(object):
             self.writeText()
 
         ## Legend
-        self.drawLegend()
+        if self.dimensions==1: self.drawLegend()
 
         return fig
 
@@ -377,22 +387,22 @@ class HepPlotter(object):
         data = np.array([i if i else float('NaN') for i in data])  # hide empty values
         NaN_values = np.isnan(data)
 
-        p,c,b = self.ax1.errorbar(bin_center,data,yerr=error,fmt=h_hist.fmt,
-                                  mfc=h_hist.mfc,mec=h_hist.mec,label=h_hist.label,
-                                  zorder=100,**h_hist.kwarg)
+        p,c,b = self.ax1.errorbar(bin_center,data,yerr=error,fmt=h.fmt,
+                                  mfc=h.mfc,mec=h.mec,label=h.label,
+                                  zorder=100,**h.kwarg)
         # record data for later
         data[NaN_values] = 0
-        h_hist.plotData  = data
+        h.plotData  = data
 
         return
 
 
-    def draw_histogram(self,h,axis=None):
+    def draw_histogram(self,h,axis=None,bottomEdge=None):
         """Draw histogram"""
         if h.draw_type=='step':
             # Hack for changing legend for step histograms (make a line instead of a rectangle)
             this_label      = None
-            histStep_pseudo = self.ax1.plot([],[],color=h_hist.linecolor,lw=h_hist.linewidth,ls=h_hist.linestyle,label=h_hist.label)
+            histStep_pseudo = axis.plot([],[],color=h.linecolor,lw=h.linewidth,ls=h.linestyle,label=h.label)
         else:
             this_label = h_hist.label
 
@@ -412,11 +422,6 @@ class HepPlotter(object):
         # record data for later
         h.plotData = data
 
-        # draw uncertainties -- use GetBinError()
-        # only using this for histograms because errorbar has a yerr option
-        if self.drawStatUncertainty and self.drawUncertaintyTopFig:
-            self.plotUncertainty(self.ax1,pltname=name,normalize=False)
-
         return
 
 
@@ -428,6 +433,7 @@ class HepPlotter(object):
         # Get the histogram
         for effData in self.effData:
             h_effDist = self.histograms[effData]
+
 self.draw_histogram(h_effDist,axTwin)
 
             n,b,p = axTwin.hist(h_effDist['center'],bins=h_effDist['bins'],
@@ -443,6 +449,8 @@ setAxis(axTwin,ax="y",kwargs)
         # hide y-ticks
         axTwin.set_yticks( np.linspace(axTwin.get_yticks()[0],axTwin.get_yticks()[-1],len(self.ax1.get_yticks())) )
         axTwin.set_yticklabels([])
+
+
 
         self.ax1.set_zorder(axTwin.get_zorder()+1) # put ax in front of axTwin
         self.ax1.patch.set_visible(False)          # hide the 'canvas'
