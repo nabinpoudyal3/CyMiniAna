@@ -163,7 +163,13 @@ void histogrammer::bookHists( std::string name ){
         init_hist("ljet_subjet1_bdisc_"+name, 100, 0.0, 1.0);
         init_hist("ljet_subjet0_charge_"+name,1000, -5.0, 5.0);
         init_hist("ljet_subjet1_charge_"+name,1000, -5.0, 5.0);
+        init_hist("ljet_subjet0_tau21_"+name,100, 0.0, 1.0);
+        init_hist("ljet_subjet1_tau21_"+name,100, 0.0, 1.0);
+        init_hist("ljet_subjet0_tau32_"+name,100, 0.0, 1.0);
+        init_hist("ljet_subjet1_tau32_"+name,100, 0.0, 1.0);
 
+        init_hist("ljet_subjet0_subjet1_tau21_"+name,100, 0.0,1.0, 100,0.0,1.0);  // subjet0 tau21 vs subjet1 tau21
+        init_hist("ljet_subjet0_subjet1_tau32_"+name,100, 0.0,1.0, 100,0.0,1.0);  // subjet0 tau32 vs subjet1 tau32
         init_hist("ljet_subjet0_charge_bdisc_"+name,1000,-5.0,5.0, 100,0.0,1.0);  // charge vs bdisc (charge=x-axis)
         init_hist("ljet_subjet1_charge_bdisc_"+name,1000,-5.0,5.0, 100,0.0,1.0);  // charge vs bdisc (charge=x-axis)
 
@@ -367,6 +373,18 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
             fill("ljet_subjet1_bdisc_"+name, ljet.subjet1_bdisc, event_weight);
             fill("ljet_subjet0_charge_"+name,ljet.subjet0_charge,event_weight);
             fill("ljet_subjet1_charge_"+name,ljet.subjet1_charge,event_weight);
+
+            float subjet0_tau21 = ljet.subjet0_tau2/ljet.subjet0_tau1;
+            float subjet0_tau32 = ljet.subjet0_tau3/ljet.subjet0_tau2;
+            float subjet1_tau21 = ljet.subjet1_tau2/ljet.subjet1_tau1;
+            float subjet1_tau32 = ljet.subjet1_tau3/ljet.subjet1_tau2;
+            fill("ljet_subjet0_tau21_"+name, subjet0_tau21, event_weight);
+            fill("ljet_subjet1_tau21_"+name, subjet1_tau21, event_weight);
+            fill("ljet_subjet0_tau32_"+name, subjet0_tau32, event_weight);
+            fill("ljet_subjet1_tau32_"+name, subjet1_tau32, event_weight);
+
+            fill("ljet_subjet0_subjet1_tau21_"+name,subjet0_tau21,subjet1_tau21,event_weight);  // subjet0 tau21 vs subjet1 tau21
+            fill("ljet_subjet0_subjet1_tau32_"+name,subjet0_tau32,subjet1_tau32,event_weight);  // subjet0 tau32 vs subjet1 tau32
 
             fill("ljet_subjet0_charge_bdisc_"+name, ljet.subjet0_charge, ljet.subjet0_bdisc, event_weight);
             fill("ljet_subjet1_charge_bdisc_"+name, ljet.subjet1_charge, ljet.subjet1_bdisc, event_weight);

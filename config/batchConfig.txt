@@ -1,9 +1,9 @@
 date today
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/ttbar/$TODAY
-subdir ttbar
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/SingleElectronHv3/$TODAY
+subdir SingleElectronHv3
 eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/
-files config/listOfTtbarFiles.txt
+files config/listOfSingleElectronHv3Files.txt
 username demarley
 executable run
 test False

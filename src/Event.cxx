@@ -112,11 +112,18 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_subjet0_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0deepCSV");
       m_ljet_subjet0_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0pt");
       m_ljet_subjet0_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0mass");
+      m_ljet_subjet0_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau1");
+      m_ljet_subjet0_tau2   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau2");
+      m_ljet_subjet0_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau3");
+
       m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge");
       m_ljet_subjet1_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1bDisc");
       m_ljet_subjet1_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1deepCSV");
       m_ljet_subjet1_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1pt");
       m_ljet_subjet1_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1mass");
+      m_ljet_subjet1_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau1");
+      m_ljet_subjet1_tau2   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau2");
+      m_ljet_subjet1_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau3");
 
       m_ljet_BEST_class = new TTreeReaderValue<std::vector<int>>(m_ttree,"AK8BEST_class");
       m_ljet_BEST_t = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_t");
@@ -601,10 +608,16 @@ void Event::initialize_ljets(){
         ljet.subjet0_charge = (*m_ljet_subjet0_charge)->at(i);
         ljet.subjet0_mass   = (*m_ljet_subjet0_mass)->at(i);
         ljet.subjet0_pt     = (*m_ljet_subjet0_pt)->at(i);
+        ljet.subjet0_tau1   = (*m_ljet_subjet0_tau1)->at(i);
+        ljet.subjet0_tau2   = (*m_ljet_subjet0_tau2)->at(i);
+        ljet.subjet0_tau3   = (*m_ljet_subjet0_tau3)->at(i);
         ljet.subjet1_bdisc  = (*m_ljet_subjet1_bdisc)->at(i);
         ljet.subjet1_charge = (*m_ljet_subjet1_charge)->at(i);
         ljet.subjet1_mass   = (*m_ljet_subjet1_mass)->at(i);
         ljet.subjet1_pt     = (*m_ljet_subjet1_pt)->at(i);
+        ljet.subjet1_tau1   = (*m_ljet_subjet1_tau1)->at(i);
+        ljet.subjet1_tau2   = (*m_ljet_subjet1_tau2)->at(i);
+        ljet.subjet1_tau3   = (*m_ljet_subjet1_tau3)->at(i);
 
         ljet.target = target;
         ljet.isGood = isGood;
