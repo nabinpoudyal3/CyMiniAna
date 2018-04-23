@@ -74,7 +74,9 @@ class histogrammer {
     std::map<std::string, TH2D*> m_map_histograms2D;
     std::map<std::string, TH3D*> m_map_histograms3D;
 
+    std::vector<std::string> m_containments;
     std::vector<std::string> m_names;
+    std::map<int,std::string> m_mapContainmentRev;
 
     bool m_putOverflowInLastBin;
     bool m_putUnderflowInFirstBin;

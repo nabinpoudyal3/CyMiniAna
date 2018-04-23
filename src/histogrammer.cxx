@@ -33,6 +33,11 @@ histogrammer::histogrammer( configuration& cmaConfig, std::string name ) :
 
     if (m_name.length()>0  && m_name.substr(m_name.length()-1,1).compare("_")!=0)
         m_name = m_name+"_"; // add '_' to end of string, if needed
+
+    m_mapContainmentRev = m_config->mapOfPartonContainmentRev();
+    m_containments.clear();
+    for (const auto& x : m_config->mapOfPartonContainment())
+        m_containments.push_back(x.first);
   }
 
 histogrammer::~histogrammer() {}
@@ -183,6 +188,21 @@ void histogrammer::bookHists( std::string name ){
             init_hist("ljet_subjet_1_charge_Qneg_"+name,1000, -5.0, 5.0);
             init_hist("ljet_subjet_1_bdisc_Qneg_"+name,  100,  0.0, 1.0);
         }
+
+        if (m_config->isTtbar()){
+            for (const auto& c : m_containments){
+                std::string cname = c+"_"+name;
+                init_hist("ljet_pt_"+cname,     2000,  0.0, 2000.0);
+                init_hist("ljet_SDmass_"+cname,  500,  0.0,  500.0);
+                init_hist("ljet_BEST_t_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_w_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_z_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_h_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_j_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_t_j_"+cname,100,  0.0,    1.0);
+                init_hist("ljet_pt_SDmass_"+cname, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
+            } // end loop over containments
+        } // end if isttbar
     }
 
     if (m_useLeptons){
@@ -395,6 +415,19 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                     fill("ljet_subjet_1_bdisc_Qneg_"+name,  ljet.subjet1_bdisc, event_weight);
                 }
             } // end if use leptons
+
+            if (m_config->isTtbar()){
+                std::string cname = m_mapContainmentRev[ std::abs(ljet.containment) ]+"_"+name;
+                fill("ljet_pt_"+cname,     ljet.p4.Pt(),      event_weight);
+                fill("ljet_SDmass_"+cname, ljet.softDropMass, event_weight);
+                fill("ljet_BEST_t_"+name,  ljet.BEST_t,       event_weight);
+                fill("ljet_BEST_w_"+name,  ljet.BEST_w,       event_weight);
+                fill("ljet_BEST_z_"+name,  ljet.BEST_z,       event_weight);
+                fill("ljet_BEST_h_"+name,  ljet.BEST_h,       event_weight);
+                fill("ljet_BEST_j_"+name,  ljet.BEST_j,       event_weight);
+                fill("ljet_BEST_t_j_"+name,ljet.BEST_t / (ljet.BEST_t+ljet.BEST_j), event_weight);
+                fill("ljet_pt_SDmass_"+cname, ljet.p4.Pt(),ljet.softDropMass,event_weight);
+            } // end if isttbar
         } // end loop over ljets
     } // end if use ljets
 
