@@ -1,8 +1,8 @@
 date today
 output_dir eos
-eos_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/SingleMuonG/$TODAY
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/SingleMuonG/$TODAY
 subdir SingleMuonG
-eos_tarball_path /store/user/lpctop/ttbarAC/flatNtuples/CWoLa/
+eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/
 files config/listOfSingleMuonGFiles.txt
 username demarley
 executable run
