@@ -202,6 +202,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
         m_mc_e   = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENenergy");
         m_mc_pdgId  = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENid");
         m_mc_status = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENstatus");
+        m_mc_parent_idx = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENparent_idx");
+        m_mc_child0_idx = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENchild0_idx");
+        m_mc_child1_idx = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENchild1_idx");
         m_mc_isHadTop = new TTreeReaderValue<std::vector<int>>(m_ttree,"GENisHadTop");
       }
 /*
@@ -458,16 +461,16 @@ void Event::initialize_truth(){
     // loop over truth partons
     unsigned int p_idx(0);
     for (unsigned int i=0; i<nPartons; i++){
-        if ((*m_mc_status)->at(i)<60) continue;
 
         Parton parton;
         parton.p4.SetPtEtaPhiE((*m_mc_pt)->at(i),(*m_mc_eta)->at(i),(*m_mc_phi)->at(i),(*m_mc_e)->at(i));
 
-        int pdgId = (*m_mc_pdgId)->at(i);
+        int status = (*m_mc_status)->at(i);
+        int pdgId  = (*m_mc_pdgId)->at(i);
         unsigned int abs_pdgId = std::abs(pdgId);
-        cma::DEBUG("EVENT : pdgId = "+std::to_string(pdgId));
 
-        parton.pdgId = pdgId;
+        parton.pdgId  = pdgId;
+        parton.status = status;
 
         // simple booleans for type
         parton.isTop = ( abs_pdgId==6 );
@@ -490,12 +493,20 @@ void Event::initialize_truth(){
         parton.top_index  = -1;                       // index in truth_tops vector
         parton.containment = 0;                       // value for containment calculation
 
+        parton.parent_idx = (*m_mc_parent_idx)->at(i);
+        parton.child0_idx = (*m_mc_child0_idx)->at(i);
+        parton.child1_idx = (*m_mc_child1_idx)->at(i);
+
+        // skip replicated top/W in truth record
+        if (parton.isTop && parton.status<60) continue;
+        if (parton.isW && (parton.child0_idx<0 || parton.child1_idx<0)) continue;
+
         // build truth top structs
         // in truth parton record, the top should arrive before its children
         TruthTop top;
 
         if (parton.isTop){
-            cma::DEBUG("EVENT : is top "+std::to_string((*m_mc_isHadTop)->size()));
+            cma::DEBUG("EVENT : is top ");
             top.Wdecays.clear();    // for storing W daughters
             top.daughters.clear();  // for storing non-W/bottom daughters
 
@@ -507,9 +518,60 @@ void Event::initialize_truth(){
             parton.top_index   = t_idx;
             parton.containment = m_mapOfContainment.at("FULL");   // only considering truth tops right now, not the decay products
             if (parton.pdgId<0) parton.containment *= -1;         // negative value for anti-tops
+
             m_truth_tops.push_back(top);   // store tops now, add information from children in future iterations
             t_idx++;
         }
+        else if (!parton.isTop && parton.parent_idx>0) {
+            int parent_pdgid = (*m_mc_pdgId)->at(parton.parent_idx);
+            cma::DEBUG("EVENT : it's not a top, it's a "+std::to_string(pdgId)+"; parent idx = "+std::to_string(parton.parent_idx)+"; parent pdgid = "+std::to_string(parent_pdgid));
+
+            // check if W is decaying to itself
+            if (std::abs(parent_pdgid) == 24 && parent_pdgid == parton.pdgId) {// look at grandparent
+                int gparent_idx = (*m_mc_parent_idx)->at(parton.parent_idx);
+                parent_pdgid = (*m_mc_pdgId)->at(gparent_idx);
+            }
+            else if (parent_pdgid==parton.pdgId) continue;    // other particles self-decaying, just skip
+
+            // get the parent from the list of partons
+            Parton parent;
+            int top_index(-1);
+            for (const auto& t : m_truth_partons){
+                if (t.pdgId==parent_pdgid) {
+                    parent    = t;
+                    top_index = t.top_index;
+                    break;
+                }
+            }
+            if (top_index<0) continue;    // weird element in truth record, just skip it
+            parton.top_index = top_index;
+            cma::DEBUG("EVENT : Top index = "+std::to_string(top_index));
+
+            // Parent is Top (W or b)
+            if (parent.isTop){
+                top = m_truth_tops.at(parent.top_index);
+                if (parton.isW) top.W = parton.index;
+                else if (parton.isBottom) {
+                    top.bottom = parton.index;
+                    parton.containment = m_mapOfContainment.at("BONLY");
+                    if (top.isAntiTop) parton.containment*=-1;
+                }
+                else top.daughters.push_back( parton.index );        // non-W/bottom daughter
+                m_truth_tops[parent.top_index] = top;                // update entry
+            }
+            // Parent is W
+            else if (parent.isW){
+                top = m_truth_tops.at(top_index);
+                top.Wdecays.push_back(parton.index);
+                top.isHadronic = (parton.isQuark);
+                top.isLeptonic = (parton.isLepton);
+
+                parton.containment = m_mapOfContainment.at("QONLY");
+                if (top.isAntiTop) parton.containment*=-1;
+
+                m_truth_tops[top_index] = top;      // update entry
+            }
+        } // end else if not top
 
         // store for later access
         m_truth_partons.push_back( parton );
@@ -630,9 +692,8 @@ void Event::initialize_ljets(){
         // Truth-matching to jet
         ljet.truth_partons.clear();
         if (m_useTruth && m_config->isTtbar()) {
-            cma::DEBUG("EVENT : Truth match AK8 subjets");  // match subjets (and then the AK8 jet) to truth tops
+            cma::DEBUG("EVENT : Truth match AK8");          // match subjets (and then the AK8 jet) to truth tops
 
-            // First AK8 subjet
             m_truthMatchingTool->matchJetToTruthTop(ljet);  // match to partons
 
             cma::DEBUG("EVENT : ++ Ljet had top = "+std::to_string(ljet.isHadTop)+" for truth top "+std::to_string(ljet.matchId));

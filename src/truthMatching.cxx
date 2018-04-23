@@ -50,23 +50,22 @@ void truthMatching::matchJetToTruthTop(Jet& jet){
     jet.containment = 0;         // initialize containment
     jet.truth_partons.clear();
 
-    cma::DEBUG("TRUTHMATCHING : Truth matching tops to jet "+std::to_string(m_truth_tops.size()));
+    cma::DEBUG("TRUTHMATCHING : Truth matching tops to jet: n truth tops = "+std::to_string(m_truth_tops.size()));
     for (unsigned int t_idx=0, size=m_truth_tops.size(); t_idx<size; t_idx++){
-        cma::DEBUG("TRUTHMATCHING : Truth matching top to jet "+std::to_string(t_idx));
+        cma::DEBUG("TRUTHMATCHING : Truth matching top "+std::to_string(t_idx)+" to jet");
         auto truthtop = m_truth_tops.at(t_idx);
         if (!truthtop.isHadronic) continue;         // only want hadronically-decaying tops
 
-        Parton top = m_truth_partons.at( truthtop.Top );
-        parton_match(top,jet,0.6);
-/*
+//        Parton top = m_truth_partons.at( truthtop.Top );
+//        parton_match(top,jet,0.6);
+
         Parton bottomQ = m_truth_partons.at( truthtop.bottom );
         Parton wdecay1 = m_truth_partons.at( truthtop.Wdecays.at(0) );
         Parton wdecay2 = m_truth_partons.at( truthtop.Wdecays.at(1) );
 
-        parton_match(bottomQ,jet);
-        parton_match(wdecay1,jet);
-        parton_match(wdecay2,jet);
-*/
+        parton_match(bottomQ,jet,0.8);
+        parton_match(wdecay1,jet,0.8);
+        parton_match(wdecay2,jet,0.8);
 
         // if the jet is matched to a truth top, exit
         if (jet.containment!=0){

@@ -21,10 +21,13 @@ struct CmaBase {
 // Truth information
 struct Parton : CmaBase {
     int pdgId;
+    int status;
     int index;       // index in vector of truth partons
     int decayIdx;    // index in truth record
     int parent_ref;  // index in truth vector of parent
     int parent_idx;  // index in truth record of parent
+    int child0_idx;  // index in truth record of child0
+    int child1_idx;  // index in truth record of child1
     int containment;
     int top_index;   // index of parton in the truth_top vector
 

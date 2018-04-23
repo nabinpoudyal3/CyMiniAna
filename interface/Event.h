@@ -378,9 +378,9 @@ class Event {
     TTreeReaderValue<std::vector<int>> * m_mc_pdgId;
     TTreeReaderValue<std::vector<int>> * m_mc_status;
     TTreeReaderValue<std::vector<int>> * m_mc_isHadTop;
-    TTreeReaderValue<std::vector<int>> * m_mc_parent_index;
-    TTreeReaderValue<std::vector<int>> * m_mc_child0_index;
-    TTreeReaderValue<std::vector<int>> * m_mc_child1_index;
+    TTreeReaderValue<std::vector<int>> * m_mc_parent_idx;
+    TTreeReaderValue<std::vector<int>> * m_mc_child0_idx;
+    TTreeReaderValue<std::vector<int>> * m_mc_child1_idx;
 
     // HLT 
     TTreeReaderValue<unsigned int> * m_HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50;
