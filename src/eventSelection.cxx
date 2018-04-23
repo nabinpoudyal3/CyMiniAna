@@ -295,11 +295,12 @@ bool eventSelection::zeroLeptonSelection(double cutflow_bin){
     bool pass(false);
 
     // cut0 :: triggers
-    bool passTrig(true);
-    for (const auto& trig : m_zeroLeptonTriggers)
-        if (!m_triggers.at(trig)) passTrig = false;
+    unsigned int passTrig(0);
+    for (const auto& trig : m_zeroLeptonTriggers){
+        if (m_triggers.at(trig)) passTrig++;
+    }
 
-    if (!passTrig)
+    if (passTrig<1)
         return false;
     else{
         fillCutflows(cutflow_bin);
