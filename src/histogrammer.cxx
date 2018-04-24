@@ -438,12 +438,12 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                 std::string cname = m_mapContainmentRev[ std::abs(ljet.containment) ]+"_"+name;
                 fill("ljet_pt_"+cname,     ljet.p4.Pt(),      event_weight);
                 fill("ljet_SDmass_"+cname, ljet.softDropMass, event_weight);
-                fill("ljet_BEST_t_"+name,  ljet.BEST_t,       event_weight);
-                fill("ljet_BEST_w_"+name,  ljet.BEST_w,       event_weight);
-                fill("ljet_BEST_z_"+name,  ljet.BEST_z,       event_weight);
-                fill("ljet_BEST_h_"+name,  ljet.BEST_h,       event_weight);
-                fill("ljet_BEST_j_"+name,  ljet.BEST_j,       event_weight);
-                fill("ljet_BEST_t_j_"+name,ljet.BEST_t / (ljet.BEST_t+ljet.BEST_j), event_weight);
+                fill("ljet_BEST_t_"+cname,  ljet.BEST_t,       event_weight);
+                fill("ljet_BEST_w_"+cname,  ljet.BEST_w,       event_weight);
+                fill("ljet_BEST_z_"+cname,  ljet.BEST_z,       event_weight);
+                fill("ljet_BEST_h_"+cname,  ljet.BEST_h,       event_weight);
+                fill("ljet_BEST_j_"+cname,  ljet.BEST_j,       event_weight);
+                fill("ljet_BEST_t_j_"+cname,ljet.BEST_t / (ljet.BEST_t+ljet.BEST_j), event_weight);
                 fill("ljet_pt_SDmass_"+cname, ljet.p4.Pt(),ljet.softDropMass,event_weight);
             } // end if isttbar
         } // end loop over ljets

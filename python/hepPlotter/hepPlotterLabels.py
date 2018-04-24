@@ -138,10 +138,17 @@ def variable_labels():
     variables['nu_pt']   = Variable(binning=hist1d(20, 25.,  600.),  label=r'$\nu$ p'+_T)
 
     variables['HT']      = Variable(binning=hist1d(50,0.,5000.), label=r'H'+_T)
-    variables['mtw']     = Variable(binning=hist1d(12,  0.,  120.),    label=r'$\text{m_T^W}$ [GeV]')
+    variables['mtw']     = Variable(binning=hist1d(12,  0.,  120.),label=r'$\text{m_T^W}$ [GeV]')
     variables['mass_lb'] = Variable(binning=hist1d(32,  0.,  800.),label=r'm$_{\ell\text{b}}$')
     variables['met_met'] = Variable(binning=hist1d(29, 20.,  500.),label=r'E$_{\text{T}}^{\text{miss}}$ [GeV]')
     variables['met_phi'] = Variable(binning=hist1d(29, 20.,  500.),label=r'$\phi^{\text{miss}}$ [GeV]')
+
+    ttbar = r"\text{t}\bar{\text{t}}"
+    variables['mtt']  = Variable(binning=hist1d(25,0,5000),label=r'm$_{%s}$ [GeV]'%ttbar)
+    variables['pttt'] = Variable(binning=hist1d(10,0,500),label=r'p$_{\text{T},%s }$ [GeV]'%ttbar)
+    variables['ytt']  = Variable(binning=hist1d(10,0,5),label=r'y$_{%s}$ [GeV]'%ttbar)
+    variables['beta'] = Variable(binning=hist1d(10,0,1),label=r'$\beta_{z,%s}$ [GeV]'%ttbar)
+    variables['dy']   = Variable(binning=hist1d(12,-3,3),label=r'$\Delta|\text{y}|$')
 
     return variables
 
@@ -210,7 +217,7 @@ class EnergyStamp(Text):
     """Class for writing center of mass energy on plot"""
     def __init__(self):
         Text.__init__(self)
-        self.text = r"$\sqrt{\text{s}}$ = 13 TeV"
+        self.text = r"(13 TeV)"
         self.fontsize = 18
         self.ha = 'left'
         self.va = 'top'

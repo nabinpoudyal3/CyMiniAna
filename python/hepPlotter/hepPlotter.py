@@ -54,7 +54,7 @@ else:
 # the following may not do anything, might be useful in non-CMSSW environments
 os.environ['PATH'] = os.environ['PATH']+':/usr/texbin'+':/Library/TeX/texbin' # LaTeX support
 ## ------------------------------ ##
-
+import Analysis.CyMiniAna.util as util
 import hepPlotterTools as hpt
 import hepPlotterLabels as hpl
 
@@ -468,8 +468,7 @@ class HepPlotter(object):
 
 
         if self.colormap is None:
-            hh,bb = np.histogram2d( x_bin_center,y_bin_center,bins=[binns_x,binns_y],
-                                    weights=h_data )
+            hh,bx,by = np.histogram2d( x_bin_center,y_bin_center,bins=[binns_x,binns_y],weights=h_data )
             self.colormap = hpt.getDataStructure( hh )
 
         # Make the plot
@@ -489,7 +488,7 @@ class HepPlotter(object):
         # Configure the colorbar
         cbar = plt.colorbar()
         if self.logplot:
-            cbar.ax.set_yticklabels( [r"10$^{\text{%s}}$"%(hpt.extract(i.get_text())) for i in cbar.ax.get_yticklabels()] )
+            cbar.ax.set_yticklabels( [r"10$^{\text{%s}}$"%(util.extract(i.get_text())) for i in cbar.ax.get_yticklabels()] )
         else:
             cbar.ax.set_yticklabels( [r"$\text{%s}$"%(i.get_text().replace(r'$','')) for i in cbar.ax.get_yticklabels()],**fontProperties )
         if self.colorbar_title != None:
@@ -649,7 +648,7 @@ class HepPlotter(object):
             return
 
         # Modify tick labels
-        if self.logplot:
+        if self.logplot and self.dimensions==1:
             logTickLabels = [r"10$^{\text{%s}}$"%(int(np.log10(i)) ) for i in axis_ticks]
             if yaxis: axis.set_yticklabels(logTickLabels,fontsize=self.label_size,**fontProperties)
             else:     axis.set_xticklabels(logTickLabels,fontsize=self.label_size,**fontProperties)
@@ -727,6 +726,8 @@ class HepPlotter(object):
             cms_stamp.va    = 'bottom'   # change alignment for 2d labels
             lumi_stamp.ha   = 'right'
             energy_stamp.ha = 'right'
+            lumi_stamp.va   = 'bottom'
+            energy_stamp.va = 'bottom'
 
 
         self.ax1.text(cms_stamp.coords[0],cms_stamp.coords[1],cms_stamp.text,fontsize=cms_stamp.fontsize,

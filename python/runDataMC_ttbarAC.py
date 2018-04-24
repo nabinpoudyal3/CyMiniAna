@@ -34,19 +34,11 @@ parser.add_argument('-o','--outpath', action='store',default='./',
                     help='Directory for storing output plots')
 results = parser.parse_args()
 
+
 listOfHists = results.listOfHists
-outpath = results.outpath
+outpath     = results.outpath
+histograms  = util.file2list(listOfHists)
 
-histograms = util.file2list(listOfHists)
-
-rebins   = {
-"jet_pt":10,\
-"ljet_tau32wta":10,\
-"deltay":50,\
-"beta_ttbar":array('d',[0.,0.3,0.6,1.0]),\
-"pt_ttbar":array('d',[0.0,50.,100,200.]),\
-"m_ttbar":array('d',[0.0,500,800,1000,1200,1500,2000,2500,4000,5000]),
-}
 
 x_labels = hpl.variable_labels()
 
@@ -56,11 +48,6 @@ ttbar_files = util.file2list('config/plots/listOfTtbarFiles.txt')
 data_files  = util.file2list('config/plots/listOfDataFiles.txt')
 
 
-
-# For DataMC plots, one histogram with each sample goes on a single plot
-# so I have this structured to loop over the histograms, then the ROOT files
-# with lots of histograms, it is probably better to open root files only once,
-# load all the histograms, then do the plotting
 for histogram in histograms:
 
     histogramName = histogram.replace("h_","").replace("_eventVars","")
@@ -115,6 +102,7 @@ for histogram in histograms:
             h_hist_stop.SetDirectory(0)
         else: h_hist_stop.Add( h_hist.Clone() )
 
+
     print "     > Opening data from wjets files"
     for file in wjets_files:
         file = file.rstrip("\n")
@@ -126,6 +114,7 @@ for histogram in histograms:
             h_hist_wjets.SetDirectory(0)
         else: h_hist_wjets.Add( h_hist.Clone() )
 
+
     print "     > Opening data from ttbar files"
     for file in ttbar_files:
         file = file.rstrip("\n")
@@ -136,6 +125,7 @@ for histogram in histograms:
             h_hist_ttbar = h_hist.Clone()
             h_hist_ttbar.SetDirectory(0)
         else: h_hist_ttbar.Add( h_hist.Clone() )
+
 
     print "     > Opening data from data files"
     for file in data_files:
