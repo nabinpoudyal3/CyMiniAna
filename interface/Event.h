@@ -33,6 +33,7 @@
 #include "Analysis/CyMiniAna/interface/truthMatching.h"
 #include "Analysis/CyMiniAna/interface/deepLearning.h"
 #include "Analysis/CyMiniAna/interface/ttbarReco.h"
+#include "Analysis/CyMiniAna/interface/neutrinoReco.h"
 
 
 // Event Class
@@ -161,9 +162,11 @@ class Event {
     bool m_DNNinference;
     bool m_DNNtraining;
 
+    // External tools
     ttbarReco* m_ttbarRecoTool;            // tool to perform ttbar reconstruction
     deepLearning* m_deepLearningTool;      // tool to perform deep learning
     truthMatching* m_truthMatchingTool;    // tool to perform truth-matching
+    neutrinoReco* m_neutrinoRecoTool;      // tool to perform neutrino reconsutrction
 
     Ttbar0L m_ttbar0L;
     Ttbar1L m_ttbar1L;

@@ -140,10 +140,10 @@ void configuration::initialize() {
     m_isOneLeptonAnalysis  = cma::str2bool( getConfigOption("isOneLeptonAnalysis") );
     m_isTwoLeptonAnalysis  = cma::str2bool( getConfigOption("isTwoLeptonAnalysis") );
 
-    if ( (m_isZeroLeptonAnalysis + m_isOneLeptonAnalysis + m_isTwoLeptonAnalysis) != 1 ){
-        cma::ERROR("CONFIG : Must choose only one of 'isZeroLeptonAnalysis', 'isOneLeptonAnalysis', 'isTwoLeptonAnalysis'");
-        exit(1);
-    }
+//    if ( (m_isZeroLeptonAnalysis + m_isOneLeptonAnalysis + m_isTwoLeptonAnalysis) != 1 ){
+//        cma::ERROR("CONFIG : Must choose only one of 'isZeroLeptonAnalysis', 'isOneLeptonAnalysis', 'isTwoLeptonAnalysis'");
+//        exit(1);
+//    }
 
 
     // check that b-tag and top-tag WPs are recognized as one of supported values

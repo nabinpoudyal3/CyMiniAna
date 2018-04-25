@@ -237,7 +237,8 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
 
     // Kinematic reconstruction algorithms
-    m_ttbarRecoTool = new ttbarReco(cmaConfig);
+    m_ttbarRecoTool    = new ttbarReco(cmaConfig);
+    m_neutrinoRecoTool = new neutrinoReco(cmaConfig);
 } // end constructor
 
 
@@ -803,13 +804,26 @@ void Event::initialize_neutrinos(){
     }
 
     Neutrino nu1;
+    nu1.p4.SetPtEtaPhiM( m_met.p4.Pt(), 0, m_met.p4.Phi(), 0);   // "dummy" value pz=0
     Neutrino nu2;
+    nu2.p4.SetPtEtaPhiM( m_met.p4.Pt(), 0, m_met.p4.Phi(), 0);   // "dummy" value pz=0
 
+    int nlep = m_leptons.size();
+    if (nlep<1){
+        // not enough leptons to do reconstruction, so just create dummy value
+        m_neutrinos.push_back(nu1);
+        return;
+    }
+
+    m_neutrinoRecoTool->setObjects(m_leptons.at(0),m_met);
     if (m_neutrinoReco){
         // reconstruct neutrinos!
         if (m_isOneLeptonAnalysis){
+            nu1 = m_neutrinoRecoTool->execute();        // tool assumes 1-lepton final state
+            m_neutrinos.push_back(nu1);
         }
         else if (m_isTwoLeptonAnalysis){
+            // part of ttbar reconstruction instead?
         }
     }
     else{

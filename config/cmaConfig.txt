@@ -1,8 +1,8 @@
 useJets true
 useLargeRJets true
 useLeptons true
-useNeutrinos false
-neutrinoReco false
+useNeutrinos true
+neutrinoReco true
 kinematicReco true
 useTruth true
 jet_btag_wkpt M
@@ -26,6 +26,6 @@ DNNinference false
 DNNtraining false
 NEvents -1
 verboseLevel INFO
-isZeroLeptonAnalysis false
+isZeroLeptonAnalysis true
 isOneLeptonAnalysis true
 isTwoLeptonAnalysis false
