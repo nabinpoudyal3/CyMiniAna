@@ -64,6 +64,7 @@ cd ${_CONDOR_SCRATCH_DIR}         # delete working directory
 rm -rf %(cmsRelease)s
 
 echo " > Ended at `date` on `hostname`"
+ls -alh
 exit 0
 """
 

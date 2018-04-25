@@ -6,7 +6,7 @@ eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/
 files config/listOfTtbarFiles.txt
 username demarley
 executable run
-test True
+test False
 submit True
 verbose True
 config config/cmaConfig.txt

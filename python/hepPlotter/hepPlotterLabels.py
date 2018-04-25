@@ -48,6 +48,14 @@ def sample_labels():
     samples['wjets']     = Sample(label=r'W+jets',color='yellow')
     samples['zjets']     = Sample(label=r'Z+jets',color='darkorange')
 
+    samples['ttbar_QONLY'] = Sample(label=ttbar+" (q)",    color='#696969')
+    samples['ttbar_BONLY'] = Sample(label=ttbar+" (b)",    color='#808080')
+    samples['ttbar_BQ']    = Sample(label=ttbar+" (qb)",   color='#79160F')
+    samples['ttbar_W']     = Sample(label=ttbar+" (qq)",   color='#DC682A')
+    samples['ttbar_FULL']  = Sample(label=ttbar+" (qqb)",  color='red')
+    samples['ttbar_OTHER'] = Sample(label=ttbar+" (other)",color='#EC706B')
+    samples['ttbar_NONE']  = Sample(label=ttbar+" (other)",color='#696969')
+
     # Machine learning (CWoLa)
     samples['top'] = Sample(label='Top',color='white')
     samples['antitop'] = Sample(label='Anti-top',color='white')
@@ -89,6 +97,7 @@ def variable_labels():
     variables['ljet_m']     = Variable(binning=hist1d(40,  0.,  400.), label=r'Large-R Jet '+_mass)
     variables['ljet_pt']    = Variable(binning=hist1d(14,200., 1500.), label=r'Large-R Jet p'+_T)
     variables['ljet_BEST_t']= Variable(binning=hist1d(10,  0.,   1.0), label=r'BEST(top)')
+    variables['ljet_BEST_t_j']= Variable(binning=hist1d(10,  0.,   1.0), label=r'BEST(top/(top+jet))')
     variables['ljet_BEST_j']= Variable(binning=hist1d(10,  0.,   1.0), label=r'BEST(jet)')
     variables['ljet_tau1']  = Variable(binning=hist1d(10,  0.,   1.0), label=r'$\tau_{\text{1}}$')
     variables['ljet_tau2']  = Variable(binning=hist1d(10,  0.,   1.0), label=r'$\tau_{\text{2}}$')
@@ -96,6 +105,7 @@ def variable_labels():
     variables['ljet_tau3']  = Variable(binning=hist1d(10,  0.,   1.0), label=r'$\tau_{\text{3}}$')
     variables['ljet_tau32'] = Variable(binning=hist1d(11,  0.,   1.1), label=r'$\tau_{\text{32}}$')
     variables['ljet_softDropMass'] = Variable(binning=hist1d(40,0.,400.), label=r'Large-R Jet '+_mass)
+    variables['ljet_SDmass'] = Variable(binning=hist1d(40,0.,400.), label=r'Large-R Jet '+_mass)
     variables['ljet_charge'] = Variable(binning=hist1d(80,  -5.,   5.), label=r'Large-R Jet Charge')
 
     for i in range(16):
@@ -128,6 +138,8 @@ def variable_labels():
     variables['jet_pt']  =   Variable(binning=hist1d(10,25., 500.),  label=r'Small-R Jet p'+_T)
     variables['jet_eta'] =   Variable(binning=hist1d(10,-2.5,  2.5), label=r'Small-R Jet '+_eta)
     variables['btags_n'] =   Variable(binning=hist1d(4, -0.5,  3.5), label=r'Number of b-tags')
+    variables['btags_n'] =   Variable(binning=hist1d(4, -0.5,  3.5), label=r'Number of b-tags')
+    variables['n_btags'] =   Variable(binning=hist1d(6, -0.5,  5.5), label=r'Number of b-tags')
     variables['jet_bdisc'] = Variable(binning=hist1d(10, 0.,   1.),  label=r'Small-R Jet b-disc.')
 
     variables['lep_eta'] = Variable(binning=hist1d(10,-2.5,   2.5),label=r'Lepton '+_eta)
@@ -219,8 +231,8 @@ class EnergyStamp(Text):
         Text.__init__(self)
         self.text = r"(13 TeV)"
         self.fontsize = 18
-        self.ha = 'left'
-        self.va = 'top'
+        self.ha = 'right'
+        self.va = 'bottom'
 
 class LumiStamp(Text):
     """Class for writing luminosity on plot"""
@@ -228,8 +240,8 @@ class LumiStamp(Text):
         Text.__init__(self)
         self.text = r"%s fb$^{\text{-1}}$"%(lumi)
         self.fontsize = 18
-        self.ha = 'left'
-        self.va = 'top'
+        self.ha = 'right'
+        self.va = 'bottom'
 
 class CMSStamp(Text):
     """Class for writing official CMS name & plot type (Simulation, Internal, etc.) on plot"""

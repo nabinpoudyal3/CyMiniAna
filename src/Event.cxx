@@ -403,11 +403,11 @@ void Event::ttbarReconstruction(){
         m_ttbarRecoTool->execute(m_ljets);
         m_ttbar0L = m_ttbarRecoTool->ttbar0L();
     }
-    else if (m_isOneLeptonAnalysis){
+    if (m_isOneLeptonAnalysis){
         m_ttbarRecoTool->execute(m_leptons,m_jets,m_ljets);
         m_ttbar1L = m_ttbarRecoTool->ttbar1L();
     }
-    else if (m_isTwoLeptonAnalysis){
+    if (m_isTwoLeptonAnalysis){
         m_ttbarRecoTool->execute(m_electrons,m_muons,m_jets);
         m_ttbar2L = m_ttbarRecoTool->ttbar2L();
     }

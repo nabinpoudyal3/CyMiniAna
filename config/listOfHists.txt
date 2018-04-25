@@ -1,1 +1,4 @@
-h_jet_pt_eventVars
+h_n_btags_{0}
+h_ljet_SDmass_{0}
+h_ljet_BEST_t_{0}
+h_ljet_BEST_t_j_{0}
