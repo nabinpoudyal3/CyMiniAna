@@ -233,6 +233,7 @@ void histogrammer::bookHists( std::string name ){
     init_hist("met_met_"+name, 500,  0.0,  500);
     init_hist("met_phi_"+name, 6.4, -3.2,  3.2);
     init_hist("ht_"+name,     5000,  0.0, 5000);
+    init_hist("mtw_"+name,     500,  0.0,  500);
 
     //init_hist("dnn_"+name,  100, 0.0,   1.);
 
@@ -342,8 +343,9 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     // physics information
     std::vector<Jet> jets = event.jets();
     std::vector<Ljet> ljets = event.ljets();
-    std::vector<Muon> muons = event.muons();
-    std::vector<Electron> electrons = event.electrons();
+    std::vector<Lepton> leptons = event.leptons();
+    //std::vector<Muon> muons = event.muons();
+    //std::vector<Electron> electrons = event.electrons();
     std::vector<Neutrino> neutrinos = event.neutrinos();
     MET met = event.met();
 
@@ -367,6 +369,7 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
 
 
     if (m_useLjets){
+        cma::DEBUG("HISTOGRAMMER : Fill large-R jets");
         fill("n_ljets_"+name, ljets.size(), event_weight );
 
         for (const auto& ljet : ljets){
@@ -413,10 +416,9 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
             fill("ljet_pt_SDmass_"+name,ljet.p4.Pt(), ljet.softDropMass, event_weight);
 
             int charge(-999);
-            if (m_useLeptons) {
+            if (m_useLeptons && leptons.size()>0) {
                 // only interested in these plots for lepton+jets channel (1 lepton reconstructed)
-                if (electrons.size()>0)  charge = electrons.at(0).charge;
-                else if (muons.size()>0) charge = muons.at(0).charge;
+                charge = leptons.at(0).charge;
 
                 if (charge>0) {
                     fill("ljet_charge_Qpos_"+name, ljet.charge, event_weight);
@@ -451,22 +453,21 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
 
     if (m_useLeptons){
         cma::DEBUG("HISTOGRAMMER : Fill leptons");
-        for (const auto& el : electrons){
-            if (!el.isGood) continue;
-            fill("el_pt_"+name,  el.p4.Pt(),  event_weight);
-            fill("el_eta_"+name, el.p4.Eta(), event_weight);
-            fill("el_phi_"+name, el.p4.Phi(), event_weight);
-            fill("el_charge_"+name, el.charge, event_weight);
-        }
-
-        for (const auto& mu : muons){
-            if (!mu.isGood) continue;
-            fill("mu_pt_"+name,  mu.p4.Pt(),  event_weight);
-            fill("mu_eta_"+name, mu.p4.Eta(), event_weight);
-            fill("mu_phi_"+name, mu.p4.Phi(), event_weight);
-            fill("mu_charge_"+name, mu.charge, event_weight);
-        }
-    }
+        for (const auto& lep : leptons){
+            if (lep.isElectron){
+                fill("el_pt_"+name,  lep.p4.Pt(),  event_weight);
+                fill("el_eta_"+name, lep.p4.Eta(), event_weight);
+                fill("el_phi_"+name, lep.p4.Phi(), event_weight);
+                fill("el_charge_"+name, lep.charge, event_weight);
+            }
+            else if (lep.isMuon){
+                fill("mu_pt_"+name,  lep.p4.Pt(),  event_weight);
+                fill("mu_eta_"+name, lep.p4.Eta(), event_weight);
+                fill("mu_phi_"+name, lep.p4.Phi(), event_weight);
+                fill("mu_charge_"+name, lep.charge, event_weight);
+            }
+        } // end loop over leptons
+    } // end if use leptons
 
     if (m_useNeutrinos){
         cma::DEBUG("HISTOGRAMMER : Fill neutrinos");
@@ -482,6 +483,7 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     fill("met_met_"+name, met.p4.Pt(),  event_weight);
     fill("met_phi_"+name, met.p4.Phi(), event_weight);
     fill("ht_"+name,      event.HT(),   event_weight);
+    fill("mtw_"+name,     met.mtw,      event_weight);
 
 /*
     // DNN

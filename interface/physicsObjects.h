@@ -164,6 +164,7 @@ struct Neutrino : CmaBase{
 
 struct MET : CmaBase{
     // extra MET attributs
+    float mtw;   // transverse mass of W
 };
 
 
