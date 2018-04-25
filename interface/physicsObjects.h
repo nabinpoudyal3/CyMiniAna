@@ -21,10 +21,13 @@ struct CmaBase {
 // Truth information
 struct Parton : CmaBase {
     int pdgId;
+    int status;
     int index;       // index in vector of truth partons
     int decayIdx;    // index in truth record
     int parent_ref;  // index in truth vector of parent
     int parent_idx;  // index in truth record of parent
+    int child0_idx;  // index in truth record of child0
+    int child1_idx;  // index in truth record of child1
     int containment;
     int top_index;   // index of parton in the truth_top vector
 
@@ -104,10 +107,16 @@ struct Ljet : Jet{
     float subjet0_bdisc;
     float subjet0_mass;
     float subjet0_pt;
+    float subjet0_tau1;
+    float subjet0_tau2;
+    float subjet0_tau3;
     float subjet1_charge;
     float subjet1_bdisc;
     float subjet1_mass;
     float subjet1_pt;
+    float subjet1_tau1;
+    float subjet1_tau2;
+    float subjet1_tau3;
 
     int target;
     std::map<std::string, double> features;  // store features in map to easily access later

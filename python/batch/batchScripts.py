@@ -22,11 +22,14 @@ xrdcp -s root://cmseos.fnal.gov/%(eos_path_to_tarball)s/%(cmsRelease)s.tgz .
 tar -xf %(cmsRelease)s.tgz
 rm %(cmsRelease)s.tgz
 
-## copy transferred data
-if (! -d %(cmsRelease)s/src/Analysis/CyMiniAna/batch/ ) then
-    mkdir %(cmsRelease)s/src/Analysis/CyMiniAna/batch/
+## copy transferred data in batch directory (only need 3 files)
+if (! -d %(cmsRelease)s/src/Analysis/CyMiniAna/%(unique_id_batch_path)s/ ) then
+    mkdir -p %(cmsRelease)s/src/Analysis/CyMiniAna/%(unique_id_batch_path)s/
 endif
-mv batch/* %(cmsRelease)s/src/Analysis/CyMiniAna/batch/
+
+mv cmaConfig.txt %(cmsRelease)s/src/Analysis/CyMiniAna/%(unique_id_batch_path)s/
+mv listOfFiles.txt %(cmsRelease)s/src/Analysis/CyMiniAna/%(unique_id_batch_path)s/
+mv run_condor.sh %(cmsRelease)s/src/Analysis/CyMiniAna/%(unique_id_batch_path)s/
 
 ## Setup CMSSW environment
 setenv SCRAM_ARCH slc6_amd64_gcc530
@@ -61,6 +64,7 @@ cd ${_CONDOR_SCRATCH_DIR}         # delete working directory
 rm -rf %(cmsRelease)s
 
 echo " > Ended at `date` on `hostname`"
+ls -alh
 exit 0
 """
 
@@ -77,7 +81,7 @@ Executable = %(condorExec)s
 
 Should_Transfer_Files = YES
 WhenToTransferOutput  = ON_EXIT
-Transfer_Input_Files  = %(baseDir)s/batch
+Transfer_Input_Files  = %(unique_id_batch_path)s/cmaConfig.txt,%(unique_id_batch_path)s/listOfFiles.txt,%(unique_id_batch_path)s/run_condor.sh
 notify_user   = ${LOGNAME}@FNAL.GOV
 x509userproxy = $ENV(X509_USER_PROXY)
 

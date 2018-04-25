@@ -33,6 +33,11 @@ histogrammer::histogrammer( configuration& cmaConfig, std::string name ) :
 
     if (m_name.length()>0  && m_name.substr(m_name.length()-1,1).compare("_")!=0)
         m_name = m_name+"_"; // add '_' to end of string, if needed
+
+    m_mapContainmentRev = m_config->mapOfPartonContainmentRev();
+    m_containments.clear();
+    for (const auto& x : m_config->mapOfPartonContainment())
+        m_containments.push_back(x.first);
   }
 
 histogrammer::~histogrammer() {}
@@ -163,7 +168,13 @@ void histogrammer::bookHists( std::string name ){
         init_hist("ljet_subjet1_bdisc_"+name, 100, 0.0, 1.0);
         init_hist("ljet_subjet0_charge_"+name,1000, -5.0, 5.0);
         init_hist("ljet_subjet1_charge_"+name,1000, -5.0, 5.0);
+        init_hist("ljet_subjet0_tau21_"+name,100, 0.0, 1.0);
+        init_hist("ljet_subjet1_tau21_"+name,100, 0.0, 1.0);
+        init_hist("ljet_subjet0_tau32_"+name,100, 0.0, 1.0);
+        init_hist("ljet_subjet1_tau32_"+name,100, 0.0, 1.0);
 
+        init_hist("ljet_subjet0_subjet1_tau21_"+name,100, 0.0,1.0, 100,0.0,1.0);  // subjet0 tau21 vs subjet1 tau21
+        init_hist("ljet_subjet0_subjet1_tau32_"+name,100, 0.0,1.0, 100,0.0,1.0);  // subjet0 tau32 vs subjet1 tau32
         init_hist("ljet_subjet0_charge_bdisc_"+name,1000,-5.0,5.0, 100,0.0,1.0);  // charge vs bdisc (charge=x-axis)
         init_hist("ljet_subjet1_charge_bdisc_"+name,1000,-5.0,5.0, 100,0.0,1.0);  // charge vs bdisc (charge=x-axis)
 
@@ -183,6 +194,21 @@ void histogrammer::bookHists( std::string name ){
             init_hist("ljet_subjet_1_charge_Qneg_"+name,1000, -5.0, 5.0);
             init_hist("ljet_subjet_1_bdisc_Qneg_"+name,  100,  0.0, 1.0);
         }
+
+        if (m_config->isTtbar()){
+            for (const auto& c : m_containments){
+                std::string cname = c+"_"+name;
+                init_hist("ljet_pt_"+cname,     2000,  0.0, 2000.0);
+                init_hist("ljet_SDmass_"+cname,  500,  0.0,  500.0);
+                init_hist("ljet_BEST_t_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_w_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_z_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_h_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_j_"+cname,  100,  0.0,    1.0);
+                init_hist("ljet_BEST_t_j_"+cname,100,  0.0,    1.0);
+                init_hist("ljet_pt_SDmass_"+cname, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
+            } // end loop over containments
+        } // end if isttbar
     }
 
     if (m_useLeptons){
@@ -368,6 +394,18 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
             fill("ljet_subjet0_charge_"+name,ljet.subjet0_charge,event_weight);
             fill("ljet_subjet1_charge_"+name,ljet.subjet1_charge,event_weight);
 
+            float subjet0_tau21 = ljet.subjet0_tau2/ljet.subjet0_tau1;
+            float subjet0_tau32 = ljet.subjet0_tau3/ljet.subjet0_tau2;
+            float subjet1_tau21 = ljet.subjet1_tau2/ljet.subjet1_tau1;
+            float subjet1_tau32 = ljet.subjet1_tau3/ljet.subjet1_tau2;
+            fill("ljet_subjet0_tau21_"+name, subjet0_tau21, event_weight);
+            fill("ljet_subjet1_tau21_"+name, subjet1_tau21, event_weight);
+            fill("ljet_subjet0_tau32_"+name, subjet0_tau32, event_weight);
+            fill("ljet_subjet1_tau32_"+name, subjet1_tau32, event_weight);
+
+            fill("ljet_subjet0_subjet1_tau21_"+name,subjet0_tau21,subjet1_tau21,event_weight);  // subjet0 tau21 vs subjet1 tau21
+            fill("ljet_subjet0_subjet1_tau32_"+name,subjet0_tau32,subjet1_tau32,event_weight);  // subjet0 tau32 vs subjet1 tau32
+
             fill("ljet_subjet0_charge_bdisc_"+name, ljet.subjet0_charge, ljet.subjet0_bdisc, event_weight);
             fill("ljet_subjet1_charge_bdisc_"+name, ljet.subjet1_charge, ljet.subjet1_bdisc, event_weight);
 
@@ -395,6 +433,19 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                     fill("ljet_subjet_1_bdisc_Qneg_"+name,  ljet.subjet1_bdisc, event_weight);
                 }
             } // end if use leptons
+
+            if (m_config->isTtbar()){
+                std::string cname = m_mapContainmentRev[ std::abs(ljet.containment) ]+"_"+name;
+                fill("ljet_pt_"+cname,     ljet.p4.Pt(),      event_weight);
+                fill("ljet_SDmass_"+cname, ljet.softDropMass, event_weight);
+                fill("ljet_BEST_t_"+cname,  ljet.BEST_t,       event_weight);
+                fill("ljet_BEST_w_"+cname,  ljet.BEST_w,       event_weight);
+                fill("ljet_BEST_z_"+cname,  ljet.BEST_z,       event_weight);
+                fill("ljet_BEST_h_"+cname,  ljet.BEST_h,       event_weight);
+                fill("ljet_BEST_j_"+cname,  ljet.BEST_j,       event_weight);
+                fill("ljet_BEST_t_j_"+cname,ljet.BEST_t / (ljet.BEST_t+ljet.BEST_j), event_weight);
+                fill("ljet_pt_SDmass_"+cname, ljet.p4.Pt(),ljet.softDropMass,event_weight);
+            } // end if isttbar
         } // end loop over ljets
     } // end if use ljets
 

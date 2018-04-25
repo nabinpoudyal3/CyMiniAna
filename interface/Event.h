@@ -307,11 +307,17 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_deepCSV;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_pt;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_mass;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_tau1;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_tau2;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_tau3;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_charge;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_bdisc;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_deepCSV;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_pt;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_mass;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_tau1;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_tau2;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_tau3;
     TTreeReaderValue<std::vector<float>> * m_ljet_uncorrPt;
     TTreeReaderValue<std::vector<float>> * m_ljet_uncorrE;
 
@@ -372,9 +378,9 @@ class Event {
     TTreeReaderValue<std::vector<int>> * m_mc_pdgId;
     TTreeReaderValue<std::vector<int>> * m_mc_status;
     TTreeReaderValue<std::vector<int>> * m_mc_isHadTop;
-    TTreeReaderValue<std::vector<int>> * m_mc_parent_index;
-    TTreeReaderValue<std::vector<int>> * m_mc_child0_index;
-    TTreeReaderValue<std::vector<int>> * m_mc_child1_index;
+    TTreeReaderValue<std::vector<int>> * m_mc_parent_idx;
+    TTreeReaderValue<std::vector<int>> * m_mc_child0_idx;
+    TTreeReaderValue<std::vector<int>> * m_mc_child1_idx;
 
     // HLT 
     TTreeReaderValue<unsigned int> * m_HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50;

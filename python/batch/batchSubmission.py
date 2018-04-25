@@ -111,7 +111,7 @@ class BatchSubmission(object):
         condor_executable  = bs.condor_bash_template() % {'outputDir':self.output_dir,
             'executable':self.executable,'eos_path':self.eos_path,'cmsRelease':self.cmsRelease,
             'cfg_filename':self.cfg_filename,'executable':self.executable,'eos_path_to_tarball':self.eos_tarball_path,
-            'username':self.username,'local_output_path':self.local_output_path}
+            'username':self.username,'local_output_path':self.local_output_path,'unique_id_batch_path':self.unique_id_batch_path}
 
         # Write the condor submission script
         template = bs.condor_script_template() % {'baseDir':self.baseDir,

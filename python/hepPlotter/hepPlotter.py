@@ -54,7 +54,7 @@ else:
 # the following may not do anything, might be useful in non-CMSSW environments
 os.environ['PATH'] = os.environ['PATH']+':/usr/texbin'+':/Library/TeX/texbin' # LaTeX support
 ## ------------------------------ ##
-
+import Analysis.CyMiniAna.util as util
 import hepPlotterTools as hpt
 import hepPlotterLabels as hpl
 
@@ -468,8 +468,7 @@ class HepPlotter(object):
 
 
         if self.colormap is None:
-            hh,bb = np.histogram2d( x_bin_center,y_bin_center,bins=[binns_x,binns_y],
-                                    weights=h_data )
+            hh,bx,by = np.histogram2d( x_bin_center,y_bin_center,bins=[binns_x,binns_y],weights=h_data )
             self.colormap = hpt.getDataStructure( hh )
 
         # Make the plot
@@ -489,7 +488,7 @@ class HepPlotter(object):
         # Configure the colorbar
         cbar = plt.colorbar()
         if self.logplot:
-            cbar.ax.set_yticklabels( [r"10$^{\text{%s}}$"%(hpt.extract(i.get_text())) for i in cbar.ax.get_yticklabels()] )
+            cbar.ax.set_yticklabels( [r"10$^{\text{%s}}$"%(util.extract(i.get_text())) for i in cbar.ax.get_yticklabels()] )
         else:
             cbar.ax.set_yticklabels( [r"$\text{%s}$"%(i.get_text().replace(r'$','')) for i in cbar.ax.get_yticklabels()],**fontProperties )
         if self.colorbar_title != None:
@@ -649,8 +648,8 @@ class HepPlotter(object):
             return
 
         # Modify tick labels
-        if self.logplot:
-            logTickLabels = [r"10$^{\text{%s}}$"%(int(np.log10(i)) ) for i in axis_ticks]
+        if self.logplot and self.dimensions==1:
+            logTickLabels = [r"10$^{\text{%s}}$"%(int(np.log10(i)) ) if i>0 else '' for i in axis_ticks]
             if yaxis: axis.set_yticklabels(logTickLabels,fontsize=self.label_size,**fontProperties)
             else:     axis.set_xticklabels(logTickLabels,fontsize=self.label_size,**fontProperties)
         else:
@@ -715,24 +714,20 @@ class HepPlotter(object):
         energy_stamp = hpl.EnergyStamp()
 
         cms_stamp.coords    = [text['x'][0], text['y'][0]]
-        lumi_stamp.coords   = [text['x'][1], text['y'][1]]  # not used right now, always drawn with the energy
-        energy_stamp.coords = [text['x'][1], text['y'][1]]
+        lumi_stamp.coords   = [0.99,1.0]  # not used right now, always drawn with the energy
+        energy_stamp.coords = [0.99,1.0]
 
         # modify defaults
         if self.CMSlabel == 'top right':
             cms_stamp.ha    = 'right'    # move text labels appropriately
-            lumi_stamp.ha   = 'right'
-            energy_stamp.ha = 'right'
         if self.dimensions==2:
             cms_stamp.va    = 'bottom'   # change alignment for 2d labels
-            lumi_stamp.ha   = 'right'
-            energy_stamp.ha = 'right'
 
 
         self.ax1.text(cms_stamp.coords[0],cms_stamp.coords[1],cms_stamp.text,fontsize=cms_stamp.fontsize,
                       ha=cms_stamp.ha,va=cms_stamp.va,transform=self.ax1.transAxes)
 
-        energy_lumi_text = energy_stamp.text+", "+lumi_stamp.text if self.plotLUMI else energy_stamp.text
+        energy_lumi_text = "{0} {1}".format(lumi_stamp.text,energy_stamp.text) if self.plotLUMI else energy_stamp.text
         self.ax1.text(energy_stamp.coords[0],energy_stamp.coords[1],energy_lumi_text,
                       fontsize=energy_stamp.fontsize,ha=energy_stamp.ha,va=energy_stamp.va,
                       color=energy_stamp.color,transform=self.ax1.transAxes)
