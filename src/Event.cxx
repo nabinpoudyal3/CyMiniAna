@@ -888,6 +888,16 @@ void Event::initialize_kinematics(){
             m_ST += lep.p4.Pt(); 
     }
 
+    // transverse mass of the W (only relevant for 1-lepton)
+    float mtw(0.0);
+
+    if (m_leptons.size()>0){
+        Lepton lep = m_leptons.at(0);
+        float dphi = m_met.p4.Phi() - lep.p4.Phi();
+        mtw = sqrt( 2 * lep.p4.Pt() * m_met.p4.Pt() * (1-cos(dphi)) );
+    }
+    m_met.mtw = mtw;
+
     return;
 }
 
