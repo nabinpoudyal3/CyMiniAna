@@ -1,6 +1,6 @@
 """
 Created:         17 April 2018
-Last Updated:    17 April 2018
+Last Updated:    26 April 2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -43,52 +43,8 @@ ttbar = uproot.open(config['ttbar'])  # truth delta|y| distribution & response m
 objsyst = config['systematics']       # detector-level systematics for signal (ttbar) and backgrounds
 
 
-## FBU
-pyfbu = PyFBU()
+unf.runUnfolding()
 
-pyfbu.nMCMC      = 1000000    # Sampling
-pyfbu.monitoring = False      # Monitoring
-pyfbu.nThin      = 1
-
-truth = ttbar['truth_deltay']
-pyfbu.lower      = [t/5 for t in truth]      # lower bound of hyperbox for sampling
-pyfbu.upper      = [t*2 for t in truth]      # upper bound of hyperbox for sampling
-
-pyfbu.data       = uproot.open(data)[hist]
-pyfbu.response   = ttbar['h_resmat']
-pyfbu.background = uproot.open(bckg)[hist]
-
-## Normalization uncertainties
-## > pyfbu.backgroundsyst = {'bckg':0.} # stat only
-pyfbu.backgroundsyst = {
-    'qcd':0.5,
-}
-
-## load systematics
-exp_systs = uproot.open(objsyst)
-systematics_dict = #
-bckgkeys = pyfbu.backgroundsyst.keys()
-
-signalsystdict = dict([(str(k),v) for k,v in systematics_dict['signal'].iteritems() if k in listOfSystematics])
-signalsystdict['LUMI'] = [0. for _ in pyfbu.data]
-
-bckgsystdict   = dict([(str(k),v) for k,v in systematics_dict['background'].iteritems() if k in listOfSystematics])
-bckgsystdict['LUMI'] = dict(zip(bckgkeys,[[0. if (mcStat or 'wjets' in k or 'qcd' in k) else 0.028 for _ in pyfbu.data] for k in bckgkeys]))
-
-pyfbu.objsyst = {'signal':signalsystdict,'background':bckgsystdict}
-
-## Run the algorithm
-pyfbu.run()
-
-
-
-## Save output posteriors
-bckgkeys = pyfbu.backgroundsyst.keys()
-unfbins = pyfbu.trace
-
-np.save(outdir+'unfolded',unfbins)        ## save unfolded result
-for nuis in bckgkeys+listOfSystematics:
-    trace = pyfbu.nuisancestrace[nuis]
-    np.save(outdir+nuis,trace)            ## save posteriors
+unf.save()
 
 ## THE END ##
