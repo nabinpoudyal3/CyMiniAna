@@ -84,6 +84,7 @@ void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, st
        - lepton
        - AK4 near lepton (2D cut)
          > highest pT
+         > Ref: https://github.com/UHH2/UHH2/blob/master/common/src/Utils.cxx#L34
        - AK8 away from lepton
          > Most 'top-like' = highest BEST_t score
     */
@@ -102,19 +103,33 @@ void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, st
     int ak4candidate(-1);
     int ak8candidate(-1);
     if (lep.p4.Pt()>10){
-        // -- Setup AK4 jet (highest pT jet within [0.3,pi/2] of lepton)
+        // -- Setup AK4 jet : 2D Cut
         cma::DEBUG("TTBARRECO : building ttbar with "+std::to_string(jets.size())+" ak4 candidates");
         float ak4_pt(0);
+        TVector3 lep3 = lep.p4.Vect();
 
         for (auto& jet : jets){
-            float dr    = jet.p4.DeltaR(lep.p4);
-            float ptrel = jet.p4.Perp( lep.p4.Vect() );
-            //if (0.3<dr && dr<M_HALF_PI && jet.p4.Pt() > ak4_pt){
-            if ( (dr>0.4 || ptrel>25) && jet.p4.Pt() > ak4_pt){        // 2D cut instead of DeltaR window
-                ak4_pt = jet.p4.Pt();
-                ak4candidate = jet.index;
-            }
-        } // end loop over ak4 candidates
+            TVector3 jet3 = jet.p4.Vect();
+            float jpt   = jet.p4.Pt();
+            float dr    = jet.p4.DeltaR(lep.p4);              // DeltaR( lepton,AK4 )
+            float ptrel = lep3.Cross(jet3).Mag()/jet3.Mag();  // pTrel(  lepton,AK4 )
+
+            // Two possible scenarios -- only consider jets with DeltaR<PI/2:
+            // > jet within (0.4<DeltaR<PI/2)
+            // > jet closer than 0.4 but ptrel>25
+            // Choose highest pT option
+
+            if (dr<M_HALF_PI) { 
+                if (dr<0.4 && ptrel>25 && jpt>ak4_pt){
+                    ak4_pt = jpt;
+                    ak4candidate = jet.index;
+                }
+                else if (dr>0.4 && jpt>ak4_pt){
+                    ak4_pt = jpt;
+                    ak4candidate = jet.index;
+                }
+            } // end possible AK4 candidate
+        } // end loop over ak4 
 
 
         // -- Setup AK8 jet (highest BEST_t jet farther away than pi/2 from lepton)

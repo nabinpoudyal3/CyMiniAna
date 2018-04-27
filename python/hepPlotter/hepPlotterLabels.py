@@ -145,6 +145,13 @@ def variable_labels():
     variables['lep_eta'] = Variable(binning=hist1d(10,-2.5,   2.5),label=r'Lepton '+_eta)
     variables['lep_pt']  = Variable(binning=hist1d(10, 25.,  300.),label=r'Lepton p'+_T)
 
+    variables['mu_pt']  = Variable(binning=hist1d(10, 25.,  300.),label=r'$\mu$ p'+_T)
+    variables['mu_eta'] = Variable(binning=hist1d(10,-2.5,   2.5),label=r'$\mu$ '+_eta)
+    variables['mu_phi']  = Variable(binning=hist1d(10,-2.5,   2.5), label=r'$\mu$ '+_phi)
+    variables['el_pt']  = Variable(binning=hist1d(10, 25.,  300.),label=r'Electron p'+_T)
+    variables['el_eta'] = Variable(binning=hist1d(10,-2.5,   2.5),label=r'Electron '+_eta)
+    variables['el_phi']  = Variable(binning=hist1d(10,-2.5,   2.5), label=r'Electron '+_phi)
+
     variables['nu_phi']  = Variable(binning=hist1d(10,-2.5,   2.5), label=r'$\nu$ '+_phi)
     variables['nu_eta']  = Variable(binning=hist1d(10,-2.5,   2.5), label=r'$\nu$ '+_eta)
     variables['nu_pt']   = Variable(binning=hist1d(20, 25.,  600.),  label=r'$\nu$ p'+_T)

@@ -747,15 +747,16 @@ void Event::initialize_leptons(){
     for (unsigned int i=0; i<nMuons; i++){
         Lepton mu;
         mu.p4.SetPtEtaPhiE( (*m_mu_pt)->at(i),(*m_mu_eta)->at(i),(*m_mu_phi)->at(i),(*m_mu_e)->at(i));
-        bool isMedium = (*m_mu_id_medium)->at(i);
+        bool isMedium   = (*m_mu_id_medium)->at(i);
+        bool isTight    = (*m_mu_id_tight)->at(i);
 
         bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium);
         if (!isGood) continue;
 
         mu.charge = (*m_mu_charge)->at(i);
         mu.loose  = (*m_mu_id_loose)->at(i);
-        mu.medium = isMedium;
-        mu.tight  = (*m_mu_id_tight)->at(i);
+        mu.medium = isMedium; 
+        mu.tight  = isTight; 
         mu.iso    = (*m_mu_iso)->at(i);
         mu.isGood = isGood;
 
@@ -772,7 +773,7 @@ void Event::initialize_leptons(){
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
         bool isTightNoIso = (*m_el_id_tight_noIso)->at(i);
 
-        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.1 && isTightNoIso);
+        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isTightNoIso);
         if (!isGood) continue;
 
         el.charge = (*m_el_charge)->at(i);
