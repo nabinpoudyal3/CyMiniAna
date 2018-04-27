@@ -752,7 +752,7 @@ void Event::initialize_leptons(){
         bool isMediumBF = (*m_mu_id_mediumBF)->at(i);
         bool isTight    = (*m_mu_id_tight)->at(i);
 
-        if (!m_isMC && m_runNumber <= 278808)
+        if (!m_isMC && **m_runNumber <= 278808)
             isMedium = isMediumBF;
 
         bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium);
