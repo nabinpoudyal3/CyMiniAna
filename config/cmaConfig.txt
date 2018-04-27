@@ -14,10 +14,10 @@ output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt
 calcWeightSystematics false
-#selection mujets,ejets,allhad
-#cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt,config/cuts_allhad.txt
-selection mujets
-cutsfile config/cuts_mujets.txt
+selection mujets,ejets,allhad
+cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt,config/cuts_allhad.txt
+#selection mujets
+#cutsfile config/cuts_mujets.txt
 treenames config/treenames.txt
 inputfile config/listOfMCSamples.txt
 #inputfile config/listOfFiles.txt
@@ -26,6 +26,6 @@ DNNinference false
 DNNtraining false
 NEvents -1
 verboseLevel INFO
-isZeroLeptonAnalysis false
+isZeroLeptonAnalysis true
 isOneLeptonAnalysis true
 isTwoLeptonAnalysis false
