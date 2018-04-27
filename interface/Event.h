@@ -278,7 +278,6 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_mu_iso;
     TTreeReaderValue<std::vector<unsigned int>> * m_mu_id_loose;
     TTreeReaderValue<std::vector<unsigned int>> * m_mu_id_medium;
-    TTreeReaderValue<std::vector<unsigned int>> * m_mu_id_mediumBF;
     TTreeReaderValue<std::vector<unsigned int>> * m_mu_id_tight;
 
     // Reconstructed neutrinos

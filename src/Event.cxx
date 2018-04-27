@@ -163,7 +163,6 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_mu_iso = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUcorrIso");
       m_mu_id_loose  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUlooseID");
       m_mu_id_medium = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUmediumID");
-      m_mu_id_mediumBF = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUmediumBFID");
       m_mu_id_tight  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUtightID");
     }
 
@@ -749,11 +748,7 @@ void Event::initialize_leptons(){
         Lepton mu;
         mu.p4.SetPtEtaPhiE( (*m_mu_pt)->at(i),(*m_mu_eta)->at(i),(*m_mu_phi)->at(i),(*m_mu_e)->at(i));
         bool isMedium   = (*m_mu_id_medium)->at(i);
-        bool isMediumBF = (*m_mu_id_mediumBF)->at(i);
         bool isTight    = (*m_mu_id_tight)->at(i);
-
-        if (!m_isMC && **m_runNumber <= 278808)
-            isMedium = isMediumBF;
 
         bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium);
         if (!isGood) continue;
