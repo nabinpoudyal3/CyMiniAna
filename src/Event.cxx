@@ -163,6 +163,7 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_mu_iso = new TTreeReaderValue<std::vector<float>>(m_ttree,"MUcorrIso");
       m_mu_id_loose  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUlooseID");
       m_mu_id_medium = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUmediumID");
+      m_mu_id_mediumBF = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUmediumBFID");
       m_mu_id_tight  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUtightID");
     }
 
