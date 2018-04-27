@@ -105,39 +105,31 @@ void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, st
     if (lep.p4.Pt()>10){
         // -- Setup AK4 jet : 2D Cut
         cma::DEBUG("TTBARRECO : building ttbar with "+std::to_string(jets.size())+" ak4 candidates");
-        std::vector<int> ak4candidates;
         float ak4_pt(0);
-        float drmin(std::numeric_limits<float>::infinity());   // large initial number
         TVector3 lep3 = lep.p4.Vect();
 
         for (auto& jet : jets){
             TVector3 jet3 = jet.p4.Vect();
+            float jpt   = jet.p4.Pt();
+            float dr    = jet.p4.DeltaR(lep.p4);              // DeltaR( lepton,AK4 )
+            float ptrel = lep3.Cross(jet3).Mag()/jet3.Mag();  // pTrel(  lepton,AK4 )
 
-            float dr    = jet.p4.DeltaR(lep.p4);
-            float ptrel = lep3.Cross(jet3).Mag()/jet3.Mag();
-
-            // Two possible candidates:
-            // > jet that is closest to the lepton (DeltaR>0.4)
+            // Two possible scenarios -- only consider jets with DeltaR<PI/2:
+            // > jet within (0.4<DeltaR<PI/2)
             // > jet closer than 0.4 but ptrel>25
             // Choose highest pT option
 
-            if (dr<0.4 && ptrel>25){
-                ak4candidates.push_back(jet.index);
-            }
-            else if (dr>0.4 && dr<drmin){
-                drmin = dr;
-                ak4candidates.push_back(jet.index);
-            }
+            if (dr<M_HALF_PI) { 
+                if (dr<0.4 && ptrel>25 && jpt>ak4_pt){
+                    ak4_pt = jpt;
+                    ak4candidate = jet.index;
+                }
+                else if (dr>0.4 && jpt>ak4_pt){
+                    ak4_pt = jpt;
+                    ak4candidate = jet.index;
+                }
+            } // end possible AK4 candidate
         } // end loop over ak4 
-
-        // from list of possible candidates, choose the one with highest pt
-        for (const auto& ind : ak4candidates){
-            float jpt = jets.at(ind).p4.Pt();
-            if ( jpt > ak4_pt ){
-                ak4_pt = jpt;
-                ak4candidate = ind;
-            }
-        }
 
 
         // -- Setup AK8 jet (highest BEST_t jet farther away than pi/2 from lepton)
