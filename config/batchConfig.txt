@@ -1,9 +1,9 @@
 date today
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/SingleMuonB/$TODAY
-subdir SingleMuonB
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/ttbar-ext/$TODAY
+subdir ttbar-ext
 eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/
-files config/listOfSingleMuonBFiles.txt 
+files config/listOfTtbarExtFiles.txt 
 username demarley
 executable run
 test False

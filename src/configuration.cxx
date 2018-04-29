@@ -276,6 +276,7 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
 
     std::string pd  = *primaryDataset;
     std::size_t pos = pd.find_first_of("/");
+
     if (pos==0){
         // bad name for metadata -- need to use map to get metadata
         // given something like '/ttbar/run2/.../', want 'ttbar'
@@ -293,14 +294,21 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
         // the metadata in the file can probably be trusted
         m_recalculateMetadata = false;
 
-        m_sample.primaryDataset = *primaryDataset;
-        m_sample.XSection = *xsection;
-        m_sample.KFactor  = *kfactor;
-        m_sample.NEvents  = *NEvents;
-        m_sample.sumOfWeights = *sumOfWeights;
-
-        m_primaryDataset = *primaryDataset;
-        m_NTotalEvents   = *NEvents;
+        if (m_mapOfSamples.find(pd)!=m_mapOfSamples.end()){
+            if (m_mapOfSamples.at(pd).XSection!=*xsection){
+                // obtain values from map, not root file (something may have been updated)
+                m_sample = m_mapOfSamples.at(pd);
+            }
+        }
+        else {
+            m_sample.primaryDataset = *primaryDataset;
+            m_sample.XSection = *xsection;
+            m_sample.KFactor  = *kfactor;
+            m_sample.NEvents  = *NEvents;
+            m_sample.sumOfWeights = *sumOfWeights;
+        }
+        m_primaryDataset = m_sample.primaryDataset;
+        m_NTotalEvents   = m_sample.NEvents;
     }
 
     cma::DEBUG("CONFIGURATION : Primary dataset = "+m_primaryDataset);

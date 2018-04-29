@@ -277,6 +277,8 @@ class configuration {
 
     // Primary dataset names for different samples in analysis
     std::map<std::string,std::string> m_mapOfPrimaryDatasets = {
+        {"ttbar","TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"},
+        {"ttbar-ext","TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"},
         {"ttbarGOOD","TT_TuneCUETP8M1_13TeV-powheg-pythia8"},
         {"ttbarGEN","TT_TuneCUETP8M1_13TeV-powheg-pythia8"},
         {"singletop_schan","ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"},
@@ -310,7 +312,7 @@ class configuration {
                                              "qcd_mu_pt0470","qcd_mu_pt0600","qcd_mu_pt0800","qcd_mu_pt1000",
                                              "qcd_el_pt0080","qcd_el_pt0120","qcd_el_pt0170","qcd_el_pt0300",
                                              "qcd_b_pt080","qcd_b_pt170","qcd_b_pt250"};
-    std::vector<std::string> m_ttbarFiles = {"ttbarGOOD","ttbarGEN"};
+    std::vector<std::string> m_ttbarFiles = {"ttbarGOOD","ttbarGEN","ttbar","ttbar-ext"};
     std::vector<std::string> m_wjetsFiles = {"wjets1","wjets2","wjets3","wjets4"};
     std::vector<std::string> m_singleTopFiles = {"singletop_schan","singletop_tWchan_antitop",
                                                  "singletop_tWchan_top","singletop_tchan_antitop",
