@@ -34,6 +34,7 @@ class configuration {
     virtual bool isMC() {return m_isMC;}              // must call "checkFileType(file)" or "isMC(file)" first!
     virtual bool isMC( TFile& file );
     bool isGridFile(){ return m_isGridFile;}
+    bool isExtendedSample(){ return m_isExtendedSample;}
     bool isTtbar(){ return m_isTtbar;}
     bool isQCD(){ return m_isQCD;}
 
@@ -160,6 +161,7 @@ class configuration {
     // type of file(s)
     bool m_isMC;
     bool m_isGridFile;
+    bool m_isExtendedSample;
     bool m_isQCD;
     bool m_isTtbar;
     bool m_isWjets;
@@ -179,9 +181,7 @@ class configuration {
     bool m_neutrinoReco;
 
     // luminosity
-    double m_LUMI      = 36074.56; // 2015+2016 luminosity
-    double m_LUMI_2015 = 3212.96;
-    double m_LUMI_2016 = 32861.6; // OflLumi-13TeV-008
+    double m_LUMI      = 35870;   //36074.56; // 2015+2016 luminosity
 
     // return some values from config file
     std::string m_input_selection;
@@ -277,6 +277,8 @@ class configuration {
 
     // Primary dataset names for different samples in analysis
     std::map<std::string,std::string> m_mapOfPrimaryDatasets = {
+        {"ttbar","TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"},
+        {"ttbar-ext","TT_TuneCUETP8M2T4_13TeV-powheg-pythia8-ext"},
         {"ttbarGOOD","TT_TuneCUETP8M1_13TeV-powheg-pythia8"},
         {"ttbarGEN","TT_TuneCUETP8M1_13TeV-powheg-pythia8"},
         {"singletop_schan","ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"},
@@ -310,7 +312,7 @@ class configuration {
                                              "qcd_mu_pt0470","qcd_mu_pt0600","qcd_mu_pt0800","qcd_mu_pt1000",
                                              "qcd_el_pt0080","qcd_el_pt0120","qcd_el_pt0170","qcd_el_pt0300",
                                              "qcd_b_pt080","qcd_b_pt170","qcd_b_pt250"};
-    std::vector<std::string> m_ttbarFiles = {"ttbarGOOD","ttbarGEN"};
+    std::vector<std::string> m_ttbarFiles = {"ttbarGOOD","ttbarGEN","ttbar","ttbar-ext"};
     std::vector<std::string> m_wjetsFiles = {"wjets1","wjets2","wjets3","wjets4"};
     std::vector<std::string> m_singleTopFiles = {"singletop_schan","singletop_tWchan_antitop",
                                                  "singletop_tWchan_top","singletop_tchan_antitop",
@@ -356,6 +358,7 @@ class configuration {
              {"makeEfficiencies",      "false"},
              {"NEvents",               "-1"},
              {"firstEvent",            "0"},
+             {"isExtendedSample",      "false"},
              {"input_selection",       "grid"},
              {"selection",             "example"},
              {"output_path",           "./"},

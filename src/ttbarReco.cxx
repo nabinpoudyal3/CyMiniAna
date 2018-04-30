@@ -112,7 +112,7 @@ void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, st
             TVector3 jet3 = jet.p4.Vect();
             float jpt   = jet.p4.Pt();
             float dr    = jet.p4.DeltaR(lep.p4);              // DeltaR( lepton,AK4 )
-            float ptrel = lep3.Cross(jet3).Mag()/jet3.Mag();  // pTrel(  lepton,AK4 )
+            float ptrel = cma::ptrel( lep.p4,jet.p4 );        // pTrel(  lepton,AK4 )
 
             // Two possible scenarios -- only consider jets with DeltaR<PI/2:
             // > jet within (0.4<DeltaR<PI/2)

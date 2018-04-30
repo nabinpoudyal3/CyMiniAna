@@ -19,6 +19,7 @@ configuration::configuration(const std::string &configFile) :
   m_configFile(configFile),
   m_isMC(false),
   m_isGridFile(false),
+  m_isExtendedSample(false),
   m_isZeroLeptonAnalysis(false),
   m_isOneLeptonAnalysis(false),
   m_isTwoLeptonAnalysis(false),
@@ -178,7 +179,8 @@ void configuration::initialize() {
     cma::read_file( getConfigOption("treenames"), m_treeNames );
     m_treename = getConfigOption("treename");
 
-    m_isGridFile = (m_input_selection.compare("grid")==0) ? true : false;
+    m_isGridFile = (m_input_selection.compare("grid")==0);
+    m_isExtendedSample = cma::str2bool( getConfigOption("isExtendedSample") );
 
     m_mapOfSamples.clear();
     cma::getSampleWeights( m_metadataFile,m_mapOfSamples );
@@ -276,6 +278,21 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
 
     std::string pd  = *primaryDataset;
     std::size_t pos = pd.find_first_of("/");
+    std::size_t extpos = pd.find("-ext");
+
+    if (m_isExtendedSample && extpos==std::string::npos){
+        cma::WARNING("CONFIGURATION : 'isExtendedSample' set to true but '-ext' not found in primary dataset name");
+        if ( m_mapOfSamples.find(pd+"-ext")==m_mapOfSamples.end() ){
+            cma::WARNING("CONFIGURATION : The extended sample name, '"+pd+"-ext' is not available, using the default name -- please check configuration!");
+        }
+        else{
+            cma::WARNING("CONFIGURATION : Using the extended sample name, '"+pd+"-ext'");
+            pd += "-ext";
+        }
+    }
+
+    bool pd_in_map = m_mapOfSamples.find(pd)!=m_mapOfSamples.end();    // check if the primary dataset exists in our map
+
     if (pos==0){
         // bad name for metadata -- need to use map to get metadata
         // given something like '/ttbar/run2/.../', want 'ttbar'
@@ -283,7 +300,7 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
         std::size_t found = pd.find_first_of("/",pos+1);
         pd = pd.substr(pos+1,found-1);
 
-        if (m_mapOfSamples.find(pd)==m_mapOfSamples.end()) return;
+        if (!pd_in_map) return;
         m_sample = m_mapOfSamples.at(pd);
 
         m_primaryDataset = m_sample.primaryDataset;
@@ -293,14 +310,22 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
         // the metadata in the file can probably be trusted
         m_recalculateMetadata = false;
 
-        m_sample.primaryDataset = *primaryDataset;
-        m_sample.XSection = *xsection;
-        m_sample.KFactor  = *kfactor;
-        m_sample.NEvents  = *NEvents;
-        m_sample.sumOfWeights = *sumOfWeights;
-
-        m_primaryDataset = *primaryDataset;
-        m_NTotalEvents   = *NEvents;
+        if (pd_in_map){
+            if (m_mapOfSamples.at(pd).XSection!=*xsection){
+                // obtain values from map, not root file (something may have been updated)
+                m_recalculateMetadata = true;
+                m_sample = m_mapOfSamples.at(pd);
+            }
+        }
+        else {
+            m_sample.primaryDataset = *primaryDataset;
+            m_sample.XSection = *xsection;
+            m_sample.KFactor  = *kfactor;
+            m_sample.NEvents  = *NEvents;
+            m_sample.sumOfWeights = *sumOfWeights;
+        }
+        m_primaryDataset = m_sample.primaryDataset;
+        m_NTotalEvents   = m_sample.NEvents;
     }
 
     cma::DEBUG("CONFIGURATION : Primary dataset = "+m_primaryDataset);

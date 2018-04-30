@@ -110,6 +110,7 @@ class Event {
     std::map<std::string,unsigned int> triggers() const {return m_triggers;}
 
     // kinematic reconstruction, ML
+    bool customIsolation( Lepton& lep );
     void getDilepton();
     Ttbar0L ttbar0L() const {return m_ttbar0L;}
     Ttbar1L ttbar1L() const {return m_ttbar1L;}
