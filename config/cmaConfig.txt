@@ -4,12 +4,12 @@ useLeptons true
 useNeutrinos true
 neutrinoReco true
 kinematicReco true
-useTruth false
+useTruth true
 jet_btag_wkpt M
-makeTTree true
+makeTTree false
 makeHistograms true
 makeEfficiencies false
-input_selection oldgrid
+input_selection grid
 output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt

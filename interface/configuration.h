@@ -179,9 +179,7 @@ class configuration {
     bool m_neutrinoReco;
 
     // luminosity
-    double m_LUMI      = 36074.56; // 2015+2016 luminosity
-    double m_LUMI_2015 = 3212.96;
-    double m_LUMI_2016 = 32861.6; // OflLumi-13TeV-008
+    double m_LUMI      = 35870;   //36074.56; // 2015+2016 luminosity
 
     // return some values from config file
     std::string m_input_selection;

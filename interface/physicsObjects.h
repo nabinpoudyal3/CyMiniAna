@@ -133,6 +133,8 @@ struct Lepton : CmaBase{
     bool isMuon;
     int index;       // index in vector of leptons
 
+    float drmin;     // distance to closest AK4
+    float ptrel;     // relative pT to closest AK4
     float iso;
     float id;
     int loose;

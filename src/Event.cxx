@@ -191,12 +191,14 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     m_sumOfWeights   = 1.0;
     m_LUMI           = m_config->LUMI();
 
+    Sample ss = m_config->sample();
+
     // MC information
     if (m_isMC){
       //m_weight_mc    = 1;//new TTreeReaderValue<float>(m_ttree,"evt_Gen_Weight");
-      m_xsection     = 1;//m_config->XSectionMap( m_fileName );
-      m_kfactor      = 1;//m_config->KFactorMap(  m_fileName );
-      m_sumOfWeights = 1;//m_config->sumWeightsMap( m_fileName );
+      m_xsection     = ss.XSection;
+      m_kfactor      = ss.KFactor;        // most likely =1
+      m_sumOfWeights = ss.sumOfWeights;
 
       if (m_config->isTtbar()){
         m_mc_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree,"GENpt");
@@ -340,12 +342,6 @@ void Event::execute(Long64_t entry){
         cma::DEBUG("EVENT : Setup truth information ");
     }
 
-    // Leptons
-    if (m_useLeptons){
-        initialize_leptons();
-        cma::DEBUG("EVENT : Setup leptons ");
-    }
-
     // Jets
     if (m_useJets){
         initialize_jets();
@@ -356,6 +352,12 @@ void Event::execute(Long64_t entry){
     if (m_useLargeRJets){
         initialize_ljets();
         cma::DEBUG("EVENT : Setup large-R jets ");
+    }
+
+    // Leptons
+    if (m_useLeptons){
+        initialize_leptons();
+        cma::DEBUG("EVENT : Setup leptons ");
     }
 
     // Get some kinematic variables (MET, HT, ST)
@@ -653,15 +655,18 @@ void Event::initialize_ljets(){
         ljet.p4.SetPtEtaPhiM( (*m_ljet_pt)->at(i),(*m_ljet_eta)->at(i),(*m_ljet_phi)->at(i),(*m_ljet_m)->at(i));
         ljet.softDropMass = (*m_ljet_SDmass)->at(i);
 
-        bool isGood(ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && ljet.softDropMass>10.);
-        if (!isGood) continue;
-
-        ljet.charge = (*m_ljet_charge)->at(i);
         ljet.tau1   = (*m_ljet_tau1)->at(i);
         ljet.tau2   = (*m_ljet_tau2)->at(i);
         ljet.tau3   = (*m_ljet_tau3)->at(i);
         ljet.tau21  = ljet.tau2 / ljet.tau1;
         ljet.tau32  = ljet.tau3 / ljet.tau2;
+        bool toptag = (ljet.softDropMass>105. && ljet.softDropMass<210 && ljet.tau32<0.65);
+
+        // check if the AK8 is 'good'
+        bool isGood(ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4); // && toptag);
+        if (!isGood) continue;
+
+        ljet.charge = (*m_ljet_charge)->at(i);
 
         ljet.BEST_t = (*m_ljet_BEST_t)->at(i);
         ljet.BEST_w = (*m_ljet_BEST_w)->at(i);
@@ -750,7 +755,9 @@ void Event::initialize_leptons(){
         bool isMedium   = (*m_mu_id_medium)->at(i);
         bool isTight    = (*m_mu_id_tight)->at(i);
 
-        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium);
+        bool iso = customIsolation(mu);    // 2D isolation cut between leptons & AK4 (need AK4 initialized first!)
+
+        bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium && iso);
         if (!isGood) continue;
 
         mu.charge = (*m_mu_charge)->at(i);
@@ -773,7 +780,9 @@ void Event::initialize_leptons(){
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
         bool isTightNoIso = (*m_el_id_tight_noIso)->at(i);
 
-        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isTightNoIso);
+        bool iso = customIsolation(el);    // 2D isolation cut between leptons & AK4 (need AK4 initialized first!)
+
+        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isTightNoIso && iso);
         if (!isGood) continue;
 
         el.charge = (*m_el_charge)->at(i);
@@ -903,6 +912,35 @@ void Event::initialize_kinematics(){
 }
 
 
+
+bool Event::customIsolation( Lepton& lep ){
+    /* 2D isolation cut for leptons 
+       - Check that the lepton and nearest AK4 jet satisfies
+         DeltaR() < 0.4 || pTrel>25
+    */
+    bool pass(false);
+    //int min_index(-1);                    // index of AK4 closest to lep
+    float drmin(100.0);                   // min distance between lep and AK4s
+    float ptrel(0.0);                     // pTrel between lepton and AK4s
+
+    if (m_jets.size()<1) return false;    // no AK4 -- event will fail anyway
+
+    for (const auto& jet : m_jets){
+        float dr = lep.p4.DeltaR( jet.p4 );
+        if (dr < drmin) {
+            drmin = dr;
+            ptrel = cma::ptrel( lep.p4,jet.p4 );
+            //min_index = jet.index;
+        }
+    }
+
+    lep.drmin = drmin;
+    lep.ptrel = ptrel;
+
+    if (drmin > 0.4 || ptrel > 25) pass = true;
+
+    return pass;
+}
 
 
 /*** GETTER FUNCTIONS ***/
