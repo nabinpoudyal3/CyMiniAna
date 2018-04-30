@@ -34,6 +34,7 @@ class configuration {
     virtual bool isMC() {return m_isMC;}              // must call "checkFileType(file)" or "isMC(file)" first!
     virtual bool isMC( TFile& file );
     bool isGridFile(){ return m_isGridFile;}
+    bool isExtendedSample(){ return m_isExtendedSample;}
     bool isTtbar(){ return m_isTtbar;}
     bool isQCD(){ return m_isQCD;}
 
@@ -160,6 +161,7 @@ class configuration {
     // type of file(s)
     bool m_isMC;
     bool m_isGridFile;
+    bool m_isExtendedSample;
     bool m_isQCD;
     bool m_isTtbar;
     bool m_isWjets;
@@ -276,7 +278,7 @@ class configuration {
     // Primary dataset names for different samples in analysis
     std::map<std::string,std::string> m_mapOfPrimaryDatasets = {
         {"ttbar","TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"},
-        {"ttbar-ext","TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"},
+        {"ttbar-ext","TT_TuneCUETP8M2T4_13TeV-powheg-pythia8-ext"},
         {"ttbarGOOD","TT_TuneCUETP8M1_13TeV-powheg-pythia8"},
         {"ttbarGEN","TT_TuneCUETP8M1_13TeV-powheg-pythia8"},
         {"singletop_schan","ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"},
@@ -356,6 +358,7 @@ class configuration {
              {"makeEfficiencies",      "false"},
              {"NEvents",               "-1"},
              {"firstEvent",            "0"},
+             {"isExtendedSample",      "false"},
              {"input_selection",       "grid"},
              {"selection",             "example"},
              {"output_path",           "./"},

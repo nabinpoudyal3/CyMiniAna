@@ -10,6 +10,7 @@ makeTTree false
 makeHistograms true
 makeEfficiencies false
 input_selection grid
+isExtendedSample true
 output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt
