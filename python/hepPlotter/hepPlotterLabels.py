@@ -73,8 +73,11 @@ def sample_labels():
 
     # Generic
     samples['mu']        = Sample(label=r'$\mu$+jets',color='k')
+    samples['mujets']    = Sample(label=r'$\mu$+jets',color='k')
     samples['el']        = Sample(label=r'e+jets',color='k')
+    samples['ejets']     = Sample(label=r'e+jets',color='k')
     samples['muel']      = Sample(label=r'$\ell$+jets',color='k')
+    samples['ljets']     = Sample(label=r'$\ell$+jets',color='k')
 
     return samples
 
@@ -145,9 +148,9 @@ def variable_labels():
     variables['lep_eta'] = Variable(binning=hist1d(10,-2.5,   2.5),label=r'Lepton '+_eta)
     variables['lep_pt']  = Variable(binning=hist1d(10, 25.,  300.),label=r'Lepton p'+_T)
 
-    variables['mu_pt']  = Variable(binning=hist1d(10, 25.,  300.),label=r'$\mu$ p'+_T)
-    variables['mu_eta'] = Variable(binning=hist1d(10,-2.5,   2.5),label=r'$\mu$ '+_eta)
-    variables['mu_phi']  = Variable(binning=hist1d(10,-2.5,   2.5), label=r'$\mu$ '+_phi)
+    variables['mu_pt']  = Variable(binning=hist1d(10, 25.,  300.),label=r'Muon p'+_T)
+    variables['mu_eta'] = Variable(binning=hist1d(10,-2.5,   2.5),label=r'Muon '+_eta)
+    variables['mu_phi']  = Variable(binning=hist1d(10,-2.5,   2.5), label=r'Muon '+_phi)
     variables['el_pt']  = Variable(binning=hist1d(10, 25.,  300.),label=r'Electron p'+_T)
     variables['el_eta'] = Variable(binning=hist1d(10,-2.5,   2.5),label=r'Electron '+_eta)
     variables['el_phi']  = Variable(binning=hist1d(10,-2.5,   2.5), label=r'Electron '+_phi)
