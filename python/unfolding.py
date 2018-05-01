@@ -10,7 +10,6 @@ Texas A&M University
 Base class for performing unfolding
 """
 import json
-import util
 import datetime
 
 import matplotlib
@@ -19,6 +18,7 @@ import uproot
 import numpy as np
 import pandas as pd
 
+import util
 from unfoldingPlotter import unfoldingPlotter
 
 
@@ -33,9 +33,19 @@ class Unfolding(object):
         self.date = datetime.date.today().strftime('%d%b%Y')
 
         ## Handling NN objects and data -- set in the class
-        self.df  = None          # dataframe containing physics information
+        self.df          = None         # dataframe containing physics information
+        self.output_dir  = ""           # directory for storing outputs
 
-        self.pyfbu = PyFBU()
+        self.variables   = []           # variables to load from the dataframe ('deltay','mtt',etc.)
+        self.backgrounds = []           # names of background samples
+        self.stat_only   = False        # only consider the statistical uncertainty
+        self.xsections   = None         # normalization uncertainties, e.g., util.read_config('xsection.txt')
+        self.exp_systs   = None         # systematic uncertainties for each detector-related object
+
+        ## -- Adjust unfolding parameters
+        self.nMCMC       = 1000000
+        self.monitoring  = False
+        self.nThin       = 1
 
 
     def initialize(self):   #,config):
@@ -44,56 +54,56 @@ class Unfolding(object):
         self.msg_svc.level = self.verbose_level
         self.msg_svc.initialize()
 
+        self.load_hep_data()            # Load the physics data
+
+        ## PyFBU
+        self.pyfbu = PyFBU()            # Python framework for Fully Bayesian Unfolding
+
+        self.pyfbu.nMCMC      = self.nMCMC                 # Sampling
+        self.pyfbu.monitoring = self.monitoring            # Monitoring
+        self.pyfbu.nThin      = self.nThin
+
+        self.pyfbu.lower = [t/5 for t in self.truth_data]  # lower bound of hyperbox for sampling
+        self.pyfbu.upper = [t*2 for t in self.truth_data]  # upper bound of hyperbox for sampling
+
+        self.pyfbu.data       = self.df['data']
+        self.pyfbu.response   = self.df['h_resmat']
+        self.pyfbu.background = self.df['bckg']
 
         ## -- Plotting framework
         print " >> Store output in ",self.output_dir
         self.plotter = UnfoldingPlotter()  # class for plotting relevant NN information
         self.plotter.output_dir   = self.output_dir
-        self.plotter.image_format = 'pdf'
-
-
-        ## -- Adjust unfolding parameters
-        self.pyfbu.nMCMC      = config['nMCMC']                     # default = 1000000    # Sampling
-        self.pyfbu.monitoring = util.str2bool( config['monitor'] )  # default = False      # Monitoring
-        self.pyfbu.nThin      = int( config['nThin'] )              # default = 1
-
-        self.load_hep_data()
-        truth = ttbar['truth_deltay']
-        self.pyfbu.lower = [t/5 for t in truth]      # lower bound of hyperbox for sampling
-        self.pyfbu.upper = [t*2 for t in truth]      # upper bound of hyperbox for sampling
-
-        self.pyfbu.data = uproot.open(data)[hist]
-        self.pyfbu.response   = ttbar['h_resmat']
-        self.pyfbu.background = uproot.open(bckg)[hist]
+        self.plotter.image_format = 'pdf'           # must use .pdf at the LPC
 
         return
 
 
-    def runUnfolding(self):
+    def execute(self):
         """Perform unfolding"""
 
-## Normalization uncertainties -- keep stored in a text file for easy, global access
-## > pyfbu.backgroundsyst = {'bckg':0.} # stat only
-xsection = util.read_config('xsection.txt')
-self.pyfbu.backgroundsyst = {
-    'qcd':xsection['qcd'],
-}
+        ## Normalization uncertainties -- keep stored in a text file for easy, global access
 
-## load systematics from ROOT file
-## > Update LUMI uncertainty depending on data-driven / floating backgrounds
-exp_systs = uproot.open(objsyst)
-systematics_dict = {'signal':{},'background':{}}#
+        if self.stat_only: 
+            self.pyfbu.backgroundsyst = {'bckg':0.} # stat only
+            self.pyfbu.objsyst = {'signal':{},'background':{}}
+        else: 
+            self.pyfbu.backgroundsyst = dict( (k,self.xsection[k]) for k in self.backgrounds )   # {'qcd':xsection['qcd']}
 
-signalsystdict = dict([(str(k),v) for k,v in systematics_dict['signal'].iteritems() if k in listOfSystematics])
-signalsystdict['LUMI'] = [xsection['LUMI'] for _ in pyfbu.data]
+            ## load systematics from ROOT file
+            ## > Update LUMI uncertainty depending on data-driven / floating backgrounds
+            systematics_dict = {'signal':{},'background':{}}
 
-bckgsystdict   = systematics_dict['background']
-bckgsystdict['LUMI'] = dict(zip(bckgkeys,[[0. if k in data_driven else xsection['LUMI'] for _ in pyfbu.data] for k in bckgkeys]))
+            signalsystdict = dict([(str(k),v) for k,v in systematics_dict['signal'].iteritems() if k in self.systematics])
+            signalsystdict['LUMI'] = [self.xsection['LUMI'] for _ in pyfbu.data]
 
-self.pyfbu.objsyst = {'signal':signalsystdict,'background':bckgsystdict}
+            bckgsystdict   = systematics_dict['background']
+            bckgsystdict['LUMI'] = dict(zip(self.backgrounds,[[0. if k in self.data_driven else self.xsection['LUMI'] for _ in pyfbu.data] for k in self.backgrounds]))
 
-## Run the algorithm
-self.pyfbu.run()
+            self.pyfbu.objsyst = {'signal':signalsystdict,'background':bckgsystdict}
+
+        ## Run the algorithm
+        self.pyfbu.run()
 
         return
 
@@ -104,12 +114,14 @@ self.pyfbu.run()
         Load the physics data (flat ntuple) for NN using uproot
         Convert to DataFrame for easier slicing 
 
-        @param variables2plot    If there are extra variables to plot, 
-                                 that aren't features of the NN, include them here
+        @param variables2plot    If there are extra variables to plot, include them here
         """
         file = uproot.open(self.hep_data)
         data = file[self.treename]
-        dataframe = data.pandas.df( self.features+['target']+variables2plot )
+        self.df = data.pandas.df( self.variables+variables2plot )
+
+        self.truth_data = self.df['truth_deltay']
+        self.load_resmat()
 
         self.metadata = file['metadata']   # names of samples, target values, etc.
 
@@ -118,18 +130,18 @@ self.pyfbu.run()
 
     def load_resmat(self):
         """Load existing model to make plots or predictions"""
+        self.resmat = self.df['resmat']
         return
 
 
     def build_resmat(self):
         """Build the response matrix"""
+        # save truth vs reco histogram & divide by truth (acceptance)
         return
 
 
     def save_resmat(self):
         """Save the model for use later"""
-        output = self.output_dir+'/'+self.model_name
-
         return
 
 
@@ -138,14 +150,13 @@ self.pyfbu.run()
         Save the features to a json file to load via lwtnn later
         Hard-coded scale & offset; must change later if necessary
         """
-## Save output posteriors
-bckgkeys = pyfbu.backgroundsyst.keys()
-unfbins = pyfbu.trace
+        bckgkeys = pyfbu.backgroundsyst.keys()
+        unfbins = pyfbu.trace
 
-np.save(outdir+'unfolded',unfbins)        ## save unfolded result
-for nuis in bckgkeys+listOfSystematics:
-    trace = pyfbu.nuisancestrace[nuis]
-    np.save(outdir+nuis,trace)            ## save posteriors
+        np.save(outdir+'unfolded',unfbins)        ## save unfolded result
+        for nuis in bckgkeys+listOfSystematics:
+            trace = pyfbu.nuisancestrace[nuis]
+            np.save(outdir+nuis,trace)            ## save posteriors
 
         return
 
@@ -157,12 +168,13 @@ for nuis in bckgkeys+listOfSystematics:
 
         # Diagnostics before the unfolding
         if preUnfolding:
-            #prefit
-            #response matrix
+            self.msg_svc.INFO("FBU : -- pre-unfolding")
+            #prefit data/mc
+            #draw response matrix
 
         # post unfolding
         if postUnfolding:
-            self.msg_svc.INFO("DL : -- post-unfolding")
+            self.msg_svc.INFO("FBU : -- post-unfolding")
             #pulls
             #postfits
 

@@ -1,6 +1,6 @@
 """
 Created:         17 April 2018
-Last Updated:    26 April 2018
+Last Updated:    30 April 2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -25,26 +25,59 @@ import util
 import Analysis.uproot as uproot
 from Analysis.fbu import PyFBU
 
-
 if len(sys.argv)<2: 
     util.HELP()
 
+
+print
+print " ------------------------------ "
+print " *    Unfolding with PyFBU    * "
+print " ------------------------------ "
+print
+
+
 config = util.read_config(sys.argv[1])
 
-output_path = config['output_path']
+date   = strftime("%d%b", localtime())
+vb     = util.VERBOSE()
+
+## Set configuration options ##
+if len(sys.argv)<2:
+    vb.HELP()
+    sys.exit(1)
+
+vb.level = config['verbose_level']
+vb.initialize()
+
+
+## Set output directory
+output_dir  = "nMCMC{0}_".format(config.nMCMC)
+output_dir += "nThin{0}_".format(config.nThin)
+
+hep_data_name = config.hep_data.split('/')[-1].split('.')[0]
 listOfSystematics = util.file2list( config['listOfSystematics'] )
 
-## Input information (histograms of delta|y| distribution)
-hist  = config['histogram']           # name of histogram (e.g., 'deltay' or 'deltay_mttbar')
-data  = config['data']                # real/pseudo data
-bckg  = config['bckg']                # background predictions
-ttbar = uproot.open(config['ttbar'])  # truth delta|y| distribution & response matrix
+## Setup Deep Learning class
+fbu = Unfolding()
 
-objsyst = config['systematics']       # detector-level systematics for signal (ttbar) and backgrounds
+fbu.nMCMC = config.nMCMC
+fbu.nThin = config.nThin
+fbu.monitoring = config.monitoring
+fbu.output_dir = output
+
+#fbu.stat_only = config['stat_only']
+#data files
+
+if not os.path.isdir(output_dir):
+    vb.INFO("RUN : '{0}' does not exist ".format(output))
+    vb.INFO("RUN :       Creating the directory. ")
+    os.system( 'mkdir -p {0}'.format(output_dir) )
+else:
+    vb.INFO("RUN :  Saving output to {0}".format(output_dir))
 
 
-unf.runUnfolding()
-
-unf.save()
+## Setup
+fbu.initialize()
+fbu.execute()
 
 ## THE END ##
