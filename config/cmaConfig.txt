@@ -6,11 +6,11 @@ neutrinoReco true
 kinematicReco true
 useTruth true
 jet_btag_wkpt M
-makeTTree false
+makeTTree true
 makeHistograms true
 makeEfficiencies false
 input_selection grid
-isExtendedSample true
+isExtendedSample false
 output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt

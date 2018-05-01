@@ -290,6 +290,9 @@ class configuration {
         {"wjets2","WJetsToLNu_Pt-250To400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
         {"wjets3","WJetsToLNu_Pt-400To600_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
         {"wjets4","WJetsToLNu_Pt-600ToInf_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"},
+        {"diboson-ww","WW_TuneCUETP8M1_13TeV-pythia8"},
+        {"diboson-wz","WZ_TuneCUETP8M1_13TeV-pythia8"},
+        {"diboson-zz","ZZ_TuneCUETP8M1_13TeV-pythia8"},
         {"qcd","QCD_TuneCUETP8M1_13TeV_pythia8"},
         {"qcd_mu_pt0080","QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
         {"qcd_mu_pt0120","QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
@@ -317,6 +320,7 @@ class configuration {
     std::vector<std::string> m_singleTopFiles = {"singletop_schan","singletop_tWchan_antitop",
                                                  "singletop_tWchan_top","singletop_tchan_antitop",
                                                  "singletop_tchan_top","singletop_tchan_top"};
+    std::vector<std::string> m_dibosonFiles = {"diboson-ww","diboson-wz","diboson-zz"};
 
     // Degrees of 'containment' for parton matching to jets
     std::map<std::string,int> m_containmentMap = {
