@@ -32,10 +32,12 @@ void metadataTree::initialize(TTree* t, TFile& outputFile, const std::string dir
     m_oldTTree = t;
 
     if (!recalculateMetadata){
+        cma::DEBUG("METADATA : Cloning metadata tree");
         m_ttree = m_oldTTree->CloneTree(-1);
         cma::getListOfBranches(m_oldTTree,m_listOfBranches);
     }
     else{
+        cma::DEBUG("METADATA : Creating metadata tree, not cloning it!");
         m_ttree = new TTree("metadata","metadata");
         createBranches();
     }

@@ -265,6 +265,9 @@ bool configuration::checkPrimaryDataset(const std::vector<std::string>& files){
 void configuration::readMetadata(TFile& file,const std::string& metadataTreeName){
     /* Read metadata TTree */
     m_sample.clear();
+    m_primaryDataset = "";
+    m_NTotalEvents   = 1;
+
     if (metadataTreeName.size()<1) return;  // no metadata tree to read
 
     TTreeReader metadata(metadataTreeName.c_str(), &file);
@@ -293,6 +296,9 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
     }
 
     bool pd_in_map = m_mapOfSamples.find(pd)!=m_mapOfSamples.end();    // check if the primary dataset exists in our map
+    Sample this_sample;
+    if (pd_in_map)
+        this_sample = m_mapOfSamples.at(pd);
 
     if (pos==0){
         // bad name for metadata -- need to use map to get metadata
@@ -302,14 +308,13 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
         pd = pd.substr(pos+1,found-1);
 
         if (!pd_in_map) return;
-        m_sample = m_mapOfSamples.at(pd);
+        m_sample = this_sample;
 
         m_primaryDataset = m_sample.primaryDataset;
         m_NTotalEvents   = m_sample.NEvents;
     }
     else{
-        // the metadata in the file can probably be trusted
-        m_recalculateMetadata = false;
+        m_recalculateMetadata = false;    // first assume the information in the root file (metadata tree) is good to use
 
         m_sample.primaryDataset = pd;
         m_sample.XSection = *xsection;
@@ -317,10 +322,18 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
         m_sample.NEvents  = *NEvents;
         m_sample.sumOfWeights = *sumOfWeights;
 
-        if (pd_in_map && m_mapOfSamples.at(pd).XSection!=*xsection){
-            // obtain values from map, not root file (something may have been updated)
-            m_recalculateMetadata = true;
-            m_sample = m_mapOfSamples.at(pd);
+        if (pd_in_map){
+            // check if the metadata in the file can be trusted (compare with the text file)
+
+            float xsec_diff = (this_sample.XSection - *xsection) / this_sample.XSection;
+            float sumw_diff = (this_sample.sumOfWeights - *sumOfWeights) / this_sample.sumOfWeights;
+            int nevents_diff = this_sample.NEvents - *NEvents;
+
+            if (xsec_diff>1e-3 || sumw_diff>1e-3 || nevents_diff!=0){
+                // obtain values from map, not root file (something may have been updated/corrected!)
+                m_recalculateMetadata = true;
+                m_sample = this_sample;
+            }
         }
 
         m_primaryDataset = m_sample.primaryDataset;

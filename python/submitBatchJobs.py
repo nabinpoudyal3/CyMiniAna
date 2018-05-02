@@ -53,7 +53,7 @@ batch.file       = cfg['files']            # individual root files to process
 batch.batch_subdir = cfg['subdir']         # sub-directory for storing batch scripts
 
 ## Setup output
-eos_path       = cfg['eos_path'].replace("$TODAY",date)   # '/store/user/demarley/'+date
+eos_path       = cfg['eos_path']+"/"+date  # '/store/user/demarley/'+date; separate jobs by date to minimize over-writing
 batch.eos_path = eos_path
 batch.eos_tarball_path = cfg['eos_tarball_path']
 
