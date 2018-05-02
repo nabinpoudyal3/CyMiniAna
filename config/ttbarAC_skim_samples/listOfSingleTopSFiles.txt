@@ -1,0 +1,4 @@
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_s-channel_4f_InclusiveDecays_13TeV-amcatnlo-pythia8/crab_ttbarAC_singletop-s/180430_200756/0000/ttbarAC_outtree_1.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_s-channel_4f_InclusiveDecays_13TeV-amcatnlo-pythia8/crab_ttbarAC_singletop-s/180430_200756/0000/ttbarAC_outtree_2.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_s-channel_4f_InclusiveDecays_13TeV-amcatnlo-pythia8/crab_ttbarAC_singletop-s/180430_200756/0000/ttbarAC_outtree_3.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_s-channel_4f_InclusiveDecays_13TeV-amcatnlo-pythia8/crab_ttbarAC_singletop-s/180430_200756/0000/ttbarAC_outtree_4.root

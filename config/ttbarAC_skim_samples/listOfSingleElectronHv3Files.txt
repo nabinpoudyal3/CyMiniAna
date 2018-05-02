@@ -1,0 +1,9 @@
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_1.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_2.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_3.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_4.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_5.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_6.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_7.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_8.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleElectron/crab_ttbarAC_SingleElectronHv3/180419_205151/0000/ttbarAC_outtree_9.root
