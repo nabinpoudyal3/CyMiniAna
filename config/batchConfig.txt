@@ -1,9 +1,9 @@
 date today
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/diboson-zz/$TODAY
-subdir diboson-zz
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/zjets/$TODAY
+subdir zjets
 eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/
-files config/ttbarAC_skim_samples/listOfDibosonZZFiles.txt
+files config/ttbarAC_skim_samples/listOfZjetsFiles.txt
 username demarley
 executable run
 test False

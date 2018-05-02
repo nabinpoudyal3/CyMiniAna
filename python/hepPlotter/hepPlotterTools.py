@@ -9,6 +9,7 @@ Texas A&M University
 
 Simple functions to help with basic plots.
 """
+import os
 import ROOT
 import numpy as np
 from array import array
@@ -84,6 +85,37 @@ def getSampleType(name):
         sampletype = ''
 
     return sampletype
+
+
+class Sample(object):
+    """Class for holding metadata information"""
+    def __init__(self):
+        self.pd = ""
+        self.xsection = 1
+        self.sumOfWeights = 1
+        self.nevents = 1
+
+
+def getMetadata():
+    """
+       Store the xsection & sum of weights using primary dataset as key
+        'PrimaryDataset XSection sumWeights KFactor NEvents'
+    """
+    samples = {}
+    cma_dir = os.getenv("CYMINIANADIR")
+    metadata = open(cma_dir+"/config/sampleMetaData.txt","r")
+    for line in metadata:
+        if line.startswith("#") or line=="\n": continue
+
+        l = line.split()
+        s = Sample()
+        s.pd = l[0]
+        s.xsection = float(l[1])
+        s.sumOfWeights = float(l[2])
+        s.nevents = int(l[4])
+        samples[l[0]] = s
+
+    return samples
 
 
 def hist1d(nbins,bin_low,bin_high):
