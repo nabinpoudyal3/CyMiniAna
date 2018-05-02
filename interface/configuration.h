@@ -166,6 +166,8 @@ class configuration {
     bool m_isTtbar;
     bool m_isWjets;
     bool m_isSingleTop;
+    bool m_isDiboson;
+    bool m_isZjets;
 
     // type of analysis
     bool m_isZeroLeptonAnalysis;
@@ -293,6 +295,7 @@ class configuration {
         {"diboson-ww","WW_TuneCUETP8M1_13TeV-pythia8"},
         {"diboson-wz","WZ_TuneCUETP8M1_13TeV-pythia8"},
         {"diboson-zz","ZZ_TuneCUETP8M1_13TeV-pythia8"},
+        {"zjets","DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"},
         {"qcd","QCD_TuneCUETP8M1_13TeV_pythia8"},
         {"qcd_mu_pt0080","QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
         {"qcd_mu_pt0120","QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"},
@@ -321,6 +324,7 @@ class configuration {
                                                  "singletop_tWchan_top","singletop_tchan_antitop",
                                                  "singletop_tchan_top","singletop_tchan_top"};
     std::vector<std::string> m_dibosonFiles = {"diboson-ww","diboson-wz","diboson-zz"};
+    std::vector<std::string> m_zjetsFiles = {"zjets"};
 
     // Degrees of 'containment' for parton matching to jets
     std::map<std::string,int> m_containmentMap = {

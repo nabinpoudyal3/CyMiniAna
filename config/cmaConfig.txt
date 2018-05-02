@@ -26,7 +26,7 @@ useDNN false
 DNNinference false
 DNNtraining false
 NEvents -1
-verboseLevel INFO
+verboseLevel DEBUG
 isZeroLeptonAnalysis true
 isOneLeptonAnalysis true
 isTwoLeptonAnalysis false

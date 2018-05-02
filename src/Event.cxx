@@ -457,12 +457,16 @@ void Event::initialize_triggers(){
 void Event::initialize_truth(){
     /* Setup struct of truth information */
     m_truth_partons.clear();
+    m_truth_tops.clear();
+
+    if (!m_config->isTtbar()) return;   // don't need this for MC other than ttbar
+
+    // only care about this for ttbar
     unsigned int nPartons( (*m_mc_pt)->size() );
     cma::DEBUG("EVENT : N Partons = "+std::to_string(nPartons));
 
     // Collect truth top information into one value
     unsigned int t_idx(0);  // keeping track of tops in m_truth_tops
-    m_truth_tops.clear();
 
     // loop over truth partons
     unsigned int p_idx(0);
