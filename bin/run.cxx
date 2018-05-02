@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
             metadata_treename = "";  // metadata TTree doesn't exist, set this so "config" won't look for it
         config.inspectFile( *file,metadata_treename );      // check the type of file being processed
 
-        // Clone metadata tree
+        // Clone/write metadata tree
         TTree * original_metadata_ttree;
         metadataTree metadata_ttree(config);
 

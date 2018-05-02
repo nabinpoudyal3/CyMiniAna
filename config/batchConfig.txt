@@ -1,9 +1,9 @@
-date today
+date 01May2018
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/singletop-tbar/$TODAY
-subdir singletop-tbar
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/diboson-zz/
+subdir diboson-zz
 eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/
-files config/ttbarAC_skim_samples/listOfSingleTbarTFiles.txt
+files config/ttbarAC_skim_samples/listOfDibosonZZFiles.txt
 username demarley
 executable run
 test False

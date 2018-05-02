@@ -1,0 +1,2 @@
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4/crab_ttbarAC_singletop-tW/180430_200855/0000/ttbarAC_outtree_1.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4/crab_ttbarAC_singletop-tW/180430_200855/0000/ttbarAC_outtree_2.root

@@ -1,0 +1,17 @@
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_1.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_10.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_11.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_12.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_13.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_14.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_15.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_16.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_17.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_2.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_3.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_4.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_5.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_6.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_7.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_8.root
+root://131.225.204.161:1094//store/group/lpctlbsm/pilot/ST_t-channel_antitop_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/crab_ttbarAC_singletop-tbar/180430_200836/0000/ttbarAC_outtree_9.root
