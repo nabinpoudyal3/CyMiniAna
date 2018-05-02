@@ -79,7 +79,7 @@ void ttbarReco::execute(std::vector<Ljet>& ljets){
 
 
 // single lepton
-void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, std::vector<Ljet>& ljets){
+void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Neutrino>& nu, std::vector<Jet>& jets, std::vector<Ljet>& ljets){
     /* Build top quarks system 
        - lepton
        - AK4 near lepton (2D cut)
@@ -95,21 +95,21 @@ void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, st
     Lepton lep;
     if (leptons.size()>0)
         lep = leptons.at(0);
-    else
+    else{
         lep.p4.SetPtEtaPhiE(0,0,0,0);   // this event will fail the selection anway, use dummy value
-
+        lep.isGood = false;
+    }
 
     // Get Jets (only if lepton exists)
-    int ak4candidate(-1);
-    int ak8candidate(-1);
-    if (lep.p4.Pt()>10){
+    int ak4candidate(-1);   // index in jets that corresponds to AK4 from leptonic top
+    int ak8candidate(-1);   // index in ljets that corresponds to AK8 (hadronic top)
+
+    if (leptons.size()>0){
         // -- Setup AK4 jet : 2D Cut
         cma::DEBUG("TTBARRECO : building ttbar with "+std::to_string(jets.size())+" ak4 candidates");
         float ak4_pt(0);
-        TVector3 lep3 = lep.p4.Vect();
 
         for (auto& jet : jets){
-            TVector3 jet3 = jet.p4.Vect();
             float jpt   = jet.p4.Pt();
             float dr    = jet.p4.DeltaR(lep.p4);              // DeltaR( lepton,AK4 )
             float ptrel = cma::ptrel( lep.p4,jet.p4 );        // pTrel(  lepton,AK4 )
@@ -146,18 +146,17 @@ void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Jet>& jets, st
     } // end if lepton has sufficient pT
 
 
-    // Define objects in the struct -- no neutrino yet
-    m_ttbar1L.lepton = lep;
+    // Define objects in the struct
+    m_ttbar1L.neutrino = nu.at(0);
+    m_ttbar1L.lepton   = lep;
 
     Jet dummy_jet;
     dummy_jet.isGood = false;
-    if (ak4candidate>=0) m_ttbar1L.jet = jets.at(ak4candidate);
-    else m_ttbar1L.jet = dummy_jet;
+    m_ttbar1L.jet = (ak4candidate>=0) ? jets.at(ak4candidate) : dummy_jet;
 
     Ljet dummy_ljet;
     dummy_ljet.isGood = false;
-    if (ak8candidate>=0) m_ttbar1L.ljet = ljets.at(ak8candidate);
-    else m_ttbar1L.ljet = dummy_ljet;
+    m_ttbar1L.ljet = (ak8candidate>=0) ? ljets.at(ak8candidate) : dummy_ljet;
 
     cma::DEBUG("TTBARRECO : Ttbar built ");
 

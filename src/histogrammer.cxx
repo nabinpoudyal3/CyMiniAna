@@ -181,6 +181,10 @@ void histogrammer::bookHists( std::string name ){
         init_hist("ljet_pt_eta_"+name,    200,  0.0, 2000.0,  50, -2.5, 2.5);  // pt vs eta (pt=x-axis)
         init_hist("ljet_pt_SDmass_"+name, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
 
+        init_hist("ljet_SDmass_tau32_"+name, 500,  0.0,  500.0, 100,  0,   1);    // SDmass  vs tau32  (SDmass=x-axis)
+        init_hist("ljet_BEST_t_SDmass_"+name,100,  0.0,    1.0, 500,  0, 500);    // BEST(t) vs SDmass (BEST=x-axis)
+        init_hist("ljet_BEST_t_tau32_"+name, 100,  0.0,    1.0, 100,  0,   1);    // BEST(t) vs tau32  (BEST=x-axis)
+
         // plots of subjet charge/bdisc for different lepton charges
         if (m_useLeptons){
             init_hist("ljet_charge_Qpos_"+name,1000, -5.0, 5.0);
@@ -239,12 +243,25 @@ void histogrammer::bookHists( std::string name ){
     init_hist("ht_"+name,     5000,  0.0, 5000);
     init_hist("mtw_"+name,     500,  0.0,  500);
 
-    //init_hist("dnn_"+name,  100, 0.0,   1.);
+    // ttbar reconstruction + asymmetry values
+    if (m_config->isOneLeptonAnalysis()){
+        init_hist("deltaR_lep_ak4_"+name, 50, 0.0, 5.0);
+        init_hist("pTrel_lep_ak4_"+name, 100, 0.0, 500);
+        init_hist("deltaR_lep_ak8_"+name, 50, 0.0, 5.0);
+        init_hist("deltaR_ak4_ak8_"+name, 50, 0.0, 5.0);
+        init_hist("deltaR_pTrel_lep_ak4_"+name, 50,0.0,5.0, 100,0.0,500);
 
-    // asymmetry variables
-    init_hist("mttbar_"+name,  5000, 0.0, 5000);
-    init_hist("pTttbar_"+name,  300, 0.0,  300);
-    init_hist("yttbar_"+name,   100,-10.,   10);
+        init_hist("deltay_"+name,  1000,-5.0,  5.0);
+        init_hist("mttbar_"+name,  5000, 0.0, 5000);
+        init_hist("pTttbar_"+name,  300, 0.0,  300);
+        init_hist("yttbar_"+name,   200,-10.,   10);
+        init_hist("betattbar_"+name,100,  0.,    1);
+
+        init_hist("mttbar_deltay_"+name,  5000, 0.0, 5000, 1000,-5.0,  5.0);
+        init_hist("pTttbar_deltay_"+name, 300, 0.0,  300, 1000,-5.0,  5.0);
+        init_hist("yttbar_deltay_"+name,  200,-10.,   10, 1000,-5.0,  5.0);
+        init_hist("betattbar_deltay_"+name, 100, 0.0, 1.0, 1000,-5.0,  5.0);
+    }
 
     return;
 }
@@ -340,6 +357,9 @@ void histogrammer::fill( Event& event, const std::vector<unsigned int>& evtsel_d
 void histogrammer::fill( const std::string& name, Event& event, double event_weight){
     /* Fill histograms -- just use information from the event and fill histogram
        This is the function to modify / inherit for analysis-specific purposes
+
+       //std::vector<Muon> muons = event.muons();  -- merged into "Lepton"
+       //std::vector<Electron> electrons = event.electrons();
     */
     cma::DEBUG("HISTOGRAMMER : Fill histograms.");
     cma::DEBUG("HISTOGRAMMER : event weight = "+std::to_string(event_weight) );
@@ -348,8 +368,6 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     std::vector<Jet> jets = event.jets();
     std::vector<Ljet> ljets = event.ljets();
     std::vector<Lepton> leptons = event.leptons();
-    //std::vector<Muon> muons = event.muons();
-    //std::vector<Electron> electrons = event.electrons();
     std::vector<Neutrino> neutrinos = event.neutrinos();
     MET met = event.met();
 
@@ -418,6 +436,10 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
 
             fill("ljet_pt_eta_"+name,   ljet.p4.Pt(), ljet.p4.Eta(), event_weight);
             fill("ljet_pt_SDmass_"+name,ljet.p4.Pt(), ljet.softDropMass, event_weight);
+
+            fill("ljet_SDmass_tau32_"+name, ljet.softDropMass, ljet.tau32,  event_weight);    // SDmass  vs tau32  (SDmass=x-axis)
+            fill("ljet_BEST_t_SDmass_"+name,ljet.BEST_t, ljet.softDropMass, event_weight);    // BEST(t) vs SDmass (BEST=x-axis)
+            fill("ljet_BEST_t_tau32_"+name, ljet.BEST_t, ljet.tau32,        event_weight);    // BEST(t) vs tau32  (BEST=x-axis)
 
             int charge(-999);
             if (m_useLeptons && leptons.size()>0) {
@@ -504,6 +526,48 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     fill("pTttbar_"+name, (top.p4+antitop.p4).Pt(), event_weight);
     fill("yttbar_"+name,  (top.p4+antitop.p4).Rapidity(), event_weight);
 */
+
+    if (m_config->isOneLeptonAnalysis()){
+        Ttbar1L ttbarSL = event.ttbar1L();
+
+        Jet tt_jet     = ttbarSL.jet;
+        Ljet tt_ljet   = ttbarSL.ljet;
+        Lepton tt_lep  = ttbarSL.lepton;
+        Neutrino tt_nu = ttbarSL.neutrino;
+
+        float dr_lep_ak4 = tt_jet.p4.DeltaR( tt_lep.p4 );
+        float ptrel_lep_ak4 = cma::ptrel( tt_lep.p4, tt_jet.p4);
+
+        fill("deltaR_lep_ak4_"+name, dr_lep_ak4,    event_weight);
+        fill("pTrel_lep_ak4_"+name,  ptrel_lep_ak4, event_weight);
+        fill("deltaR_lep_ak8_"+name, tt_ljet.p4.DeltaR( tt_lep.p4 ), event_weight);
+        fill("deltaR_ak4_ak8_"+name, tt_ljet.p4.DeltaR( tt_jet.p4 ), event_weight);
+        fill("deltaR_pTrel_lep_ak4_"+name, dr_lep_ak4, ptrel_lep_ak4, event_weight);
+
+        // asymmetry
+        TLorentzVector top_lep;
+        TLorentzVector top_had;
+        TLorentzVector ttbar;
+
+        top_lep = (tt_nu.p4 + tt_lep.p4 + tt_jet.p4);
+        top_had = tt_ljet.p4;
+        ttbar = top_had+top_lep;
+
+        float dy = tt_lep.charge * ( std::abs(top_lep.Rapidity()) - std::abs(top_had.Rapidity()) );
+        float betatt = std::abs(top_had.Pz() + top_lep.Pz()) / (top_had.E() + top_lep.E());
+
+        fill("deltay_"+name,  dy,  event_weight);
+        fill("mttbar_"+name,  ttbar.M(),  event_weight);
+        fill("pTttbar_"+name, ttbar.Pt(), event_weight);
+        fill("yttbar_"+name,  ttbar.Rapidity(), event_weight);
+        fill("betattbar_"+name, betatt, event_weight);
+
+        fill("mttbar_deltay_"+name,  ttbar.M(),  dy, event_weight);
+        fill("pTttbar_deltay_"+name, ttbar.Pt(), dy, event_weight);
+        fill("yttbar_deltay_"+name,  ttbar.Rapidity(), dy, event_weight);
+        fill("betattbar_deltay_"+name, betatt, dy, event_weight);
+    }
+
     cma::DEBUG("HISTOGRAMMER : End histograms");
 
     return;

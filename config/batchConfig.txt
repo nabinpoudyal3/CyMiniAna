@@ -1,9 +1,10 @@
-date 01May2018
+date today
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/diboson-zz/
-subdir diboson-zz
-eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/
-files config/ttbarAC_skim_samples/listOfDibosonZZFiles.txt
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/cwoala/ttbar-ext/
+subdir ttbar-ext
+eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/cwoala/
+#files config/ttbarAC_skim_samples/listOfDibosonZZFiles.txt
+files config/cyminiana_samples/ttbar-ext.txt
 username demarley
 executable run
 test False
