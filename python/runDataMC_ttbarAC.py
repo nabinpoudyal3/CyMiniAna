@@ -93,15 +93,16 @@ for samp in samples:
 
     for file in filelists[samp]:
         f = ROOT.TFile.Open(file)
-        m = f.Get("tree/metadata")
-        m.GetEntry(0)
+#        m = f.Get("tree/metadata")
+#        m.GetEntry(0)
+        sf = 1.0
 
-        if samp.startswith('ttbar') or samp==dataname : 
-            sf = 1.0
-        else:
-            # Need to normalize the samples properly!
-            samp_metadata = metadata[str(m.primaryDataset)]
-            sf = 1/samp_metadata.sumOfWeights
+#        if samp.startswith('ttbar') or samp==dataname : 
+#            sf = 1.0
+#        else:
+#            # Need to normalize the samples properly!
+#            samp_metadata = metadata[str(m.primaryDataset)]
+#            sf = 1/samp_metadata.sumOfWeights
 
         for hist in histograms:
             hi = hist.format(selection)
