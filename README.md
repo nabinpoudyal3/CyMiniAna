@@ -54,9 +54,9 @@ _The master branch is only used to make new tags!_
 To get started, you first need a proper CMSSW release environment and other packages to work with CyMiniAna.  
 
 ```shell
-## setup CMSSW (slc6_amd64_gcc530)
-cmsrel CMSSW_9_0_1
-cd CMSSW_9_0_1/src/
+## setup CMSSW
+cmsrel CMSSW_9_4_4
+cd CMSSW_9_4_4/src/
 cmsenv
 git cms-init
 ```
