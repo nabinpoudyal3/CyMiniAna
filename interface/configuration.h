@@ -236,7 +236,7 @@ class configuration {
 
     std::vector<std::string> m_zeroLeptonTriggers = {"HLT_PFHT800","HLT_PFHT900","HLT_AK8PFJet450","HLT_PFHT700TrimMass50","HLT_PFJet360TrimMass30"};
     std::vector<std::string> m_ejetsTriggers  = {"HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50","HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165","HLT_Ele115_CaloIdVT_GsfTrkIdT"};
-    std::vector<std::string> m_mujetsTriggers = {"HLT_Mu40_Eta2P1_PFJet200_PFJet50","HLT_Mu50","HLT_TkMu50"};
+    std::vector<std::string> m_mujetsTriggers = {/*"HLT_Mu40_Eta2P1_PFJet200_PFJet50",*/"HLT_Mu50","HLT_TkMu50"};
     std::vector<std::string> m_dileptonTriggers = {};
 
     bool m_recalculateMetadata;

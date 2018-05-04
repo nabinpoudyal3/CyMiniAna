@@ -615,6 +615,7 @@ void Event::initialize_jets(){
         jet.p4.SetPtEtaPhiM( (*m_jet_pt)->at(i),(*m_jet_eta)->at(i),(*m_jet_phi)->at(i),(*m_jet_m)->at(i));
 
         bool isGood(jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
+        jet.isGood = isGood;
         if (!isGood) continue;
 
         jet.bdisc    = (*m_jet_bdisc)->at(i);
@@ -624,7 +625,6 @@ void Event::initialize_jets(){
         jet.uncorrPt = (*m_jet_uncorrPt)->at(i);
 
         jet.index  = idx;
-        jet.isGood = isGood;
 
         getBtaggedJets(jet);
 
@@ -664,13 +664,16 @@ void Event::initialize_ljets(){
         ljet.tau3   = (*m_ljet_tau3)->at(i);
         ljet.tau21  = ljet.tau2 / ljet.tau1;
         ljet.tau32  = ljet.tau3 / ljet.tau2;
-        bool toptag = (ljet.softDropMass>105. && ljet.softDropMass<210 && ljet.tau32<0.65);
+        //bool toptag = (ljet.softDropMass>105. && ljet.softDropMass<210 && ljet.tau32<0.65);  // apply in eventSelection
+
+        float subjet0_bdisc = (*m_ljet_subjet0_bdisc)->at(i);  // want the subjets to have "real" b-disc values
+        float subjet1_bdisc = (*m_ljet_subjet1_bdisc)->at(i);
 
         // check if the AK8 is 'good'
-        bool isGood(ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4); // && toptag);
-        if (!isGood) continue;
+        bool isGood(ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && subjet0_bdisc>=0 && subjet1_bdisc>=0);
+        ljet.isGood = isGood;
 
-        ljet.charge = (*m_ljet_charge)->at(i);
+        if (!isGood) continue;
 
         ljet.BEST_t = (*m_ljet_BEST_t)->at(i);
         ljet.BEST_w = (*m_ljet_BEST_w)->at(i);
@@ -679,41 +682,24 @@ void Event::initialize_ljets(){
         ljet.BEST_j = (*m_ljet_BEST_j)->at(i);
         ljet.BEST_class = (*m_ljet_BEST_class)->at(i);
 
-        ljet.subjet0_bdisc  = (*m_ljet_subjet0_bdisc)->at(i);
+        ljet.subjet0_bdisc  = subjet0_bdisc;   // (*m_ljet_subjet0_bdisc)->at(i);
         ljet.subjet0_charge = (*m_ljet_subjet0_charge)->at(i);
         ljet.subjet0_mass   = (*m_ljet_subjet0_mass)->at(i);
         ljet.subjet0_pt     = (*m_ljet_subjet0_pt)->at(i);
-        ljet.subjet1_bdisc  = (*m_ljet_subjet1_bdisc)->at(i);
+        ljet.subjet0_tau1   = (*m_ljet_subjet0_tau1)->at(i);
+        ljet.subjet0_tau2   = (*m_ljet_subjet0_tau2)->at(i);
+        ljet.subjet0_tau3   = (*m_ljet_subjet0_tau3)->at(i);
+
+        ljet.subjet1_bdisc  = subjet1_bdisc;   // (*m_ljet_subjet1_bdisc)->at(i);
         ljet.subjet1_charge = (*m_ljet_subjet1_charge)->at(i);
         ljet.subjet1_mass   = (*m_ljet_subjet1_mass)->at(i);
         ljet.subjet1_pt     = (*m_ljet_subjet1_pt)->at(i);
+        ljet.subjet1_tau1   = (*m_ljet_subjet1_tau1)->at(i);
+        ljet.subjet1_tau2   = (*m_ljet_subjet1_tau2)->at(i);
+        ljet.subjet1_tau3   = (*m_ljet_subjet1_tau3)->at(i);
 
-        float subjet0_tau1(-999.);
-        float subjet0_tau2(-999.);
-        float subjet0_tau3(-999.);
-        float subjet1_tau1(-999.);
-        float subjet1_tau2(-999.);
-        float subjet1_tau3(-999.);
-
-        if (m_config->isGridFile()){
-            // older files will not have this option
-            subjet0_tau1 = (*m_ljet_subjet0_tau1)->at(i);
-            subjet0_tau2 = (*m_ljet_subjet0_tau2)->at(i);
-            subjet0_tau3 = (*m_ljet_subjet0_tau3)->at(i);
-            subjet1_tau1 = (*m_ljet_subjet1_tau1)->at(i);
-            subjet1_tau2 = (*m_ljet_subjet1_tau2)->at(i);
-            subjet1_tau3 = (*m_ljet_subjet1_tau3)->at(i);
-        }
-
-        ljet.subjet0_tau1 = subjet0_tau1; //(*m_ljet_subjet0_tau1)->at(i);
-        ljet.subjet0_tau2 = subjet0_tau2; //(*m_ljet_subjet0_tau2)->at(i);
-        ljet.subjet0_tau3 = subjet0_tau3; //(*m_ljet_subjet0_tau3)->at(i);
-        ljet.subjet1_tau1 = subjet1_tau1; //(*m_ljet_subjet1_tau1)->at(i);
-        ljet.subjet1_tau2 = subjet1_tau2; //(*m_ljet_subjet1_tau2)->at(i);
-        ljet.subjet1_tau3 = subjet1_tau3; //(*m_ljet_subjet1_tau3)->at(i);
-
+        ljet.charge = (*m_ljet_charge)->at(i);
         ljet.target = target;
-        ljet.isGood = isGood;
         ljet.index  = idx;
 
         ljet.area     = (*m_ljet_area)->at(i);
@@ -762,6 +748,7 @@ void Event::initialize_leptons(){
         bool iso = customIsolation(mu);    // 2D isolation cut between leptons & AK4 (need AK4 initialized first!)
 
         bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium && iso);
+        mu.isGood = isGood;
         if (!isGood) continue;
 
         mu.charge = (*m_mu_charge)->at(i);
@@ -769,7 +756,6 @@ void Event::initialize_leptons(){
         mu.medium = isMedium; 
         mu.tight  = isTight; 
         mu.iso    = (*m_mu_iso)->at(i);
-        mu.isGood = isGood;
 
         mu.isMuon = true;
         mu.isElectron = false;
@@ -787,6 +773,7 @@ void Event::initialize_leptons(){
         bool iso = customIsolation(el);    // 2D isolation cut between leptons & AK4 (need AK4 initialized first!)
 
         bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isTightNoIso && iso);
+        el.isGood = isGood;
         if (!isGood) continue;
 
         el.charge = (*m_el_charge)->at(i);
@@ -796,7 +783,6 @@ void Event::initialize_leptons(){
         el.loose_noIso  = (*m_el_id_loose_noIso)->at(i);
         el.medium_noIso = (*m_el_id_medium_noIso)->at(i);
         el.tight_noIso  = isTightNoIso;
-        el.isGood = isGood;
 
         el.isMuon = false;
         el.isElectron = true;
