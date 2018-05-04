@@ -598,12 +598,13 @@ void Event::initialize_truth(){
 void Event::initialize_jets(){
     /* Setup struct of jets (small-r) and relevant information 
      * b-tagging: https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco
-        CSVv2L -0.5884
-        CSVv2M 0.4432
-        CSVv2T 0.9432
+        CSVv2L 0.5426
+        CSVv2M 0.8484
+        CSVv2T 0.9535
      */
     unsigned int nJets = (*m_jet_pt)->size();
     m_jets.clear();
+    m_jets_iso.clear();  // jet collection for lepton 2D isolation
 
     for (const auto& btagWP : m_config->btagWkpts() ){
         m_btag_jets[btagWP].clear();
@@ -614,9 +615,10 @@ void Event::initialize_jets(){
         Jet jet;
         jet.p4.SetPtEtaPhiM( (*m_jet_pt)->at(i),(*m_jet_eta)->at(i),(*m_jet_phi)->at(i),(*m_jet_m)->at(i));
 
+        bool isGoodIso( jet.p4.Pt()>15 && std::abs(jet.p4.Eta())<2.4);
         bool isGood(jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
+
         jet.isGood = isGood;
-        if (!isGood) continue;
 
         jet.bdisc    = (*m_jet_bdisc)->at(i);
         jet.deepCSV  = (*m_jet_deepCSV)->at(i);
@@ -628,7 +630,11 @@ void Event::initialize_jets(){
 
         getBtaggedJets(jet);
 
-        m_jets.push_back(jet);
+        if (isGood)
+            m_jets.push_back(jet);
+        if (isGoodIso)
+            m_jets_iso.push_back(jet);
+
         idx++;
     }
 
@@ -728,10 +734,6 @@ void Event::initialize_ljets(){
 
 void Event::initialize_leptons(){
     /* Setup struct of lepton and relevant information */
-    m_ee   = false;
-    m_mumu = false;
-    m_emu  = false;
-
     m_leptons.clear();
     m_electrons.clear();  // not using right now
     m_muons.clear();      // not using right now
@@ -913,9 +915,9 @@ bool Event::customIsolation( Lepton& lep ){
     float drmin(100.0);                   // min distance between lep and AK4s
     float ptrel(0.0);                     // pTrel between lepton and AK4s
 
-    if (m_jets.size()<1) return false;    // no AK4 -- event will fail anyway
+    if (m_jets_iso.size()<1) return false;    // no AK4 -- event will fail anyway
 
-    for (const auto& jet : m_jets){
+    for (const auto& jet : m_jets_iso){
         float dr = lep.p4.DeltaR( jet.p4 );
         if (dr < drmin) {
             drmin = dr;
@@ -927,7 +929,7 @@ bool Event::customIsolation( Lepton& lep ){
     lep.drmin = drmin;
     lep.ptrel = ptrel;
 
-    if (drmin > 0.4 || ptrel > 25) pass = true;
+    if (drmin > 0.4 || ptrel > 30) pass = true;
 
     return pass;
 }

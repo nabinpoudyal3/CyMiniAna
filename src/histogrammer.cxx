@@ -220,19 +220,21 @@ void histogrammer::bookHists( std::string name ){
     }
 
     if (m_useLeptons){
-        init_hist("el_pt_"+name,  500, 0.0, 2000);
-        init_hist("el_eta_"+name,  50, -2.5, 2.5);
-        init_hist("el_phi_"+name,  64, -3.2, 3.2);
-        init_hist("el_charge_"+name, 240, -1.2, 1.2);
+        init_hist("el_pt_"+name,    500, 0.0,2000);
+        init_hist("el_eta_"+name,    50,-2.5, 2.5);
+        init_hist("el_phi_"+name,    64,-3.2, 3.2);
+        init_hist("el_charge_"+name,240,-1.2, 1.2);
         init_hist("el_ptrel_"+name, 500, 0.0, 500);
-        init_hist("el_drmin_"+name,  50, 0.0, 5);
+        init_hist("el_drmin_"+name,  50, 0.0,   5);
+        init_hist("n_el_"+name,      10,   0,  10);
 
-        init_hist("mu_pt_"+name,  500, 0.0, 2000);
-        init_hist("mu_eta_"+name,  50, -2.5, 2.5);
-        init_hist("mu_phi_"+name,  64, -3.2, 3.2);
-        init_hist("mu_charge_"+name, 240, -1.2, 1.2);
+        init_hist("mu_pt_"+name,    500, 0.0,2000);
+        init_hist("mu_eta_"+name,    50,-2.5, 2.5);
+        init_hist("mu_phi_"+name,    64,-3.2, 3.2);
+        init_hist("mu_charge_"+name,240,-1.2, 1.2);
         init_hist("mu_ptrel_"+name, 500, 0.0, 500);
-        init_hist("mu_drmin_"+name,  50, 0.0, 5);
+        init_hist("mu_drmin_"+name,  50, 0.0,   5);
+        init_hist("n_mu_"+name,      10,   0,  10);
     }
 
     if (m_useNeutrinos){
@@ -487,7 +489,11 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
 
     if (m_useLeptons){
         cma::DEBUG("HISTOGRAMMER : Fill leptons");
+        unsigned int n_electrons(0);
+        unsigned int n_muons(0);
         for (const auto& lep : leptons){
+            if (!lep.isGood) continue;
+
             if (lep.isElectron){
                 fill("el_pt_"+name,  lep.p4.Pt(),  event_weight);
                 fill("el_eta_"+name, lep.p4.Eta(), event_weight);
@@ -495,6 +501,7 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                 fill("el_charge_"+name, lep.charge, event_weight);
                 fill("el_ptrel_"+name,  lep.ptrel,  event_weight);
                 fill("el_drmin_"+name,  lep.drmin,  event_weight);
+                n_electrons++;
             }
             else if (lep.isMuon){
                 fill("mu_pt_"+name,  lep.p4.Pt(),  event_weight);
@@ -503,8 +510,11 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                 fill("mu_charge_"+name, lep.charge, event_weight);
                 fill("mu_ptrel_"+name,  lep.ptrel,  event_weight);
                 fill("mu_drmin_"+name,  lep.drmin,  event_weight);
+                n_muons++;
             }
         } // end loop over leptons
+        fill("n_el_"+name,  n_electrons, event_weight);
+        fill("n_mu_"+name,  n_muons,     event_weight);
     } // end if use leptons
 
     if (m_useNeutrinos){

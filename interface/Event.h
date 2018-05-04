@@ -197,6 +197,7 @@ class Event {
     std::vector<Neutrino> m_neutrinos;
     std::vector<Ljet> m_ljets;
     std::vector<Jet>  m_jets;
+    std::vector<Jet>  m_jets_iso;          // for 2D lepton isolation
 
     // truth physics object information
     std::vector<Lepton> m_truth_leptons;

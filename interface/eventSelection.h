@@ -124,6 +124,7 @@ class eventSelection{
     std::map<std::string,unsigned int> m_triggers;
     std::map<std::string,unsigned int> m_filters;
 
+    unsigned int m_Nbtags;
     unsigned int m_NLeptons;
     unsigned int m_NElectrons;
     unsigned int m_NMuons;

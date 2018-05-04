@@ -1,10 +1,10 @@
 date today
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/cwoala/ttbar-ext/
-subdir ttbar-ext
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/cwoala/ttbar/
+subdir ttbar
 eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.2/cwoala/
 #files config/ttbarAC_skim_samples/listOfDibosonZZFiles.txt
-files config/cyminiana_samples/ttbar-ext.txt
+files config/cyminiana_samples/ttbar.txt
 username demarley
 executable run
 test False

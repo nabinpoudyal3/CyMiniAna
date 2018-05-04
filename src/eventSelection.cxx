@@ -183,7 +183,7 @@ bool eventSelection::applySelection(const Event &event) {
     m_filters  = event.filters();
     // add more objects as needed
 
-
+    m_Nbtags     = event.btag_jets().size();
     m_NLjets     = m_ljets.size();
     m_NJets      = m_jets.size();
     m_NLeptons   = m_leptons.size();
@@ -338,7 +338,60 @@ bool eventSelection::afbSelection(double cutflow_bin){
     /* Forward-backward asymmetry selection (cross-check of framework) */
     bool pass(false);
 
-    // cut0 :: triggers -- ejets is lepton==electron else mujets
+
+    /**** PRE SELECTION ****/
+    // cut0 :: >=1 One lepton
+    if (m_NMuons+m_NElectrons==0)
+        return false;          // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin);
+        pass = true;
+    }
+
+
+    // cut1 :: >=1 top tags
+    unsigned int n_toptags(0);
+    for (const auto& ljet : m_ljets)
+        if (ljet.tau32 < 0.80 && 105<ljet.softDropMass && ljet.softDropMass<220.) n_toptags++;
+
+    if ( n_toptags < 1 )
+        return false;  // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+1);
+        pass = true;
+    }
+
+
+    // cut2 :: Minimal AK4 kinematics
+    if ( m_jets.size() < 1 )
+        return false;  // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+2);
+        pass = true;
+    }
+
+
+    /**** REGULAR SELECTION ****/
+    // cut3 :: One lepton (kinematics only)
+    if (m_NMuons!=1 || m_NElectrons>0)
+        return false;          // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+3);
+        pass = true;
+    }
+
+
+    // cut4 :: 2D isolation
+    Lepton lep = m_leptons.at(0);
+    if ( !lep.iso ) 
+        return false;
+    else{
+        fillCutflows(cutflow_bin+4);
+        pass = true;
+    }
+
+
+    // cut5 :: triggers -- ejets is lepton==electron else mujets
     unsigned int passTrig(0);
     for (const auto& trig : m_mujetsTriggers){
         if (m_triggers.at(trig)) passTrig++;
@@ -347,80 +400,43 @@ bool eventSelection::afbSelection(double cutflow_bin){
     if (passTrig<1)
         return false;
     else{
-        fillCutflows(cutflow_bin);
-        pass = true;
-    }
-
-
-    // cut1 :: One lepton
-    if (m_NMuons!=1 || m_NElectrons>0)
-        return false;          // exit the function now; no need to test other cuts!
-    else{
-        fillCutflows(cutflow_bin+1);
-        pass = true;
-    }
-
-
-    // cut2 :: pT>55 GeV; |eta|<2.4; TightID
-    Lepton lep = m_leptons.at(0);
-    if ( lep.p4.Pt()<55 || std::abs(lep.p4.Eta())>2.4 || !lep.tight )
-        return false;
-    else{
-        fillCutflows(cutflow_bin+2);
-        pass = true;
-    }
-
-
-    // cut3 :: >=1 top tags
-    unsigned int n_toptags(0);
-    for (const auto& ljet : m_ljets){
-        if (ljet.tau32 < 0.80 && 105<ljet.softDropMass && ljet.softDropMass<220.) n_toptags++;
-    }
-
-    if ( n_toptags < 1 )
-        return false;  // exit the function now; no need to test other cuts!
-    else{
-        fillCutflows(cutflow_bin+3);
-        pass = true;
-    }
-
-
-    // cut4 :: >=2 jets (should have 1 AK4 near lepton & 1 AK4 inside the AK8)
-    if ( m_NJets < 2 )
-        return false;  // exit the function now; no need to test other cuts!
-    else{
-        fillCutflows(cutflow_bin+4);
-        pass = true;
-    }
-
-
-    // cut5 :: leading AK4 pT>150; sub-leading AK4 pT>50
-    if ( m_jets.at(0).p4.Pt() < 150. || m_jets.at(1).p4.Pt() < 50.)
-        return false;  // exit the function now; no need to test other cuts!
-    else{
         fillCutflows(cutflow_bin+5);
         pass = true;
     }
 
 
-    // cut6 :: >= 1 b-tags
-    unsigned int n_btags(0);
-    for (const auto& jet : m_jets)
-        if (jet.bdisc>0.800) n_btags++;
-
-    if ( n_btags<1 )
-        return false;
+    // cut6 :: >=2 jets (should have 1 AK4 near lepton & 1 AK4 inside the AK8)
+    if ( m_NJets < 2 )
+        return false;  // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin+6);
         pass = true;
     }
 
 
-    // cut7 :: MET > 50 GeV
+    // cut7 :: leading AK4 pT>150; sub-leading AK4 pT>50
+    if ( m_jets.at(0).p4.Pt() < 150. || m_jets.at(1).p4.Pt() < 50.)
+        return false;  // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+7);
+        pass = true;
+    }
+
+
+    // cut8 :: >= 1 b-tags
+    if ( m_Nbtags<1 )
+        return false;
+    else{
+        fillCutflows(cutflow_bin+8);
+        pass = true;
+    }
+
+
+    // cut9 :: MET > 50 GeV
     if ( m_met.p4.Pt() < 50 )
         return false;
     else{
-        fillCutflows(cutflow_bin+7);
+        fillCutflows(cutflow_bin+9);
         pass = true;
     }
 

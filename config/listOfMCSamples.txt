@@ -1,12 +1,5 @@
 #root://cmseos.fnal.gov//store/group/lpctlbsm/pilot/WJetsToLNu_Pt-100To250_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_ttbarAC_wjets1/180409_182354/0000/ttbarAC_outtree_1.root
 #root://cmseos.fnal.gov//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/crab_ttbarAC_ttbar/180419_203104/0000/ttbarAC_outtree_1.root
-#mujets-ejets/ttbarAC_outtree_108.root
-#root://131.225.204.161:1094//store/user/lpctop/ttbarAC/ttbarAC_skim/TT_TuneCUETP8M1_13TeV-powheg-pythia8/crab_ttbarAC_ttbar/180406_221102/0000/ttbarAC_outtree_108.root
-#/uscms_data/d3/demarley/ttbar/CMSSW_9_4_4/src/ttbarAC_skim/ttbarAC_skim/test/ttbarAC_outtree_ttbar.root
-#root://cmseos.fnal.gov//store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_tree_ttbarGEN_99.root
-#root://cmseos.fnal.gov//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2-muon/SingleMuon/crab_ttbarAC_SingleMuonB/180427_050924/0000/ttbarAC_outtree_75.root
 #root://cmseos.fnal.gov//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/SingleMuon/crab_ttbarAC_SingleMuonB/180419_205215/0000/ttbarAC_outtree_75.root
-#root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2-muon/SingleMuon/crab_ttbarAC_SingleMuonB/180427_050924/0000/ttbarAC_outtree_1.root
-#root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/crab_ttbarAC_ttbar-ext/180427_220655/0000/ttbarAC_outtree_1.root
+root://131.225.204.161:1094//store/group/lpctop/ttbarAC/ttbarAC_skim_v0.2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/crab_ttbarAC_ttbar-ext/180427_220655/0000/ttbarAC_outtree_1.root
 #root://131.225.204.161:1094//store/group/lpctlbsm/pilot/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_ttbarAC_zjets/180430_201031/0000/ttbarAC_outtree_11.root
-data/ttbar-ext.root
