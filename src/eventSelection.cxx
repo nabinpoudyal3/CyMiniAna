@@ -351,12 +351,10 @@ bool eventSelection::afbSelection(double cutflow_bin){
 
     // cut1 :: >=1 top tags
     unsigned int n_toptags(0);
-    std::cout << " LJETS = " << m_ljets.size() << std::endl;
     for (const auto& ljet : m_ljets) {
         if (ljet.tau32 < 0.80 && 105<ljet.softDropMass && ljet.softDropMass<220.)
             n_toptags++;
     }
-    std::cout << " LJETS tagged = " << n_toptags << std::endl;
 
     if ( n_toptags < 1 )
         return false;  // exit the function now; no need to test other cuts!
