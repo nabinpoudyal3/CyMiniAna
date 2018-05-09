@@ -628,12 +628,12 @@ void Event::initialize_jets(){
 
         jet.index  = idx;
 
-        getBtaggedJets(jet);
-
-        if (isGood)
+        if (isGood){
             m_jets.push_back(jet);
+            getBtaggedJets(jet);          // only care about b-tagging for 'real' AK4
+        }
         if (isGoodIso)
-            m_jets_iso.push_back(jet);
+            m_jets_iso.push_back(jet);    // used for 2D isolation
 
         idx++;
     }
@@ -751,13 +751,14 @@ void Event::initialize_leptons(){
 
         bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium && iso);
         mu.isGood = isGood;
+
         if (!isGood) continue;
 
         mu.charge = (*m_mu_charge)->at(i);
         mu.loose  = (*m_mu_id_loose)->at(i);
         mu.medium = isMedium; 
         mu.tight  = isTight; 
-        mu.iso    = (*m_mu_iso)->at(i);
+        mu.iso    = iso;       // use 2D isolation instead -- (*m_mu_iso)->at(i);
 
         mu.isMuon = true;
         mu.isElectron = false;
@@ -770,11 +771,12 @@ void Event::initialize_leptons(){
     for (unsigned int i=0; i<nElectrons; i++){
         Lepton el;
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
-        bool isTightNoIso = (*m_el_id_tight_noIso)->at(i);
+        bool isTightNoIso  = (*m_el_id_tight_noIso)->at(i);
+        bool isMediumNoIso = (*m_el_id_medium_noIso)->at(i);
 
         bool iso = customIsolation(el);    // 2D isolation cut between leptons & AK4 (need AK4 initialized first!)
 
-        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isTightNoIso && iso);
+        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isMediumNoIso && iso);
         el.isGood = isGood;
         if (!isGood) continue;
 
@@ -783,14 +785,17 @@ void Event::initialize_leptons(){
         el.medium = (*m_el_id_medium)->at(i);
         el.tight  = (*m_el_id_tight)->at(i);
         el.loose_noIso  = (*m_el_id_loose_noIso)->at(i);
-        el.medium_noIso = (*m_el_id_medium_noIso)->at(i);
+        el.medium_noIso = isMediumNoIso;
         el.tight_noIso  = isTightNoIso;
+        el.iso = iso;      // 2D isolation with ID+noIso
 
         el.isMuon = false;
         el.isElectron = true;
 
         m_leptons.push_back(el);
     }
+
+    cma::DEBUG("EVENT : Found "+std::to_string(m_leptons.size())+" leptons!");
 
     return;
 }
@@ -880,6 +885,7 @@ void Event::initialize_kinematics(){
 
     // set MET
     m_met.p4.SetPtEtaPhiM(**m_met_met,0.,**m_met_phi,0.);
+    cma::DEBUG("EVENT : MET = "+std::to_string(m_met.p4.Pt()));
 
     // Get MET and lepton transverse energy
     m_ST += m_HT;
