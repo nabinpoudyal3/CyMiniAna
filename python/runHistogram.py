@@ -59,7 +59,7 @@ for hi,histogram in enumerate(histograms):
     hist.ratio_type  = "ratio"     # "ratio"
     hist.stacked     = True        # stack plots
     hist.rebin       = variables[histogram].binning
-    hist.logplot     = False       # plot on log scale
+    hist.logplot     = {"y":False,"x":False,"data":False}       # plot on log scale
     hist.x_label     = variables[histogram].label
     hist.y_label     = "Events"
     hist.y_ratio_label = ""

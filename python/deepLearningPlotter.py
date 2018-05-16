@@ -130,7 +130,7 @@ class DeepLearningPlotter(object):
 
             hist.normed  = True
             hist.stacked = False
-            hist.logplot = False
+            hist.logplot = {"y":False,"x":False,"data":False}
             hist.binning = binning
             hist.x_label = self.variable_labels[feature].label
             hist.y_label = "Events"
@@ -248,7 +248,7 @@ class DeepLearningPlotter(object):
             hist.saveAs  = "{0}/hist_DNN_prediction_kfold{1}_{2}".format(self.output_dir,i,self.date)
             hist.binning = [bb/10. for bb in range(11)]
             hist.stacked = False
-            hist.logplot = False
+            hist.logplot = {"y":False,"x":False,"data":False}
             hist.x_label = "Prediction"
             hist.y_label = "Arb. Units"
             hist.CMSlabel = 'top left'

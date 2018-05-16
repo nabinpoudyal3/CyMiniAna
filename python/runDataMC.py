@@ -93,7 +93,7 @@ for histogram in histograms:
     hist.stacked     = True        # stack backgrounds
     hist.binning     = None
     hist.rebin       = variables[histogramName].binning # rebin per histogram
-    hist.logplot     = False
+    hist.logplot     = {"y":False,"x":False,"data":False}
     hist.x_label     = variables[histogramName].label
     hist.y_label     = "Events"
     hist.lumi        = 'XY.Z'

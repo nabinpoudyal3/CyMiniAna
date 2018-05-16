@@ -181,7 +181,7 @@ class HepPlotterDataMC(HepPlotter):
                                  weights=weights,histtype="stepfilled",
                                  edgecolor='k',ls="solid",color=fillcolors,
                                  label=labels,stacked=self.stacked,
-                                 log=self.logplot,zorder=10)
+                                 log=self.logplot["y"],zorder=10)
         self.histograms["background"]    = totalBckg[-1]          # total background prediction
         self.uncertainties["background"] = np.sqrt( totalErrors ) # stat errors added in quadrature
 
@@ -226,7 +226,7 @@ class HepPlotterDataMC(HepPlotter):
                         lw=2,edgecolor=signal_color,color=signal_color,
                         label=signal_label,
                         stacked=self.stackSignal,bottom=bottomEdge,
-                        log=self.logplot,zorder=11) # draw in front of background/behind data
+                        log=self.logplot["y"],zorder=11) # draw in front of background/behind data
             if max(signalPred) > totpred:
                 totpred = signalPred
             self.histograms[name]    = signalPred
@@ -258,7 +258,7 @@ class HepPlotterDataMC(HepPlotter):
                                             label=self.sample_labels[name].label)
             # Draw in the bottom plot
             systHist,b,p = self.ax2.hist(data,bins=binning,weights=weight,histtype='step',
-                                         lw=2,edgecolor=color,color=color,log=self.logplot,
+                                         lw=2,edgecolor=color,color=color,log=self.logplot["y"],
                                          label=self.sample_labels[name].label,
                                          stacked=False,zorder=10)
 
@@ -313,11 +313,11 @@ class HepPlotterDataMC(HepPlotter):
         # y-axis
         if self.ymaxScale is None:
             self.ymaxScale = self.yMaxScaleValues[self.typeOfPlot]
-        yminimum = 0.1 if self.logplot else 0.0
+        yminimum = 0.1 if self.logplot["y"] else 0.0
 
         self.ax1.set_ylim(yminimum,self.ymaxScale*self.ax1.get_ylim()[1])
         self.ax1.set_yticks(self.ax1.get_yticks()[1:])                  # remove the first point (overlaps with ratio plot)
-        if self.logplot: self.ax1.set_yticks(self.ax1.get_yticks()[1:]) # remove the first point (again)
+        if self.logplot["y"]: self.ax1.set_yticks(self.ax1.get_yticks()[1:]) # remove the first point (again)
         self.setYAxis(self.ax1)
 
         # x-axis
