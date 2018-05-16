@@ -57,6 +57,7 @@ class eventSelection{
     bool ejetsSelection(double cutflow_bin, const Lepton& lep);
     bool mujetsSelection(double cutflow_bin);
     bool cwoalaSelection(double cutflow_bin);
+    bool afbSelection(double cutflow_bin);
 
     // Dilepton selections
     bool twoLeptonSelection(double cutflow_bin);
@@ -101,6 +102,7 @@ class eventSelection{
 
     bool m_isCWoLaAnalysis;
     bool m_allHadDNNSelection;
+    bool m_isAFBAnalysis;
 
     // physics information
     float m_nominal_weight;
@@ -122,6 +124,7 @@ class eventSelection{
     std::map<std::string,unsigned int> m_triggers;
     std::map<std::string,unsigned int> m_filters;
 
+    unsigned int m_Nbtags;
     unsigned int m_NLeptons;
     unsigned int m_NElectrons;
     unsigned int m_NMuons;

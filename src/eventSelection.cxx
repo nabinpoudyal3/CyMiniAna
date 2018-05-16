@@ -105,6 +105,8 @@ void eventSelection::identifySelection(){
     m_isTwoLeptonAnalysis  = m_selection.compare("dilepton")==0;
     m_isCWoLaAnalysis      = m_selection.compare("cwola")==0;
 
+    m_isAFBAnalysis = m_selection.compare("afb")==0;
+
     return;
 }
 
@@ -181,7 +183,7 @@ bool eventSelection::applySelection(const Event &event) {
     m_filters  = event.filters();
     // add more objects as needed
 
-
+    m_Nbtags     = event.btag_jets().size();
     m_NLjets     = m_ljets.size();
     m_NJets      = m_jets.size();
     m_NLeptons   = m_leptons.size();
@@ -229,7 +231,12 @@ bool eventSelection::applySelection(const Event &event) {
 
     else if (m_isCWoLaAnalysis){
         m_ttbar1L = event.ttbar1L();
-        passSelection = (first_bin+2);
+        passSelection = cwoalaSelection(first_bin+2);
+    }
+
+    // mimc the AFB analysis as a cross-check
+    else if (m_isAFBAnalysis){
+        passSelection = afbSelection(first_bin+2);
     }
 
     // -- Dilepton analysis
@@ -327,6 +334,117 @@ bool eventSelection::zeroLeptonSelection(double cutflow_bin){
 
 
 // ******************************************************* //
+bool eventSelection::afbSelection(double cutflow_bin){
+    /* Forward-backward asymmetry selection (cross-check of framework) */
+    bool pass(false);
+
+
+    /**** PRE SELECTION ****/
+    // cut0 :: >=1 One lepton
+    if (m_NLeptons==0)
+        return false;          // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin);
+        pass = true;
+    }
+
+
+    // cut1 :: >=1 top tags
+    unsigned int n_toptags(0);
+    for (const auto& ljet : m_ljets) {
+        if (ljet.tau32 < 0.80 && 105<ljet.softDropMass && ljet.softDropMass<220.)
+            n_toptags++;
+    }
+
+    if ( n_toptags < 1 )
+        return false;  // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+1);
+        pass = true;
+    }
+
+
+    // cut2 :: Minimal AK4 kinematics
+    if ( m_jets.size() < 1 )
+        return false;  // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+2);
+        pass = true;
+    }
+
+
+    /**** REGULAR SELECTION ****/
+    // cut3 :: One lepton (kinematics only)
+    if (m_NMuons!=1 || m_NElectrons>0)
+        return false;          // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+3);
+        pass = true;
+    }
+
+
+    // cut4 :: 2D isolation
+    Lepton lep = m_leptons.at(0);
+    if ( !lep.iso ) 
+        return false;
+    else{
+        fillCutflows(cutflow_bin+4);
+        pass = true;
+    }
+
+
+    // cut5 :: triggers -- ejets is lepton==electron else mujets
+    unsigned int passTrig(0);
+    for (const auto& trig : m_mujetsTriggers){
+        if (m_triggers.at(trig)) passTrig++;
+    }
+
+    if (passTrig<1)
+        return false;
+    else{
+        fillCutflows(cutflow_bin+5);
+        pass = true;
+    }
+
+
+    // cut6 :: >=2 jets (should have 1 AK4 near lepton & 1 AK4 inside the AK8)
+    if ( m_NJets < 2 )
+        return false;  // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+6);
+        pass = true;
+    }
+
+
+    // cut7 :: leading AK4 pT>150; sub-leading AK4 pT>50
+    if ( m_jets.at(0).p4.Pt() < 150. || m_jets.at(1).p4.Pt() < 50.)
+        return false;  // exit the function now; no need to test other cuts!
+    else{
+        fillCutflows(cutflow_bin+7);
+        pass = true;
+    }
+
+
+    // cut8 :: >= 1 b-tags
+    if ( m_Nbtags<1 )
+        return false;
+    else{
+        fillCutflows(cutflow_bin+8);
+        pass = true;
+    }
+
+
+    // cut9 :: MET > 50 GeV
+    if ( m_met.p4.Pt() < 50 )
+        return false;
+    else{
+        fillCutflows(cutflow_bin+9);
+        pass = true;
+    }
+
+    return pass;
+}
+
 
 bool eventSelection::ejetsSelection(double cutflow_bin, const Lepton& lep){
     /* Check if event passes selection; called from 1-lepton selection

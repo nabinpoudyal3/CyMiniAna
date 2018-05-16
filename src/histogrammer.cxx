@@ -109,23 +109,26 @@ void histogrammer::initialize( TFile& outputFile, bool doSystWeights ){
 
 
     // loop over selections (typically only one treename)
-    for (const auto& sel : m_config->selections() )
+    for (const auto& sel : m_config->selections() ){
         bookHists( m_name+sel );
 
-    // weight systematics
-    if (m_isMC && m_doSystWeights){
-        for (const auto& syst : m_config->listOfWeightSystematics()){
-            bookHists( m_name+syst );
-        } // end weight systematics
+        // weight systematics
+        if (m_isMC && m_doSystWeights){
+            for (const auto& syst : m_config->listOfWeightSystematics()){
+                bookHists( m_name+sel+"_"+syst );
+            } // end weight systematics
 
-        // vector weight systematics
-        for (const auto& syst : m_config->mapOfWeightVectorSystematics()){
-            for (unsigned int el=0;el<syst.second;++el){
-                std::string weightIndex = std::to_string(el);
-                bookHists( m_name+weightIndex+"_"+syst.first );
-            } // end components of vector
-        } // end vector weight systematics
-    } // end if MC and save weight systematics
+            // vector weight systematics
+            for (const auto& syst : m_config->mapOfWeightVectorSystematics()){
+                for (unsigned int el=0;el<syst.second;++el){
+                    std::string weightIndex = std::to_string(el);
+                    bookHists( m_name+sel+"_"+weightIndex+"_"+syst.first );
+                } // end components of vector
+            } // end vector weight systematics
+        } // end if MC and save weight systematics
+    } // end loop over selections
+
+    return;
 }
 
 void histogrammer::bookHists( std::string name ){
@@ -173,6 +176,7 @@ void histogrammer::bookHists( std::string name ){
         init_hist("ljet_subjet0_tau32_"+name,100, 0.0, 1.0);
         init_hist("ljet_subjet1_tau32_"+name,100, 0.0, 1.0);
 
+        init_hist("ljet_subjet-b_subjet-w_tau21_"+name,100, 0.0,1.0, 100,0.0,1.0);  // subjet b (=higher bdisc) tau21 vs subjet w (=lower bdisc) tau21
         init_hist("ljet_subjet0_subjet1_tau21_"+name,100, 0.0,1.0, 100,0.0,1.0);  // subjet0 tau21 vs subjet1 tau21
         init_hist("ljet_subjet0_subjet1_tau32_"+name,100, 0.0,1.0, 100,0.0,1.0);  // subjet0 tau32 vs subjet1 tau32
         init_hist("ljet_subjet0_charge_bdisc_"+name,1000,-5.0,5.0, 100,0.0,1.0);  // charge vs bdisc (charge=x-axis)
@@ -180,6 +184,10 @@ void histogrammer::bookHists( std::string name ){
 
         init_hist("ljet_pt_eta_"+name,    200,  0.0, 2000.0,  50, -2.5, 2.5);  // pt vs eta (pt=x-axis)
         init_hist("ljet_pt_SDmass_"+name, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
+
+        init_hist("ljet_SDmass_tau32_"+name, 500,  0.0,  500.0, 100,  0,   1);    // SDmass  vs tau32  (SDmass=x-axis)
+        init_hist("ljet_BEST_t_SDmass_"+name,100,  0.0,    1.0, 500,  0, 500);    // BEST(t) vs SDmass (BEST=x-axis)
+        init_hist("ljet_BEST_t_tau32_"+name, 100,  0.0,    1.0, 100,  0,   1);    // BEST(t) vs tau32  (BEST=x-axis)
 
         // plots of subjet charge/bdisc for different lepton charges
         if (m_useLeptons){
@@ -212,19 +220,21 @@ void histogrammer::bookHists( std::string name ){
     }
 
     if (m_useLeptons){
-        init_hist("el_pt_"+name,  500, 0.0, 2000);
-        init_hist("el_eta_"+name,  50, -2.5, 2.5);
-        init_hist("el_phi_"+name,  64, -3.2, 3.2);
-        init_hist("el_charge_"+name, 240, -1.2, 1.2);
+        init_hist("el_pt_"+name,    500, 0.0,2000);
+        init_hist("el_eta_"+name,    50,-2.5, 2.5);
+        init_hist("el_phi_"+name,    64,-3.2, 3.2);
+        init_hist("el_charge_"+name,240,-1.2, 1.2);
         init_hist("el_ptrel_"+name, 500, 0.0, 500);
-        init_hist("el_drmin_"+name,  50, 0.0, 5);
+        init_hist("el_drmin_"+name,  50, 0.0,   5);
+        init_hist("n_el_"+name,      10,   0,  10);
 
-        init_hist("mu_pt_"+name,  500, 0.0, 2000);
-        init_hist("mu_eta_"+name,  50, -2.5, 2.5);
-        init_hist("mu_phi_"+name,  64, -3.2, 3.2);
-        init_hist("mu_charge_"+name, 240, -1.2, 1.2);
+        init_hist("mu_pt_"+name,    500, 0.0,2000);
+        init_hist("mu_eta_"+name,    50,-2.5, 2.5);
+        init_hist("mu_phi_"+name,    64,-3.2, 3.2);
+        init_hist("mu_charge_"+name,240,-1.2, 1.2);
         init_hist("mu_ptrel_"+name, 500, 0.0, 500);
-        init_hist("mu_drmin_"+name,  50, 0.0, 5);
+        init_hist("mu_drmin_"+name,  50, 0.0,   5);
+        init_hist("n_mu_"+name,      10,   0,  10);
     }
 
     if (m_useNeutrinos){
@@ -239,12 +249,25 @@ void histogrammer::bookHists( std::string name ){
     init_hist("ht_"+name,     5000,  0.0, 5000);
     init_hist("mtw_"+name,     500,  0.0,  500);
 
-    //init_hist("dnn_"+name,  100, 0.0,   1.);
+    // ttbar reconstruction + asymmetry values
+    if (m_config->isOneLeptonAnalysis()){
+        init_hist("deltaR_lep_ak4_"+name, 50, 0.0, 5.0);
+        init_hist("pTrel_lep_ak4_"+name, 100, 0.0, 500);
+        init_hist("deltaR_lep_ak8_"+name, 50, 0.0, 5.0);
+        init_hist("deltaR_ak4_ak8_"+name, 50, 0.0, 5.0);
+        init_hist("deltaR_pTrel_lep_ak4_"+name, 50,0.0,5.0, 100,0.0,500);
 
-    // asymmetry variables
-    init_hist("mttbar_"+name,  5000, 0.0, 5000);
-    init_hist("pTttbar_"+name,  300, 0.0,  300);
-    init_hist("yttbar_"+name,   100,-10.,   10);
+        init_hist("deltay_"+name,  1000,-5.0,  5.0);
+        init_hist("mttbar_"+name,  5000, 0.0, 5000);
+        init_hist("pTttbar_"+name,  300, 0.0,  600);
+        init_hist("yttbar_"+name,   200,-10.,   10);
+        init_hist("betattbar_"+name,100,  0.,    1);
+
+        init_hist("mttbar_deltay_"+name,  5000, 0.0, 5000, 1000,-5.0,  5.0);
+        init_hist("pTttbar_deltay_"+name,  300, 0.0,  600, 1000,-5.0,  5.0);
+        init_hist("yttbar_deltay_"+name,   200,-10.,   10, 1000,-5.0,  5.0);
+        init_hist("betattbar_deltay_"+name, 100, 0.0, 1.0, 1000,-5.0,  5.0);
+    }
 
     return;
 }
@@ -266,7 +289,6 @@ void histogrammer::fill( const std::string& name, const double& value, const dou
 
     return;
 }
-
 void histogrammer::fill( const std::string& name, 
                          const double& xvalue, const double& yvalue, const double& weight ){
     /* TH2D */
@@ -280,7 +302,6 @@ void histogrammer::fill( const std::string& name,
 
     return;
 }
-
 void histogrammer::fill( const std::string& name, 
                          const double& xvalue, const double& yvalue, const double& zvalue, const double& weight ){
     /* TH3D */
@@ -307,31 +328,31 @@ void histogrammer::fill( Event& event, const std::vector<unsigned int>& evtsel_d
         std::string sel( selections.at(ss) );
         if (!evtsel_decisions.at(ss)) continue;
         fill( m_name+sel, event, event_weight );
-    }
 
-    // if there are systematics stored as weights (e.g., b-tagging, pileup, etc.)
-    // the following calls the fill() function with different event weights
-    // to make histograms
-    bool isNominal = m_config->isNominalTree( event.treeName() );
-    if (m_isMC && isNominal && m_doSystWeights){
-        // weight systematics
-        event_weight = 1.0;
-        for (const auto& syst : m_config->listOfWeightSystematics()){
-            event_weight = event.getSystEventWeight( syst );
-            fill( m_name+syst, event, event_weight );
-        } // end weight systematics
+        // if there are systematics stored as weights (e.g., b-tagging, pileup, etc.)
+        // the following calls the fill() function with different event weights
+        // to make histograms
+        bool isNominal = m_config->isNominalTree( event.treeName() );
+        if (m_isMC && isNominal && m_doSystWeights){
+            // weight systematics
+            event_weight = 1.0;
+            for (const auto& syst : m_config->listOfWeightSystematics()){
+                event_weight = event.getSystEventWeight( syst );
+                fill( m_name+sel+"_"+syst, event, event_weight );
+            } // end weight systematics
 
-        // vector weight systematics
-        event_weight = 1.0;
-        for (const auto& syst : m_config->mapOfWeightVectorSystematics()){
-            for (unsigned int el=0;el<syst.second;++el){
-                event_weight = event.getSystEventWeight( syst.first, el );
-                std::string weightIndex = std::to_string(el);
+            // vector weight systematics
+            event_weight = 1.0;
+            for (const auto& syst : m_config->mapOfWeightVectorSystematics()){
+                for (unsigned int el=0;el<syst.second;++el){
+                    event_weight = event.getSystEventWeight( syst.first, el );
+                    std::string weightIndex = std::to_string(el);
 
-                fill( m_name+weightIndex+"_"+syst.first, event, event_weight );
-            } // end components of vector
-        } // end vector weight systematics
-    } // end if nominal and doSystWeights
+                    fill( m_name+sel+"_"+weightIndex+"_"+syst.first, event, event_weight );
+                } // end components of vector
+            } // end vector weight systematics
+        } // end if nominal and doSystWeights
+    } // end loop over selections
 
     return;
 }
@@ -340,6 +361,9 @@ void histogrammer::fill( Event& event, const std::vector<unsigned int>& evtsel_d
 void histogrammer::fill( const std::string& name, Event& event, double event_weight){
     /* Fill histograms -- just use information from the event and fill histogram
        This is the function to modify / inherit for analysis-specific purposes
+
+       //std::vector<Muon> muons = event.muons();  -- merged into "Lepton"
+       //std::vector<Electron> electrons = event.electrons();
     */
     cma::DEBUG("HISTOGRAMMER : Fill histograms.");
     cma::DEBUG("HISTOGRAMMER : event weight = "+std::to_string(event_weight) );
@@ -348,8 +372,6 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     std::vector<Jet> jets = event.jets();
     std::vector<Ljet> ljets = event.ljets();
     std::vector<Lepton> leptons = event.leptons();
-    //std::vector<Muon> muons = event.muons();
-    //std::vector<Electron> electrons = event.electrons();
     std::vector<Neutrino> neutrinos = event.neutrinos();
     MET met = event.met();
 
@@ -410,6 +432,12 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
             fill("ljet_subjet0_tau32_"+name, subjet0_tau32, event_weight);
             fill("ljet_subjet1_tau32_"+name, subjet1_tau32, event_weight);
 
+            // fill based on which subjet has a higher b-disc value
+            if (ljet.subjet0_bdisc>ljet.subjet1_bdisc)
+                fill("ljet_subjet-b_subjet-w_tau21_"+name, subjet0_tau21, subjet1_tau21, event_weight);
+            else
+                fill("ljet_subjet-b_subjet-w_tau21_"+name, subjet1_tau21, subjet0_tau21, event_weight);
+
             fill("ljet_subjet0_subjet1_tau21_"+name,subjet0_tau21,subjet1_tau21,event_weight);  // subjet0 tau21 vs subjet1 tau21
             fill("ljet_subjet0_subjet1_tau32_"+name,subjet0_tau32,subjet1_tau32,event_weight);  // subjet0 tau32 vs subjet1 tau32
 
@@ -418,6 +446,10 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
 
             fill("ljet_pt_eta_"+name,   ljet.p4.Pt(), ljet.p4.Eta(), event_weight);
             fill("ljet_pt_SDmass_"+name,ljet.p4.Pt(), ljet.softDropMass, event_weight);
+
+            fill("ljet_SDmass_tau32_"+name, ljet.softDropMass, ljet.tau32,  event_weight);    // SDmass  vs tau32  (SDmass=x-axis)
+            fill("ljet_BEST_t_SDmass_"+name,ljet.BEST_t, ljet.softDropMass, event_weight);    // BEST(t) vs SDmass (BEST=x-axis)
+            fill("ljet_BEST_t_tau32_"+name, ljet.BEST_t, ljet.tau32,        event_weight);    // BEST(t) vs tau32  (BEST=x-axis)
 
             int charge(-999);
             if (m_useLeptons && leptons.size()>0) {
@@ -457,7 +489,11 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
 
     if (m_useLeptons){
         cma::DEBUG("HISTOGRAMMER : Fill leptons");
+        unsigned int n_electrons(0);
+        unsigned int n_muons(0);
         for (const auto& lep : leptons){
+            if (!lep.isGood) continue;
+
             if (lep.isElectron){
                 fill("el_pt_"+name,  lep.p4.Pt(),  event_weight);
                 fill("el_eta_"+name, lep.p4.Eta(), event_weight);
@@ -465,6 +501,7 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                 fill("el_charge_"+name, lep.charge, event_weight);
                 fill("el_ptrel_"+name,  lep.ptrel,  event_weight);
                 fill("el_drmin_"+name,  lep.drmin,  event_weight);
+                n_electrons++;
             }
             else if (lep.isMuon){
                 fill("mu_pt_"+name,  lep.p4.Pt(),  event_weight);
@@ -473,8 +510,11 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                 fill("mu_charge_"+name, lep.charge, event_weight);
                 fill("mu_ptrel_"+name,  lep.ptrel,  event_weight);
                 fill("mu_drmin_"+name,  lep.drmin,  event_weight);
+                n_muons++;
             }
         } // end loop over leptons
+        fill("n_el_"+name,  n_electrons, event_weight);
+        fill("n_mu_"+name,  n_muons,     event_weight);
     } // end if use leptons
 
     if (m_useNeutrinos){
@@ -493,17 +533,50 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
     fill("ht_"+name,      event.HT(),   event_weight);
     fill("mtw_"+name,     met.mtw,      event_weight);
 
-/*
-    // DNN
-    cma::DEBUG("HISTOGRAMMER : Fill DNN");
-    fill("dnn_"+name, event.dnn(), event_weight); // N/A
 
-    // Asymmetry
-    cma::DEBUG("HISTOGRAMMER : Fill ttbar AC values");
-    fill("mttbar_"+name,  (top.p4+antitop.p4).M(),  event_weight);
-    fill("pTttbar_"+name, (top.p4+antitop.p4).Pt(), event_weight);
-    fill("yttbar_"+name,  (top.p4+antitop.p4).Rapidity(), event_weight);
-*/
+    if (m_config->isOneLeptonAnalysis()){
+        // have the asymmetry readily available in boosted single lepton
+        cma::DEBUG("HISTOGRAMMER : Fill ttbar AC values");
+        Ttbar1L ttbarSL = event.ttbar1L();
+
+        Jet tt_jet     = ttbarSL.jet;
+        Ljet tt_ljet   = ttbarSL.ljet;
+        Lepton tt_lep  = ttbarSL.lepton;
+        Neutrino tt_nu = ttbarSL.neutrino;
+
+        float dr_lep_ak4 = tt_jet.p4.DeltaR( tt_lep.p4 );
+        float ptrel_lep_ak4 = cma::ptrel( tt_lep.p4, tt_jet.p4);
+
+        fill("deltaR_lep_ak4_"+name, dr_lep_ak4,    event_weight);
+        fill("pTrel_lep_ak4_"+name,  ptrel_lep_ak4, event_weight);
+        fill("deltaR_lep_ak8_"+name, tt_ljet.p4.DeltaR( tt_lep.p4 ), event_weight);
+        fill("deltaR_ak4_ak8_"+name, tt_ljet.p4.DeltaR( tt_jet.p4 ), event_weight);
+        fill("deltaR_pTrel_lep_ak4_"+name, dr_lep_ak4, ptrel_lep_ak4, event_weight);
+
+        // asymmetry
+        TLorentzVector top_lep;
+        TLorentzVector top_had;
+        TLorentzVector ttbar;
+
+        top_lep = (tt_nu.p4 + tt_lep.p4 + tt_jet.p4);
+        top_had = tt_ljet.p4;
+        ttbar = top_had+top_lep;
+
+        float dy = tt_lep.charge * ( std::abs(top_lep.Rapidity()) - std::abs(top_had.Rapidity()) );
+        float betatt = std::abs(top_had.Pz() + top_lep.Pz()) / (top_had.E() + top_lep.E());
+
+        fill("deltay_"+name,  dy,  event_weight);
+        fill("mttbar_"+name,  ttbar.M(),  event_weight);
+        fill("pTttbar_"+name, ttbar.Pt(), event_weight);
+        fill("yttbar_"+name,  ttbar.Rapidity(), event_weight);
+        fill("betattbar_"+name, betatt, event_weight);
+
+        fill("mttbar_deltay_"+name,  ttbar.M(),  dy, event_weight);
+        fill("pTttbar_deltay_"+name, ttbar.Pt(), dy, event_weight);
+        fill("yttbar_deltay_"+name,  ttbar.Rapidity(), dy, event_weight);
+        fill("betattbar_deltay_"+name, betatt, dy, event_weight);
+    }
+
     cma::DEBUG("HISTOGRAMMER : End histograms");
 
     return;

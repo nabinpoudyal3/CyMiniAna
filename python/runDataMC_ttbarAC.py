@@ -54,7 +54,7 @@ histograms  = util.file2list(listOfHists)
 metadata      = hpt.getMetadata()
 x_labels      = hpl.variable_labels()
 sample_labels = hpl.sample_labels()
-selection     = 'mujets'
+selection     = 'ejets'
 
 samples = [
 'diboson-ww',

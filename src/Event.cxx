@@ -93,6 +93,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_jet_area     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4area");
       m_jet_uncorrPt = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4uncorrPt");
       m_jet_uncorrE  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4uncorrE");
+      m_jet_jerSF    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4jerSF");
+      m_jet_jerSF_UP = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4jerSF_UP");
+      m_jet_jerSF_DOWN = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4jerSF_DOWN");
     }
 
     if (m_useLargeRJets){
@@ -107,11 +110,17 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau3");
       m_ljet_area   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8area");
       m_ljet_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge");
+      m_ljet_chargeSD = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8chargeSD");
+      m_ljet_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge3");
+      m_ljet_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge10");
+
       m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge");
       m_ljet_subjet0_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0bDisc");
       m_ljet_subjet0_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0deepCSV");
       m_ljet_subjet0_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0pt");
       m_ljet_subjet0_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0mass");
+      m_ljet_subjet0_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge3");
+      m_ljet_subjet0_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge10");
 
       if (m_config->isGridFile()){
           m_ljet_subjet0_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau1");
@@ -127,6 +136,8 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_subjet1_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1deepCSV");
       m_ljet_subjet1_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1pt");
       m_ljet_subjet1_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1mass");
+      m_ljet_subjet1_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge3");
+      m_ljet_subjet1_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge10");
 
       m_ljet_BEST_class = new TTreeReaderValue<std::vector<int>>(m_ttree,"AK8BEST_class");
       m_ljet_BEST_t = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_t");
@@ -137,6 +148,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
       m_ljet_uncorrPt = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8uncorrPt");
       m_ljet_uncorrE  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8uncorrE");
+      m_ljet_jerSF    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8jerSF");
+      m_ljet_jerSF_UP = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8jerSF_UP");
+      m_ljet_jerSF_DOWN = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8jerSF_DOWN");
     }
 
 
@@ -407,7 +421,7 @@ void Event::ttbarReconstruction(){
         m_ttbar0L = m_ttbarRecoTool->ttbar0L();
     }
     if (m_isOneLeptonAnalysis){
-        m_ttbarRecoTool->execute(m_leptons,m_jets,m_ljets);
+        m_ttbarRecoTool->execute(m_leptons,m_neutrinos,m_jets,m_ljets);
         m_ttbar1L = m_ttbarRecoTool->ttbar1L();
     }
     if (m_isTwoLeptonAnalysis){
@@ -598,38 +612,51 @@ void Event::initialize_truth(){
 void Event::initialize_jets(){
     /* Setup struct of jets (small-r) and relevant information 
      * b-tagging: https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco
-        CSVv2L -0.5884
-        CSVv2M 0.4432
-        CSVv2T 0.9432
+        CSVv2L 0.5426
+        CSVv2M 0.8484
+        CSVv2T 0.9535
      */
     unsigned int nJets = (*m_jet_pt)->size();
     m_jets.clear();
+    m_jets_iso.clear();  // jet collection for lepton 2D isolation
 
     for (const auto& btagWP : m_config->btagWkpts() ){
         m_btag_jets[btagWP].clear();
     }
 
     unsigned int idx(0);
+    unsigned int idx_iso(0);
     for (unsigned int i=0; i<nJets; i++){
         Jet jet;
         jet.p4.SetPtEtaPhiM( (*m_jet_pt)->at(i),(*m_jet_eta)->at(i),(*m_jet_phi)->at(i),(*m_jet_m)->at(i));
 
+        bool isGoodIso( jet.p4.Pt()>15 && std::abs(jet.p4.Eta())<2.4);
         bool isGood(jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
-        if (!isGood) continue;
+
+        if (!isGood && !isGoodIso) continue;
+
+        jet.isGood = isGood;
 
         jet.bdisc    = (*m_jet_bdisc)->at(i);
         jet.deepCSV  = (*m_jet_deepCSV)->at(i);
         jet.area     = (*m_jet_area)->at(i);
         jet.uncorrE  = (*m_jet_uncorrE)->at(i);
         jet.uncorrPt = (*m_jet_uncorrPt)->at(i);
+        jet.jerSF    = (*m_jet_jerSF)->at(i);
+        jet.jerSF_UP = (*m_jet_jerSF_UP)->at(i);
+        jet.jerSF_DOWN = (*m_jet_jerSF_DOWN)->at(i);
 
         jet.index  = idx;
-        jet.isGood = isGood;
 
-        getBtaggedJets(jet);
-
-        m_jets.push_back(jet);
-        idx++;
+        if (isGood){
+            m_jets.push_back(jet);
+            getBtaggedJets(jet);          // only care about b-tagging for 'real' AK4
+            idx++;
+        }
+        if (isGoodIso){
+            m_jets_iso.push_back(jet);    // used for 2D isolation
+            idx_iso++;
+        }
     }
 
     m_btag_jets_default = m_btag_jets.at(m_config->jet_btagWkpt());
@@ -664,13 +691,16 @@ void Event::initialize_ljets(){
         ljet.tau3   = (*m_ljet_tau3)->at(i);
         ljet.tau21  = ljet.tau2 / ljet.tau1;
         ljet.tau32  = ljet.tau3 / ljet.tau2;
-        bool toptag = (ljet.softDropMass>105. && ljet.softDropMass<210 && ljet.tau32<0.65);
+        //bool toptag = (ljet.softDropMass>105. && ljet.softDropMass<210 && ljet.tau32<0.65);  // apply in eventSelection
+
+        float subjet0_bdisc = (*m_ljet_subjet0_bdisc)->at(i);  // want the subjets to have "real" b-disc values
+        float subjet1_bdisc = (*m_ljet_subjet1_bdisc)->at(i);
 
         // check if the AK8 is 'good'
-        bool isGood(ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4); // && toptag);
-        if (!isGood) continue;
+        bool isGood(ljet.p4.Pt()>400. && fabs(ljet.p4.Eta())<2.4 && subjet0_bdisc>=0 && subjet1_bdisc>=0);
+        ljet.isGood = isGood;
 
-        ljet.charge = (*m_ljet_charge)->at(i);
+        if (!isGood) continue;
 
         ljet.BEST_t = (*m_ljet_BEST_t)->at(i);
         ljet.BEST_w = (*m_ljet_BEST_w)->at(i);
@@ -679,46 +709,32 @@ void Event::initialize_ljets(){
         ljet.BEST_j = (*m_ljet_BEST_j)->at(i);
         ljet.BEST_class = (*m_ljet_BEST_class)->at(i);
 
-        ljet.subjet0_bdisc  = (*m_ljet_subjet0_bdisc)->at(i);
+        ljet.subjet0_bdisc  = subjet0_bdisc;   // (*m_ljet_subjet0_bdisc)->at(i);
         ljet.subjet0_charge = (*m_ljet_subjet0_charge)->at(i);
         ljet.subjet0_mass   = (*m_ljet_subjet0_mass)->at(i);
         ljet.subjet0_pt     = (*m_ljet_subjet0_pt)->at(i);
-        ljet.subjet1_bdisc  = (*m_ljet_subjet1_bdisc)->at(i);
+        ljet.subjet0_tau1   = (*m_ljet_subjet0_tau1)->at(i);
+        ljet.subjet0_tau2   = (*m_ljet_subjet0_tau2)->at(i);
+        ljet.subjet0_tau3   = (*m_ljet_subjet0_tau3)->at(i);
+
+        ljet.subjet1_bdisc  = subjet1_bdisc;   // (*m_ljet_subjet1_bdisc)->at(i);
         ljet.subjet1_charge = (*m_ljet_subjet1_charge)->at(i);
         ljet.subjet1_mass   = (*m_ljet_subjet1_mass)->at(i);
         ljet.subjet1_pt     = (*m_ljet_subjet1_pt)->at(i);
+        ljet.subjet1_tau1   = (*m_ljet_subjet1_tau1)->at(i);
+        ljet.subjet1_tau2   = (*m_ljet_subjet1_tau2)->at(i);
+        ljet.subjet1_tau3   = (*m_ljet_subjet1_tau3)->at(i);
 
-        float subjet0_tau1(-999.);
-        float subjet0_tau2(-999.);
-        float subjet0_tau3(-999.);
-        float subjet1_tau1(-999.);
-        float subjet1_tau2(-999.);
-        float subjet1_tau3(-999.);
-
-        if (m_config->isGridFile()){
-            // older files will not have this option
-            subjet0_tau1 = (*m_ljet_subjet0_tau1)->at(i);
-            subjet0_tau2 = (*m_ljet_subjet0_tau2)->at(i);
-            subjet0_tau3 = (*m_ljet_subjet0_tau3)->at(i);
-            subjet1_tau1 = (*m_ljet_subjet1_tau1)->at(i);
-            subjet1_tau2 = (*m_ljet_subjet1_tau2)->at(i);
-            subjet1_tau3 = (*m_ljet_subjet1_tau3)->at(i);
-        }
-
-        ljet.subjet0_tau1 = subjet0_tau1; //(*m_ljet_subjet0_tau1)->at(i);
-        ljet.subjet0_tau2 = subjet0_tau2; //(*m_ljet_subjet0_tau2)->at(i);
-        ljet.subjet0_tau3 = subjet0_tau3; //(*m_ljet_subjet0_tau3)->at(i);
-        ljet.subjet1_tau1 = subjet1_tau1; //(*m_ljet_subjet1_tau1)->at(i);
-        ljet.subjet1_tau2 = subjet1_tau2; //(*m_ljet_subjet1_tau2)->at(i);
-        ljet.subjet1_tau3 = subjet1_tau3; //(*m_ljet_subjet1_tau3)->at(i);
-
+        ljet.charge = (*m_ljet_charge)->at(i);
         ljet.target = target;
-        ljet.isGood = isGood;
         ljet.index  = idx;
 
         ljet.area     = (*m_ljet_area)->at(i);
         ljet.uncorrE  = (*m_ljet_uncorrE)->at(i);
         ljet.uncorrPt = (*m_ljet_uncorrPt)->at(i);
+        ljet.jerSF    = (*m_ljet_jerSF)->at(i);
+        ljet.jerSF_UP = (*m_ljet_jerSF_UP)->at(i);
+        ljet.jerSF_DOWN = (*m_ljet_jerSF_DOWN)->at(i);
 
         // Truth-matching to jet
         ljet.truth_partons.clear();
@@ -742,10 +758,6 @@ void Event::initialize_ljets(){
 
 void Event::initialize_leptons(){
     /* Setup struct of lepton and relevant information */
-    m_ee   = false;
-    m_mumu = false;
-    m_emu  = false;
-
     m_leptons.clear();
     m_electrons.clear();  // not using right now
     m_muons.clear();      // not using right now
@@ -762,14 +774,15 @@ void Event::initialize_leptons(){
         bool iso = customIsolation(mu);    // 2D isolation cut between leptons & AK4 (need AK4 initialized first!)
 
         bool isGood(mu.p4.Pt()>50 && std::abs(mu.p4.Eta())<2.4 && isMedium && iso);
+        mu.isGood = isGood;
+
         if (!isGood) continue;
 
         mu.charge = (*m_mu_charge)->at(i);
         mu.loose  = (*m_mu_id_loose)->at(i);
         mu.medium = isMedium; 
         mu.tight  = isTight; 
-        mu.iso    = (*m_mu_iso)->at(i);
-        mu.isGood = isGood;
+        mu.iso    = iso;       // use 2D isolation instead -- (*m_mu_iso)->at(i);
 
         mu.isMuon = true;
         mu.isElectron = false;
@@ -782,11 +795,14 @@ void Event::initialize_leptons(){
     for (unsigned int i=0; i<nElectrons; i++){
         Lepton el;
         el.p4.SetPtEtaPhiE( (*m_el_pt)->at(i),(*m_el_eta)->at(i),(*m_el_phi)->at(i),(*m_el_e)->at(i));
-        bool isTightNoIso = (*m_el_id_tight_noIso)->at(i);
+        bool isTightNoIso  = (*m_el_id_tight_noIso)->at(i);
+        bool isMediumNoIso = (*m_el_id_medium_noIso)->at(i);
 
         bool iso = customIsolation(el);    // 2D isolation cut between leptons & AK4 (need AK4 initialized first!)
 
-        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isTightNoIso && iso);
+        bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isMediumNoIso && iso);
+        el.isGood = isGood;
+
         if (!isGood) continue;
 
         el.charge = (*m_el_charge)->at(i);
@@ -794,15 +810,17 @@ void Event::initialize_leptons(){
         el.medium = (*m_el_id_medium)->at(i);
         el.tight  = (*m_el_id_tight)->at(i);
         el.loose_noIso  = (*m_el_id_loose_noIso)->at(i);
-        el.medium_noIso = (*m_el_id_medium_noIso)->at(i);
+        el.medium_noIso = isMediumNoIso;
         el.tight_noIso  = isTightNoIso;
-        el.isGood = isGood;
+        el.iso = iso;      // 2D isolation with ID+noIso
 
         el.isMuon = false;
         el.isElectron = true;
 
         m_leptons.push_back(el);
     }
+
+    cma::DEBUG("EVENT : Found "+std::to_string(m_leptons.size())+" leptons!");
 
     return;
 }
@@ -892,6 +910,7 @@ void Event::initialize_kinematics(){
 
     // set MET
     m_met.p4.SetPtEtaPhiM(**m_met_met,0.,**m_met_phi,0.);
+    cma::DEBUG("EVENT : MET = "+std::to_string(m_met.p4.Pt()));
 
     // Get MET and lepton transverse energy
     m_ST += m_HT;
@@ -927,9 +946,9 @@ bool Event::customIsolation( Lepton& lep ){
     float drmin(100.0);                   // min distance between lep and AK4s
     float ptrel(0.0);                     // pTrel between lepton and AK4s
 
-    if (m_jets.size()<1) return false;    // no AK4 -- event will fail anyway
+    if (m_jets_iso.size()<1) return false;    // no AK4 -- event will fail anyway
 
-    for (const auto& jet : m_jets){
+    for (const auto& jet : m_jets_iso){
         float dr = lep.p4.DeltaR( jet.p4 );
         if (dr < drmin) {
             drmin = dr;
@@ -941,7 +960,7 @@ bool Event::customIsolation( Lepton& lep ){
     lep.drmin = drmin;
     lep.ptrel = ptrel;
 
-    if (drmin > 0.4 || ptrel > 25) pass = true;
+    if (drmin > 0.4 || ptrel > 30) pass = true;
 
     return pass;
 }

@@ -197,6 +197,7 @@ class Event {
     std::vector<Neutrino> m_neutrinos;
     std::vector<Ljet> m_ljets;
     std::vector<Jet>  m_jets;
+    std::vector<Jet>  m_jets_iso;          // for 2D lepton isolation
 
     // truth physics object information
     std::vector<Lepton> m_truth_leptons;
@@ -303,10 +304,16 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_ljet_BEST_j;
     TTreeReaderValue<std::vector<int>> * m_ljet_BEST_class;
     TTreeReaderValue<std::vector<float>> * m_ljet_charge;
+    TTreeReaderValue<std::vector<float>> * m_ljet_chargeSD;
+    TTreeReaderValue<std::vector<float>> * m_ljet_charge3;
+    TTreeReaderValue<std::vector<float>> * m_ljet_charge10;
+
     TTreeReaderValue<std::vector<float>> * m_ljet_SDmass;
     TTreeReaderValue<std::vector<float>> * m_ljet_bdisc;
     TTreeReaderValue<std::vector<float>> * m_ljet_area;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_charge;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_charge3;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_charge10;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_bdisc;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_deepCSV;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_pt;
@@ -315,6 +322,8 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_tau2;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet0_tau3;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_charge;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_charge3;
+    TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_charge10;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_bdisc;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_deepCSV;
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_pt;
@@ -324,6 +333,9 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_ljet_subjet1_tau3;
     TTreeReaderValue<std::vector<float>> * m_ljet_uncorrPt;
     TTreeReaderValue<std::vector<float>> * m_ljet_uncorrE;
+    TTreeReaderValue<std::vector<float>> * m_ljet_jerSF;
+    TTreeReaderValue<std::vector<float>> * m_ljet_jerSF_UP;
+    TTreeReaderValue<std::vector<float>> * m_ljet_jerSF_DOWN;
 
     // truth large-R jet info
     TTreeReaderValue<std::vector<float>> * m_truth_ljet_pt;
@@ -355,6 +367,9 @@ class Event {
     TTreeReaderValue<std::vector<float>> * m_jet_area;
     TTreeReaderValue<std::vector<float>> * m_jet_uncorrPt;
     TTreeReaderValue<std::vector<float>> * m_jet_uncorrE;
+    TTreeReaderValue<std::vector<float>> * m_jet_jerSF;
+    TTreeReaderValue<std::vector<float>> * m_jet_jerSF_UP;
+    TTreeReaderValue<std::vector<float>> * m_jet_jerSF_DOWN;
 
 
     // Truth jet info
