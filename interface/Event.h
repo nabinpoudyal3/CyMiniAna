@@ -29,7 +29,6 @@
 
 #include "Analysis/CyMiniAna/interface/physicsObjects.h"
 #include "Analysis/CyMiniAna/interface/configuration.h"
-#include "Analysis/CyMiniAna/interface/dileptonTtbarReco.h"
 #include "Analysis/CyMiniAna/interface/truthMatching.h"
 #include "Analysis/CyMiniAna/interface/deepLearning.h"
 #include "Analysis/CyMiniAna/interface/ttbarReco.h"
@@ -111,7 +110,6 @@ class Event {
 
     // kinematic reconstruction, ML
     bool customIsolation( Lepton& lep );
-    void getDilepton();
     Ttbar0L ttbar0L() const {return m_ttbar0L;}
     Ttbar1L ttbar1L() const {return m_ttbar1L;}
     Ttbar2L ttbar2L() const {return m_ttbar2L;}
@@ -172,13 +170,6 @@ class Event {
     Ttbar0L m_ttbar0L;
     Ttbar1L m_ttbar1L;
     Ttbar2L m_ttbar2L;
-
-    // -- dilepton -- to be fixed
-    bool m_ee;
-    bool m_mumu;
-    bool m_emu;
-    dileptonTtbarReco* m_dileptonTtbar;
-    DileptonReco m_dilepton;
 
     // event weight information
     double m_nominal_weight;

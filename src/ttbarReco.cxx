@@ -1,6 +1,6 @@
 /*
-Created:        --
-Last Updated:   21 March 2018
+Created:        21 March 2018
+Last Updated:   16 May   2018
 
 Dan Marley
 daniel.edison.marley@cernSPAMNOT.ch
@@ -23,6 +23,9 @@ ttbarReco::ttbarReco( configuration& cmaConfig ) :
     m_ttbar0L = {};
     m_ttbar1L = {};
     m_ttbar2L = {};
+
+    if (m_config->isTwoLeptonAnalysis())
+        m_dileptonTtbar = new dileptonTtbarReco(cmaConfig, configuration::run2_13tev_2016_25ns, 2, true);
   }
 
 ttbarReco::~ttbarReco() {}
@@ -166,6 +169,8 @@ void ttbarReco::execute(std::vector<Lepton>& leptons, std::vector<Neutrino>& nu,
 
 // dilepton
 void ttbarReco::execute(std::vector<Electron>& electrons, std::vector<Muon>& muons, std::vector<Jet>& jets){
+    /* Dilepton ttbar reconstruction */
+    m_dileptonTtbar->execute(m_dilepton);
     return;
 }
 
