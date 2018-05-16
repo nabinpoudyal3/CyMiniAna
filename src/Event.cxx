@@ -93,6 +93,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_jet_area     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4area");
       m_jet_uncorrPt = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4uncorrPt");
       m_jet_uncorrE  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4uncorrE");
+      m_jet_jerSF    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4jerSF");
+      m_jet_jerSF_UP = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4jerSF_UP");
+      m_jet_jerSF_DOWN = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK4jerSF_DOWN");
     }
 
     if (m_useLargeRJets){
@@ -107,11 +110,17 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8tau3");
       m_ljet_area   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8area");
       m_ljet_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge");
+      m_ljet_chargeSD = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8chargeSD");
+      m_ljet_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge3");
+      m_ljet_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge10");
+
       m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge");
       m_ljet_subjet0_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0bDisc");
       m_ljet_subjet0_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0deepCSV");
       m_ljet_subjet0_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0pt");
       m_ljet_subjet0_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0mass");
+      m_ljet_subjet0_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge3");
+      m_ljet_subjet0_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge10");
 
       if (m_config->isGridFile()){
           m_ljet_subjet0_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau1");
@@ -127,6 +136,8 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_subjet1_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1deepCSV");
       m_ljet_subjet1_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1pt");
       m_ljet_subjet1_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1mass");
+      m_ljet_subjet1_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge3");
+      m_ljet_subjet1_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge10");
 
       m_ljet_BEST_class = new TTreeReaderValue<std::vector<int>>(m_ttree,"AK8BEST_class");
       m_ljet_BEST_t = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_t");
@@ -137,6 +148,9 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
 
       m_ljet_uncorrPt = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8uncorrPt");
       m_ljet_uncorrE  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8uncorrE");
+      m_ljet_jerSF    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8jerSF");
+      m_ljet_jerSF_UP = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8jerSF_UP");
+      m_ljet_jerSF_DOWN = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8jerSF_DOWN");
     }
 
 
@@ -628,6 +642,9 @@ void Event::initialize_jets(){
         jet.area     = (*m_jet_area)->at(i);
         jet.uncorrE  = (*m_jet_uncorrE)->at(i);
         jet.uncorrPt = (*m_jet_uncorrPt)->at(i);
+        jet.jerSF    = (*m_jet_jerSF)->at(i);
+        jet.jerSF_UP = (*m_jet_jerSF_UP)->at(i);
+        jet.jerSF_DOWN = (*m_jet_jerSF_DOWN)->at(i);
 
         jet.index  = idx;
 
@@ -715,6 +732,9 @@ void Event::initialize_ljets(){
         ljet.area     = (*m_ljet_area)->at(i);
         ljet.uncorrE  = (*m_ljet_uncorrE)->at(i);
         ljet.uncorrPt = (*m_ljet_uncorrPt)->at(i);
+        ljet.jerSF    = (*m_ljet_jerSF)->at(i);
+        ljet.jerSF_UP = (*m_ljet_jerSF_UP)->at(i);
+        ljet.jerSF_DOWN = (*m_ljet_jerSF_DOWN)->at(i);
 
         // Truth-matching to jet
         ljet.truth_partons.clear();

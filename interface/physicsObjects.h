@@ -77,6 +77,9 @@ struct Jet : CmaBase{
     float area;      // area of jet (needed to redo JEC)
     float uncorrPt;  // area of jet (needed to redo JEC)
     float uncorrE;   // area of jet (needed to redo JEC)
+    float jerSF;     // JER smearing for MC
+    float jerSF_UP;
+    float jerSF_DOWN;
 
     bool isHadTop;   // matched to hadronically-decaying truth top parton
     int truth_jet;   // index in vector of truth jets that is matched to this jet
