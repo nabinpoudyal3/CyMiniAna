@@ -341,7 +341,7 @@ bool eventSelection::afbSelection(double cutflow_bin){
 
     /**** PRE SELECTION ****/
     // cut0 :: >=1 One lepton
-    if (m_NMuons+m_NElectrons==0)
+    if (m_NLeptons==0)
         return false;          // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin);
@@ -375,7 +375,7 @@ bool eventSelection::afbSelection(double cutflow_bin){
 
     /**** REGULAR SELECTION ****/
     // cut3 :: One lepton (kinematics only)
-    if (m_NMuons!=1 || m_NElectrons>0)
+    if (m_NMuons>0 || m_NElectrons!=0)
         return false;          // exit the function now; no need to test other cuts!
     else{
         fillCutflows(cutflow_bin+3);

@@ -611,12 +611,15 @@ void Event::initialize_jets(){
     }
 
     unsigned int idx(0);
+    unsigned int idx_iso(0);
     for (unsigned int i=0; i<nJets; i++){
         Jet jet;
         jet.p4.SetPtEtaPhiM( (*m_jet_pt)->at(i),(*m_jet_eta)->at(i),(*m_jet_phi)->at(i),(*m_jet_m)->at(i));
 
         bool isGoodIso( jet.p4.Pt()>15 && std::abs(jet.p4.Eta())<2.4);
         bool isGood(jet.p4.Pt()>50 && std::abs(jet.p4.Eta())<2.4);
+
+        if (!isGood && !isGoodIso) continue;
 
         jet.isGood = isGood;
 
@@ -631,11 +634,12 @@ void Event::initialize_jets(){
         if (isGood){
             m_jets.push_back(jet);
             getBtaggedJets(jet);          // only care about b-tagging for 'real' AK4
+            idx++;
         }
-        if (isGoodIso)
+        if (isGoodIso){
             m_jets_iso.push_back(jet);    // used for 2D isolation
-
-        idx++;
+            idx_iso++;
+        }
     }
 
     m_btag_jets_default = m_btag_jets.at(m_config->jet_btagWkpt());
@@ -778,6 +782,7 @@ void Event::initialize_leptons(){
 
         bool isGood(el.p4.Pt()>50 && std::abs(el.p4.Eta())<2.4 && isMediumNoIso && iso);
         el.isGood = isGood;
+
         if (!isGood) continue;
 
         el.charge = (*m_el_charge)->at(i);
