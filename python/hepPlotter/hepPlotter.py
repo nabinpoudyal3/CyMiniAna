@@ -83,7 +83,7 @@ class HepPlotter(object):
         self.rebin      = 1           # rebin root histograms
         self.label_size = 20          # size of label for text on plots
         self.normed     = False       # normalize histogram
-        self.logplot    = False       # plot on log scale
+        self.logplot    = {"y":False,"x":False,"data":False}  # plot axes or data (2D) on log scale
         self.underflow  = False       # plot the underflow
         self.overflow   = False       # plot the overflow
         self.colormap   = None        # 2D plot colormap
@@ -144,6 +144,14 @@ class HepPlotter(object):
         self.p_hatch_args = {'hatch':'','color':'#99cc99',\
                              'edgecolor':'none','alpha':0.5}
         self.yMaxScaleValues = {"histogram":1.3,"efficiency":1.3}
+
+        # check that the logplot option is set properly; give defaults based on past use-cases
+        try:
+            lp = self.logplot["y"]
+        except KeyError:
+            self.logplot["y"] = self.logplot if self.dimensions==1 else False     # typically just want y-axis log scale
+            self.logplot["x"] = False
+            self.logplot["data"] = self.logplot if self.dimensions==2 else False  # 2D plot can have logNorm data
 
         # colormap setup
         linear_cmap_choice  = np.random.choice(["Reds","Blues","Greens"])
@@ -378,7 +386,7 @@ class HepPlotter(object):
                     self.kwargs[name]["normed"] = self.normed
                 data,b,p = self.ax1.hist(bin_center,bins=binning,weights=data,lw=self.linewidths[name],
                                  histtype=self.draw_types[name],bottom=bottomEdge,
-                                 ls=self.linestyles[name],log=self.logplot,color=self.colors[name],
+                                 ls=self.linestyles[name],log=self.logplot["y"],color=self.colors[name],
                                  edgecolor=self.linecolors[name],label=this_label,
                                  **self.kwargs[name])
                 if self.stacked:
@@ -472,7 +480,7 @@ class HepPlotter(object):
             self.colormap = hpt.getDataStructure( hh )
 
         # Make the plot
-        norm2d = LogNorm() if self.logplot else None
+        norm2d = LogNorm() if self.logplot["data"] else None
         plt.hist2d(x_bin_center,y_bin_center,bins=[binns_x,binns_y],
                    weights=h_data,cmap=self.colormap,norm=norm2d)
 
@@ -487,7 +495,7 @@ class HepPlotter(object):
 
         # Configure the colorbar
         cbar = plt.colorbar()
-        if self.logplot:
+        if self.logplot["y"]:
             cbar.ax.set_yticklabels( [r"10$^{\text{%s}}$"%(util.extract(i.get_text())) for i in cbar.ax.get_yticklabels()] )
         else:
             cbar.ax.set_yticklabels( [r"$\text{%s}$"%(i.get_text().replace(r'$','')) for i in cbar.ax.get_yticklabels()],**fontProperties )
@@ -648,7 +656,7 @@ class HepPlotter(object):
             return
 
         # Modify tick labels
-        if self.logplot and self.dimensions==1:
+        if self.logplot[ax] and self.dimensions==1:
             logTickLabels = [r"10$^{\text{%s}}$"%(int(np.log10(i)) ) if i>0 else '' for i in axis_ticks]
             if yaxis: axis.set_yticklabels(logTickLabels,fontsize=self.label_size,**fontProperties)
             else:     axis.set_xticklabels(logTickLabels,fontsize=self.label_size,**fontProperties)
@@ -685,7 +693,7 @@ class HepPlotter(object):
         self.ax1.yaxis.set_tick_params(which='major', length=8)
         self.ax1.xaxis.set_tick_params(which='major', length=8)
         if self.minor_ticks:
-            if not self.logplot:
+            if not self.logplot["y"]:
                 self.ax1.yaxis.set_minor_locator(self.y1minorLocator) # causes 'tick number error' on logplot
             self.ax1.xaxis.set_minor_locator(self.x1minorLocator)
             if self.ratio_plot:

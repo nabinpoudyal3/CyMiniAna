@@ -129,7 +129,6 @@ for histogram in histograms:
 
     xlimits = None
     legendLoc   = 1
-    plotLogAxis = False
 
     hist.drawStatUncertainty = True      # draw stat uncertainty separately
     hist.drawSystUncertainty = False     # draw syst uncertainty separately
@@ -142,7 +141,7 @@ for histogram in histograms:
     hist.ratio_type  = "ratio"     # "ratio"
     hist.stacked     = True        # stack plots
     hist.rebin       = x_labels[histogramName].binning  # rebin per histogram
-    hist.logplot     = plotLogAxis
+    hist.logplot     = {"y":False,"x":False,"data":False}
     hist.x_label     = x_labels[histogramName].label
     hist.y_label     = "Events"
     hist.y_ratio_label = "Data/MC"
