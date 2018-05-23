@@ -19,7 +19,6 @@ selection mujets,ejets
 cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt
 treenames config/treenames.txt
 inputfile config/listOfMCSamples.txt
-#inputfile config/listOfFiles.txt
 useDNN false
 DNNinference false
 DNNtraining false
