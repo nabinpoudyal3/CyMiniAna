@@ -10,13 +10,13 @@ makeTTree true
 makeHistograms true
 makeEfficiencies false
 input_selection grid
-isExtendedSample true
+isExtendedSample false
 output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt
 calcWeightSystematics false
-selection mujets,ejets,allhad
-cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt,config/cuts_allhad.txt
+selection mujets,ejets
+cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt
 treenames config/treenames.txt
 inputfile config/listOfMCSamples.txt
 #inputfile config/listOfFiles.txt
@@ -26,6 +26,6 @@ DNNtraining false
 NEvents -1
 firstEvent 0
 verboseLevel INFO
-isZeroLeptonAnalysis true
+isZeroLeptonAnalysis false
 isOneLeptonAnalysis true
 isTwoLeptonAnalysis false
