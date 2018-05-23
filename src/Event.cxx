@@ -729,9 +729,10 @@ void Event::initialize_ljets(){
         ljet.area     = (*m_ljet_area)->at(i);
         ljet.uncorrE  = (*m_ljet_uncorrE)->at(i);
         ljet.uncorrPt = (*m_ljet_uncorrPt)->at(i);
-        ljet.jerSF    = (*m_ljet_jerSF)->at(i);
-        ljet.jerSF_UP = (*m_ljet_jerSF_UP)->at(i);
-        ljet.jerSF_DOWN = (*m_ljet_jerSF_DOWN)->at(i);
+
+        ljet.jerSF    = 1.0; //(*m_ljet_jerSF)->at(i);
+        ljet.jerSF_UP = 1.0; //(*m_ljet_jerSF_UP)->at(i);
+        ljet.jerSF_DOWN = 1.0; //(*m_ljet_jerSF_DOWN)->at(i);
 
         // Truth-matching to jet
         ljet.truth_partons.clear();

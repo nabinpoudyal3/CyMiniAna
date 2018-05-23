@@ -10,7 +10,7 @@ makeTTree true
 makeHistograms true
 makeEfficiencies false
 input_selection grid
-isExtendedSample false
+isExtendedSample true
 output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt
@@ -23,7 +23,7 @@ useDNN false
 DNNinference false
 DNNtraining false
 NEvents -1
-firstEvent 0
+firstEvent 200000
 verboseLevel INFO
 isZeroLeptonAnalysis false
 isOneLeptonAnalysis true
