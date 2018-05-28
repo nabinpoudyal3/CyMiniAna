@@ -356,12 +356,12 @@ void configuration::inspectFile( TFile& file, const std::string& metadataTreeNam
 
     readMetadata(file,metadataTreeName);              // access metadata; recalculate if necessary
 
-    m_isQCD   = m_sample.sampleType=="qcd";           // check if file is QCD
-    m_isTtbar = m_sample.sampleType=="ttbar";         // check if file is ttbar
-    m_isWjets = m_sample.sampleType=="wjets";         // check if file is wjets
-    m_isZjets = m_sample.sampleType=="zjets";         // check if file is wjets
-    m_isDiboson   = m_sample.sampleType=="diboson";   // check if file is diboson
-    m_isSingleTop = m_sample.sampleType=="singletop"; // check if file is single top
+    m_isQCD   = m_sample.sampleType.compare("qcd")==0;           // check if file is QCD
+    m_isTtbar = m_sample.sampleType.compare("ttbar")==0;         // check if file is ttbar
+    m_isWjets = m_sample.sampleType.compare("wjets")==0;         // check if file is wjets
+    m_isZjets = m_sample.sampleType.compare("zjets")==0;         // check if file is wjets
+    m_isDiboson   = m_sample.sampleType.compare("diboson")==0;   // check if file is diboson
+    m_isSingleTop = m_sample.sampleType.compare("singletop")==0; // check if file is single top
 
     m_isMC = (m_isQCD || m_isTtbar || m_isWjets || m_isZjets || m_isSingleTop || m_isDiboson);  // no other MC at this point
 
