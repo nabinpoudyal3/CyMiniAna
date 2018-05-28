@@ -1,9 +1,9 @@
 date today
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.4/koala/ttbar-ext/
-subdir ttbar-ext
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.4/koala/ttbar
+subdir ttbar
 eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.4/koala/
-files config/ttbarAC_skim_samples/listOfTtbarExtFiles.txt
+files config/ttbarAC_skim_samples/listOfTtbarFiles-v3.txt
 username demarley
 executable run
 test False

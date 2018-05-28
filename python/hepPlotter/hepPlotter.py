@@ -148,9 +148,11 @@ class HepPlotter(object):
         # check that the logplot option is set properly; give defaults based on past use-cases
         try:
             lp = self.logplot["y"]
-        except KeyError:
-            self.logplot["y"] = self.logplot if self.dimensions==1 else False     # typically just want y-axis log scale
-            self.logplot["x"] = False
+        except TypeError:
+            user_value   = self.logplot
+            self.logplot = {}
+            self.logplot["y"]    = user_value if self.dimensions==1 else False    # typically just want y-axis log scale
+            self.logplot["x"]    = False
             self.logplot["data"] = self.logplot if self.dimensions==2 else False  # 2D plot can have logNorm data
 
         # colormap setup
