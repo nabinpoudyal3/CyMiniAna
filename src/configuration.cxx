@@ -316,6 +316,7 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
     else{
         m_recalculateMetadata = false;    // first assume the information in the root file (metadata tree) is good to use
 
+        m_sample.sampleType = "data";     // not storing sample type in metadata tree, need metadata file (default: data)
         m_sample.primaryDataset = pd;
         m_sample.XSection = *xsection;
         m_sample.KFactor  = *kfactor;
@@ -323,8 +324,9 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
         m_sample.sumOfWeights = *sumOfWeights;
 
         if (pd_in_map){
-            // check if the metadata in the file can be trusted (compare with the text file)
+            m_sample.sampleType = this_sample.sampleType;  // reset to value in the metadatafile (data not in metadata file)
 
+            // check if the metadata in the file can be trusted (compare with the text file)
             float xsec_diff = (this_sample.XSection - *xsection) / this_sample.XSection;
             float sumw_diff = (this_sample.sumOfWeights - *sumOfWeights) / this_sample.sumOfWeights;
             int nevents_diff = this_sample.NEvents - *NEvents;
@@ -348,24 +350,18 @@ void configuration::readMetadata(TFile& file,const std::string& metadataTreeName
 
 void configuration::inspectFile( TFile& file, const std::string& metadataTreeName ){
     /* Compare filenames to determine file type */
-    m_isQCD   = false;
-    m_isTtbar = false;
-    m_isWjets = false;
-    m_isZjets = false;
-    m_isSingleTop = false;
-    m_isDiboson   = false;
-    m_NTotalEvents = 0;
+    m_NTotalEvents   = 0;
     m_primaryDataset = "";
     m_recalculateMetadata = false;
 
-    readMetadata(file,metadataTreeName);                    // access metadata; recalculate if necessary
+    readMetadata(file,metadataTreeName);              // access metadata; recalculate if necessary
 
-    m_isQCD   = checkPrimaryDataset(m_qcdFiles);            // check if file is QCD
-    m_isTtbar = checkPrimaryDataset(m_ttbarFiles);          // check if file is ttbar
-    m_isWjets = checkPrimaryDataset(m_wjetsFiles);          // check if file is wjets
-    m_isZjets = checkPrimaryDataset(m_zjetsFiles);          // check if file is wjets
-    m_isDiboson = checkPrimaryDataset(m_dibosonFiles);      // check if file is diboson
-    m_isSingleTop = checkPrimaryDataset(m_singleTopFiles);  // check if file is single top
+    m_isQCD   = m_sample.sampleType.compare("qcd")==0;           // check if file is QCD
+    m_isTtbar = m_sample.sampleType.compare("ttbar")==0;         // check if file is ttbar
+    m_isWjets = m_sample.sampleType.compare("wjets")==0;         // check if file is wjets
+    m_isZjets = m_sample.sampleType.compare("zjets")==0;         // check if file is wjets
+    m_isDiboson   = m_sample.sampleType.compare("diboson")==0;   // check if file is diboson
+    m_isSingleTop = m_sample.sampleType.compare("singletop")==0; // check if file is single top
 
     m_isMC = (m_isQCD || m_isTtbar || m_isWjets || m_isZjets || m_isSingleTop || m_isDiboson);  // no other MC at this point
 

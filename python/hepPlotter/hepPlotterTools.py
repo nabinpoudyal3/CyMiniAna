@@ -14,7 +14,7 @@ import ROOT
 import numpy as np
 from array import array
 import matplotlib.pyplot as plt
-
+from Analysis.CyMiniAna.util import Sample
 
 def betterColors():
     """
@@ -87,33 +87,41 @@ def getSampleType(name):
     return sampletype
 
 
-class Sample(object):
-    """Class for holding metadata information"""
-    def __init__(self):
-        self.pd = ""
-        self.xsection = 1
-        self.sumOfWeights = 1
-        self.nevents = 1
 
-
-def getMetadata():
+def getMetadata(metadata_file=None):
     """
        Store the xsection & sum of weights using primary dataset as key
         'PrimaryDataset XSection sumWeights KFactor NEvents'
     """
     samples = {}
-    cma_dir = os.getenv("CYMINIANADIR")
-    metadata = open(cma_dir+"/config/sampleMetaData.txt","r")
+    if metadata_file is None:
+        cma_dir = os.getenv("CYMINIANADIR")
+        metadata = open(cma_dir+"/config/sampleMetaData.txt","r")
+    else:
+        metadata = open(metadata_file,"r")
+
     for line in metadata:
         if line.startswith("#") or line=="\n": continue
 
         l = line.split()
+
         s = Sample()
-        s.pd = l[0]
-        s.xsection = float(l[1])
-        s.sumOfWeights = float(l[2])
-        s.nevents = int(l[4])
-        samples[l[0]] = s
+        s.sampleType = l[0]
+        s.primaryDataset = l[1]
+        s.xsection       = float(l[2])
+        s.sumOfWeights   = float(l[3])
+        s.nevents        = int(l[5])
+        samples[l[1]]    = s
+
+    ## Add data (not in metadata files, usually)
+    names = ['data','mujets','ejets']
+    pds   = ['data','SingleMuon','SingleElectron']
+    for (name,pd) in zip(names,pds):
+        data = Sample()
+        data.sampleType = name
+        data.primaryDataset = pd
+
+        samples[pd] = data
 
     return samples
 

@@ -15,6 +15,16 @@ import ROOT
 import numpy as np
 
 
+class Sample(object):
+    """Class for holding metadata information"""
+    def __init__(self):
+        self.xsection       = 1
+        self.sumOfWeights   = 1
+        self.nevents        = 1
+        self.sampleType     = ""
+        self.primaryDataset = ""
+
+
 def getHistSeparation( S, B ):
     """Compare TH1* S and B -- need same dimensions
        Copied from : https://root.cern.ch/doc/master/MethodBase_8cxx_source.html#l02740
@@ -119,6 +129,52 @@ def file2list(filename):
 def str2bool(param):
     """Convert a string to a boolean"""
     return (param in ['true','True','1'])
+
+
+def getPrimaryDataset(root_file):
+    """Get the sample type given the root file"""
+    try:
+        md = root_file.Get("tree/metadata")
+        md.GetEntry(0)
+        pd = str(md.primaryDataset)
+    except:
+        pd = None
+
+    return pd
+
+
+def loadMetadata(file):
+    """Load metadata"""
+    data    = file2list(file)
+    samples = {}
+    for i in data:
+        if i.startswith("#"): continue
+
+        items = i.split(" ")
+        s = Sample()
+        s.sampleType     = items[0]
+        s.primaryDataset = items[1]
+
+        samples[items[1]] = s
+
+    data = Sample()
+    data.sampleType = 'data'
+    data.primaryDataset = 'data'
+
+    mujets = Sample()
+    mujets.sampleType = 'mujets'
+    mujets.primaryDataset = 'SingleMuon'
+
+    ejets = Sample()
+    ejets.sampleType = 'ejets'
+    ejets.primaryDataset = 'SingleElectron'
+
+    samples['data'] = data
+    samples['SingleMuon'] = mujets
+    samples['SingleElectron'] = ejets
+
+    return samples
+
 
 
 class VERBOSE(object):
