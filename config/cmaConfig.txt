@@ -22,9 +22,9 @@ inputfile config/listOfMCSamples.txt
 useDNN false
 DNNinference false
 DNNtraining false
-NEvents 10
+NEvents -1
 firstEvent 0
-verboseLevel DEBUG
+verboseLevel INFO
 isZeroLeptonAnalysis false
 isOneLeptonAnalysis true
 isTwoLeptonAnalysis false

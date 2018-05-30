@@ -1,9 +1,9 @@
 date today
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.4/koala/ttbar
-subdir ttbar
-eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.4/koala/
-files config/ttbarAC_skim_samples/listOfTtbarFiles-v3.txt
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.5/koala/SingleElectronHv3
+subdir SingleElectronHv3
+eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.5/koala/
+files config/ttbarAC_skim_samples/listOfSingleElectronHv3Files.txt
 username demarley
 executable run
 test False

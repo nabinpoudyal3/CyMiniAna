@@ -1,3 +1,0 @@
-root://131.225.204.161:1094//store/group/lpctlbsm/pilot/WJetsToLNu_Pt-400To600_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_ttbarAC_wjets3/180518_192349/0000/ttbarAC_outtree_1.root
-root://131.225.204.161:1094//store/group/lpctlbsm/pilot/WJetsToLNu_Pt-400To600_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_ttbarAC_wjets3/180518_192349/0000/ttbarAC_outtree_2.root
-root://131.225.204.161:1094//store/group/lpctlbsm/pilot/WJetsToLNu_Pt-400To600_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_ttbarAC_wjets3/180518_192349/0000/ttbarAC_outtree_3.root

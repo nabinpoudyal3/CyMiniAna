@@ -1,0 +1,4 @@
+root://131.225.204.161:1094//store/group/lpctlbsm/wprime-qQ/ttbarAC_skim_v0.5//ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4/crab_ttbarAC_singletop-tW/180528_143306/0000/ttbarAC_outtree_1.root
+root://131.225.204.161:1094//store/group/lpctlbsm/wprime-qQ/ttbarAC_skim_v0.5//ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4/crab_ttbarAC_singletop-tW/180528_143306/0000/ttbarAC_outtree_2.root
+root://131.225.204.161:1094//store/group/lpctlbsm/wprime-qQ/ttbarAC_skim_v0.5//ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4/crab_ttbarAC_singletop-tW/180528_143306/0000/ttbarAC_outtree_3.root
+root://131.225.204.161:1094//store/group/lpctlbsm/wprime-qQ/ttbarAC_skim_v0.5//ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4/crab_ttbarAC_singletop-tW/180528_143306/0000/ttbarAC_outtree_4.root
