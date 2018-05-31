@@ -17,6 +17,7 @@ To run:
 """
 import sys
 import ROOT
+from time import strftime
 from array import array
 from argparse import ArgumentParser
 
@@ -37,6 +38,7 @@ def getHistograms(files,histograms):
 
     for fi,file in enumerate(files):
         f = ROOT.TFile.Open(file)
+#        f = ROOT.TFile.Open(file.replace('mujets-ejets','afb').replace('30May','31May') )
 
         if not fi:
             pd   = util.getPrimaryDataset(f)
@@ -56,7 +58,7 @@ def getHistograms(files,histograms):
 
 x_labels      = hpl.variable_labels()
 sample_labels = hpl.sample_labels()
-extralabel    = {"ejets":sample_labels['ejets'].label,"mujets":sample_labels['mujets'].label}
+extralabel    = {"ejets":sample_labels['ejets'].label,"mujets":sample_labels['mujets'].label,'afb':r'A$_\text{FB}$'}
 contain = [
 'NONE',
 'QONLY',
@@ -66,16 +68,16 @@ contain = [
 'FULL',
 ]
 
-
+today  = strftime("%d%b%Y")
 parser = ArgumentParser(description="DataMC Plotter")
 
 parser.add_argument('--hists', action='store',dest='listOfHists',
                     default='config/listOfHists.txt',
                     help='Name of file that contains histograms to plot')
-parser.add_argument('-o','--outpath', action='store',default='plots/23May2018/',
+parser.add_argument('-o','--outpath', action='store',default='plots/'+today+"/",
                     dest='outpath',
                     help='Directory for storing output plots')
-parser.add_argument('--selection',action='store',default='mujets',
+parser.add_argument('--selection',action='store',default='ejets',
                     dest='selection',
                     help='Plot results from a specific selection')
 results = parser.parse_args()
@@ -96,8 +98,8 @@ samples = [
 'singletop-tW',
 'singletop-tbar',
 'singletop-tbarW',
-'ttbar-ext',
-#'ttbar',
+#'ttbar-ext',
+'ttbar',
 'wjets1',
 'wjets2',
 'wjets3',
@@ -107,10 +109,12 @@ samples = [
 dataname = 'SingleElectron' if selection == 'ejets' else 'SingleMuon'
 
 data_files  = []
-for d in ['C','D','E','F','G','H','Hv3']:
+for d in ['B','C','D','E','F','G','H','Hv3']:
     data_files += util.file2list("config/cyminiana_samples/{0}{1}.txt".format(dataname,d))
 
 filelists = dict( (k,util.file2list('config/cyminiana_samples/{0}.txt'.format(k))) for k in samples if k!='data')
+
+
 filelists['data'] = data_files
 
 # Load histograms
@@ -127,7 +131,7 @@ for histogram in histograms:
     if histogramName.startswith("h_"): histogramName = histogramName[2:]
 
     if histogram.startswith("h_mu_") and selection=="ejets": continue
-    if histogram.startswith("h_el_") and selection=="mujets": continue
+    if histogram.startswith("h_el_") and selection in ["mujets","afb"]: continue
 
     print "  :: Plotting "+histogram
 
@@ -215,12 +219,12 @@ for histogram in histograms:
             except AttributeError:
                 h_hist_data = h_hists_dict[sample]['hists'][histogram]
 
-    hist.Add(h_hist_diboson, name="diboson", sampleType="background", systematics=None)
-    hist.Add(h_hist_zjets,   name="zjets",   sampleType="background", systematics=None)
-    hist.Add(h_hist_singletop, name="singletop", sampleType="background", systematics=None)
-    hist.Add(h_hist_wjets, name="wjets",     sampleType="background", systematics=None)
-    hist.Add(h_hist_ttbar, name="ttbar",     sampleType="background", systematics=None)
-    hist.Add(h_hist_data,  name="data",      sampleType="data",       systematics=None)
+    if h_hist_diboson is not None:   hist.Add(h_hist_diboson, name="diboson", sampleType="background", systematics=None)
+    if h_hist_zjets is not None:     hist.Add(h_hist_zjets,   name="zjets",   sampleType="background", systematics=None)
+    if h_hist_singletop is not None: hist.Add(h_hist_singletop, name="singletop", sampleType="background", systematics=None)
+    if h_hist_wjets is not None:     hist.Add(h_hist_wjets, name="wjets",     sampleType="background", systematics=None)
+    if h_hist_ttbar is not None:     hist.Add(h_hist_ttbar, name="ttbar",     sampleType="background", systematics=None)
+    if h_hist_data is not None:      hist.Add(h_hist_data,  name="data",      sampleType="data",       systematics=None)
 
     # make the plot
     plot = hist.execute()

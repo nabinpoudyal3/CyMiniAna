@@ -15,8 +15,10 @@ output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt
 calcWeightSystematics false
-selection mujets,ejets,afb
-cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt,config/cuts_afb.txt
+selection mujets,ejets
+cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt
+#selection afb
+#cutsfile config/cuts_afb.txt
 treenames config/treenames.txt
 inputfile config/listOfMCSamples.txt
 useDNN false
