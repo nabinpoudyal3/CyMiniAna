@@ -1,0 +1,3 @@
+FILTERS > 1
+N_BTAGS > 1
+AK8_BEST_TOP > 0.2

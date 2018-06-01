@@ -47,23 +47,23 @@ class eventSelection{
 
     // -- Selections put into functions (easily reference them in other cuts)
     // DNN selection
-    bool allHadDNNSelection(double cutflow_bin);
+    bool allHadDNNSelection(float& cutflow_bin);
 
     // Allhadronic selection
-    bool zeroLeptonSelection(double cutflow_bin);
+    bool zeroLeptonSelection(float& cutflow_bin);
 
     // Single lepton selections
-    bool oneLeptonSelection(double cutflow_bin);
-    bool ejetsSelection(double cutflow_bin, const Lepton& lep);
-    bool mujetsSelection(double cutflow_bin);
-    bool cwoalaSelection(double cutflow_bin);
-    bool afbSelection(double cutflow_bin);
+    bool oneLeptonSelection(float& cutflow_bin);
+    bool ejetsSelection(float& cutflow_bin, const Lepton& lep);
+    bool mujetsSelection(float& cutflow_bin);
+    bool cwolaSelection(float& cutflow_bin);
+    bool afbSelection(float& cutflow_bin);
 
     // Dilepton selections
-    bool twoLeptonSelection(double cutflow_bin);
+    bool twoLeptonSelection(float& cutflow_bin);
 
     // Helper functions: Provide external access to information in this class
-    void fillCutflows(double cutflow_bin);                                // fill cutflow histograms
+    void fillCutflows(float& cutflow_bin);                                // fill cutflow histograms
     virtual void getCutNames();
     virtual std::vector<std::string> cutNames(){ return m_cutflowNames;}  // Return a vector of the cut names 
     virtual unsigned int numberOfCuts(){ return m_numberOfCuts;}          // Return the number of cuts

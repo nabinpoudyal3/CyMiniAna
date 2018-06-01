@@ -60,6 +60,10 @@ class miniTree {
 
     unsigned int m_leptop_jet;
     unsigned int m_hadtop_ljet;
+
+    std::vector<float> m_nu_pt;
+    std::vector<float> m_nu_eta;
+    std::vector<float> m_nu_phi;
 };
 
 #endif

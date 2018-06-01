@@ -59,9 +59,18 @@ void miniTree::createBranches(){
         m_ttree->Branch( "DNN", &m_dnn, "DNN/F" );
 
 
-    if (m_config->isOneLeptonAnalysis() && !branch_exists("leptop_jet") && !branch_exists("hadtop_ljet")){
-        m_ttree->Branch( "leptop_jet",  &m_leptop_jet,  "leptop_jet/I" );   // index of AK4 jet in leptonic top candidate
-        m_ttree->Branch( "hadtop_ljet", &m_hadtop_ljet, "hadtop_ljet/I" );  // index of AK8 jet as hadronic top candidate
+    if (m_config->isOneLeptonAnalysis()) {
+        // index of AK4 jet in leptonic top candidate
+        if (!branch_exists("leptop_jet"))  m_ttree->Branch( "leptop_jet",  &m_leptop_jet,  "leptop_jet/I" );
+        // index of AK8 jet as hadronic top candidate
+        if (!branch_exists("hadtop_ljet")) m_ttree->Branch( "hadtop_ljet", &m_hadtop_ljet, "hadtop_ljet/I" );
+
+        // Reconstructed neutrino(s) -- store in a vector for consistency with dilepton analysis
+        if (!branch_exists("nu_pt")) {
+            m_ttree->Branch( "nu_pt",  &m_nu_pt );
+            m_ttree->Branch( "nu_eta", &m_nu_eta );
+            m_ttree->Branch( "nu_phi", &m_nu_phi );
+        }
     }
 
     return;
@@ -113,6 +122,17 @@ void miniTree::saveEvent(Event& event, const std::vector<unsigned int>& evtsel_d
         Ttbar1L ttbar = event.ttbar1L();
         m_leptop_jet  = ttbar.jet.index;
         m_hadtop_ljet = ttbar.ljet.index;
+
+        m_nu_pt.clear();
+        m_nu_eta.clear();
+        m_nu_phi.clear();
+
+        std::vector<Neutrino> nus = event.neutrinos();
+        for (const auto& nu : nus){
+            m_nu_pt.push_back(  nu.p4.Pt() );
+            m_nu_eta.push_back( nu.p4.Eta() );
+            m_nu_phi.push_back( nu.p4.Phi() );
+        }
     }
 
 

@@ -113,30 +113,27 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_ljet_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge3");
       m_ljet_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8charge10");
 
-      m_ljet_subjet0_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge");
-      m_ljet_subjet0_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0bDisc");
-      m_ljet_subjet0_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0deepCSV");
-      m_ljet_subjet0_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0pt");
-      m_ljet_subjet0_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0mass");
+      m_ljet_subjet0_bdisc    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0bDisc");
+      m_ljet_subjet0_deepCSV  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0deepCSV");
+      m_ljet_subjet0_charge   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge");
       m_ljet_subjet0_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge3");
       m_ljet_subjet0_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0charge10");
+      m_ljet_subjet0_pt   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0pt");
+      m_ljet_subjet0_mass = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0mass");
+      m_ljet_subjet0_tau1 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau1");
+      m_ljet_subjet0_tau2 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau2");
+      m_ljet_subjet0_tau3 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau3");
 
-      if (m_config->isGridFile()){
-          m_ljet_subjet0_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau1");
-          m_ljet_subjet0_tau2   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau2");
-          m_ljet_subjet0_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet0tau3");
-          m_ljet_subjet1_tau1   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau1");
-          m_ljet_subjet1_tau2   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau2");
-          m_ljet_subjet1_tau3   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau3");
-      }
-
-      m_ljet_subjet1_charge = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge");
-      m_ljet_subjet1_bdisc  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1bDisc");
-      m_ljet_subjet1_deepCSV= new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1deepCSV");
-      m_ljet_subjet1_pt     = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1pt");
-      m_ljet_subjet1_mass   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1mass");
+      m_ljet_subjet1_bdisc    = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1bDisc");
+      m_ljet_subjet1_deepCSV  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1deepCSV");
+      m_ljet_subjet1_charge   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge");
       m_ljet_subjet1_charge3  = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge3");
       m_ljet_subjet1_charge10 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1charge10");
+      m_ljet_subjet1_pt   = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1pt");
+      m_ljet_subjet1_mass = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1mass");
+      m_ljet_subjet1_tau1 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau1");
+      m_ljet_subjet1_tau2 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau2");
+      m_ljet_subjet1_tau3 = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8subjet1tau3");
 
       m_ljet_BEST_class = new TTreeReaderValue<std::vector<int>>(m_ttree,"AK8BEST_class");
       m_ljet_BEST_t = new TTreeReaderValue<std::vector<float>>(m_ttree,"AK8BEST_t");
@@ -177,19 +174,6 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
       m_mu_id_loose  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUlooseID");
       m_mu_id_medium = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUmediumID");
       m_mu_id_tight  = new TTreeReaderValue<std::vector<unsigned int>>(m_ttree,"MUtightID");
-    }
-
-    if (!m_kinematicReco && m_useNeutrinos){
-        // Neutrinos aren't stored in the baseline ntuples, requires 'kinematicReco' to create
-        m_nu_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_pt");
-        m_nu_eta = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_eta");
-        m_nu_phi = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_phi");
-    }
-
-    if (!m_kinematicReco && m_getDNN){
-        // Load ttbar variables from file
-        m_leptop_jet  = new TTreeReaderValue<int>(m_ttree, "leptop_jet");
-        m_hadtop_ljet = new TTreeReaderValue<int>(m_ttree, "hadtop_ljet");
     }
 
     m_met_met  = new TTreeReaderValue<float>(m_ttree,"METpt");
@@ -254,6 +238,19 @@ Event::Event( TTreeReader &myReader, configuration &cmaConfig ) :
     // Kinematic reconstruction algorithms
     m_ttbarRecoTool    = new ttbarReco(cmaConfig);
     m_neutrinoRecoTool = new neutrinoReco(cmaConfig);
+
+    if (!m_neutrinoReco && m_useNeutrinos){
+        // Neutrinos aren't stored in the baseline ntuples, requires 'kinematicReco' to create
+        m_nu_pt  = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_pt");
+        m_nu_eta = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_eta");
+        m_nu_phi = new TTreeReaderValue<std::vector<float>>(m_ttree, "nu_phi");
+    }
+
+    if (!m_kinematicReco){
+        // Load ttbar variables from file
+        m_leptop_jet  = new TTreeReaderValue<int>(m_ttree, "leptop_jet");
+        m_hadtop_ljet = new TTreeReaderValue<int>(m_ttree, "hadtop_ljet");
+    }
 } // end constructor
 
 
@@ -389,15 +386,25 @@ void Event::execute(Long64_t entry){
     m_ttbar2L = {};
     if (m_kinematicReco) ttbarReconstruction();
     else{
+        Jet dummy_jet;
+        Ljet dummy_ljet;
+        Neutrino dummy_nu;
+        Lepton dummy_lep;
+
         if (m_isOneLeptonAnalysis){
             int ljetidx = **m_hadtop_ljet;
             int jetidx  = **m_leptop_jet;
-            m_ttbar1L.jet  = m_jets.at(jetidx);
-            m_ttbar1L.ljet = m_ljets.at(ljetidx);
+            m_ttbar1L.jet  = (jetidx>=0)  ? m_jets.at(jetidx)   : dummy_jet;
+            m_ttbar1L.ljet = (ljetidx>=0) ? m_ljets.at(ljetidx) : dummy_ljet;
+
             if (m_muons.size()>0)
                 m_ttbar1L.lepton = m_muons.at(0);
             else if (m_electrons.size()>0)
                 m_ttbar1L.lepton = m_electrons.at(0);
+            else if (m_muons.size()+m_electrons.size() == 0)
+                m_ttbar1L.lepton = dummy_lep;
+
+            m_ttbar1L.neutrino = (m_neutrinos.size()>0) ? m_neutrinos.at(0) : dummy_nu;
         }
     }
 
@@ -834,9 +841,9 @@ void Event::initialize_neutrinos(){
     }
 
     Neutrino nu1;
-    nu1.p4.SetPtEtaPhiM( m_met.p4.Pt(), 0, m_met.p4.Phi(), 0);   // "dummy" value pz=0
+    nu1.p4.SetPtEtaPhiM( m_met.p4.Pt(), 0, m_met.p4.Phi(), 0);   // "dummy"; pz=0
     Neutrino nu2;
-    nu2.p4.SetPtEtaPhiM( m_met.p4.Pt(), 0, m_met.p4.Phi(), 0);   // "dummy" value pz=0
+    nu2.p4.SetPtEtaPhiM( m_met.p4.Pt(), 0, m_met.p4.Phi(), 0);   // "dummy"; pz=0
 
     int nlep = m_leptons.size();
     if (nlep<1){
@@ -854,11 +861,20 @@ void Event::initialize_neutrinos(){
         }
         else if (m_isTwoLeptonAnalysis){
             // part of ttbar reconstruction instead?
+            m_neutrinos.push_back(nu1);
+            m_neutrinos.push_back(nu2);
         }
     }
     else{
         // Assign neutrinos from root file
-    }
+        unsigned int nNus = (*m_nu_pt)->size();
+
+        for (unsigned int i=0; i<nNus; i++){
+            Neutrino nu;
+            nu.p4.SetPtEtaPhiM( (*m_nu_pt)->at(i),(*m_nu_eta)->at(i),(*m_nu_phi)->at(i),0.0);
+            m_neutrinos.push_back(nu);
+        }
+    } // end use neutrinos but don't reconstruct them
 
     return;
 }

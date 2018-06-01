@@ -3,7 +3,7 @@ useLargeRJets true
 useLeptons true
 useNeutrinos true
 neutrinoReco true
-kinematicReco true
+kinematicReco false
 useTruth true
 jet_btag_wkpt M
 makeTTree true
@@ -15,10 +15,10 @@ output_path ./
 weightSystematicsFile config/weightSystematics.txt
 weightVectorSystematicsFile config/weightVectorSystematics.txt
 calcWeightSystematics false
-selection mujets,ejets
-cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt
-#selection afb
-#cutsfile config/cuts_afb.txt
+#selection mujets,ejets
+#cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt
+selection cwola
+cutsfile config/cuts_cwola.txt
 treenames config/treenames.txt
 inputfile config/listOfMCSamples.txt
 useDNN false

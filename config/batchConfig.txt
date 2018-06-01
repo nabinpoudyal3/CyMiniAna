@@ -3,7 +3,7 @@ output_dir eos
 eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.5/koala/SingleMuonB
 subdir SingleMuonB
 eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.5/koala/
-files config/ttbarAC_skim_samples/listOfSingleMuonBFiles.txt
+files config/cyminiana_samples/SingleMuonB.txt
 username demarley
 executable run
 test False
