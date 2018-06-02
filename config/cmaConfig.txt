@@ -17,8 +17,8 @@ weightVectorSystematicsFile config/weightVectorSystematics.txt
 calcWeightSystematics false
 #selection mujets,ejets
 #cutsfile config/cuts_mujets.txt,config/cuts_ejets.txt
-selection cwola
-cutsfile config/cuts_cwola.txt
+selection cwolamujets,cwolaejets
+cutsfile config/cuts_cwolamujets.txt,config/cuts_cwolaejets.txt
 treenames config/treenames.txt
 inputfile config/listOfMCSamples.txt
 useDNN false

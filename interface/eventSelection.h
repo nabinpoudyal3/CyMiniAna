@@ -43,7 +43,8 @@ class eventSelection{
     void setCutflowHistograms(TFile& outputFile);
 
     // Run for every event (in every systematic) that needs saving
-    virtual bool applySelection(const Event& event);
+    virtual void setObjects(const Event& event);
+    virtual bool applySelection();
 
     // -- Selections put into functions (easily reference them in other cuts)
     // DNN selection
@@ -53,11 +54,11 @@ class eventSelection{
     bool zeroLeptonSelection(float& cutflow_bin);
 
     // Single lepton selections
-    bool oneLeptonSelection(float& cutflow_bin);
-    bool ejetsSelection(float& cutflow_bin, const Lepton& lep);
-    bool mujetsSelection(float& cutflow_bin);
-    bool cwolaSelection(float& cutflow_bin);
-    bool afbSelection(float& cutflow_bin);
+    bool oneLeptonSelection(float& cutflow_bin, std::string selection="");
+    bool ejetsSelection( float& cutflow_bin, std::string selection="");
+    bool mujetsSelection(float& cutflow_bin, std::string selection="");
+    bool cwolaSelection( float& cutflow_bin);
+    bool afbSelection(   float& cutflow_bin);
 
     // Dilepton selections
     bool twoLeptonSelection(float& cutflow_bin);
@@ -105,6 +106,7 @@ class eventSelection{
     bool m_isAFBAnalysis;
 
     // physics information
+    bool m_valid;
     float m_nominal_weight;
     std::vector<Ljet> m_ljets;
     std::vector<Jet> m_jets;

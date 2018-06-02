@@ -179,7 +179,8 @@ int main(int argc, char** argv) {
 
             // -- Event Selection -- //
             cma::DEBUG("RUNML : Apply event selection");
-            passEvent = evtSel.applySelection(event);
+            evtSel.setObjects(event);
+            passEvent = evtSel.applySelection();
 
             if (passEvent){
                 cma::DEBUG("RUNML : Passed selection, now reconstruct ttbar & save information");

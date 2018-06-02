@@ -250,7 +250,8 @@ int main(int argc, char** argv) {
                 std::vector<unsigned int> passEvents;
                 unsigned int passedEvents(0);
                 for (unsigned int ss=0,size=selections.size();ss<size;ss++){
-                    passEvent = evtSels.at(ss).applySelection(event);
+                    evtSels.at(ss).setObjects(event);
+                    passEvent = evtSels.at(ss).applySelection();
                     passEvents.push_back( passEvent );
                     passedEvents += passEvent;
                 }

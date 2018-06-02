@@ -59,6 +59,10 @@ def getHistograms(files,histograms):
 x_labels      = hpl.variable_labels()
 sample_labels = hpl.sample_labels()
 extralabel    = {"ejets":sample_labels['ejets'].label,"mujets":sample_labels['mujets'].label,'afb':r'A$_\text{FB}$'}
+extralabel["cwola"] = "CWoLa"
+extralabel["cwola_ejets"]  = "CWoLa "+extralabel["ejets"]
+extralabel["cwola_mujets"] = "CWoLa "+extralabel["mujets"]
+
 contain = [
 'NONE',
 'QONLY',
@@ -106,15 +110,14 @@ samples = [
 'wjets4',
 'data'
 ]
-dataname = 'SingleElectron' if selection == 'ejets' else 'SingleMuon'
+dataname   = 'SingleElectron' if 'ejets' in selection else 'SingleMuon'
+sample_dir = 'config/cwola_samples'
+
+filelists = dict( (k,util.file2list('{0}/{1}.txt'.format(sample_dir,k))) for k in samples if k!='data')
 
 data_files  = []
 for d in ['B','C','D','E','F','G','H','Hv3']:
-    data_files += util.file2list("config/cyminiana_samples/{0}{1}.txt".format(dataname,d))
-
-filelists = dict( (k,util.file2list('config/cyminiana_samples/{0}.txt'.format(k))) for k in samples if k!='data')
-
-
+    data_files += util.file2list("{0}/{1}{2}.txt".format(sample_dir,dataname,d))
 filelists['data'] = data_files
 
 # Load histograms
@@ -130,7 +133,7 @@ for histogram in histograms:
     histogramName = histogram.replace("_"+selection,"")
     if histogramName.startswith("h_"): histogramName = histogramName[2:]
 
-    if histogram.startswith("h_mu_") and selection=="ejets": continue
+    if histogram.startswith("h_mu_") and selection in ["ejets"]: continue
     if histogram.startswith("h_el_") and selection in ["mujets","afb"]: continue
 
     print "  :: Plotting "+histogram
