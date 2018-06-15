@@ -27,41 +27,6 @@ import Analysis.CyMiniAna.hepPlotter.hepPlotterTools as hpt
 import Analysis.CyMiniAna.hepPlotter.hepPlotterLabels as hpl
 import Analysis.CyMiniAna.util as util
 
-metadata = hpt.getMetadata()  # use default metadatafile
-
-
-def getHistograms(files,histograms):
-    """Aggregate histograms from many files"""
-    pd    = ''
-    name  = ''
-    hists = {}
-
-    for fi,file in enumerate(files):
-        f = ROOT.TFile.Open(file)
-#        f = ROOT.TFile.Open(file.replace('mujets-ejets','afb').replace('30May','31May') )
-
-        if not fi:
-            pd   = util.getPrimaryDataset(f)
-            name = metadata[pd].sampleType     # compare primary dataset with metadatafile
-
-        for h in histograms:
-            try:
-                h_temp = getattr(f,h)
-                h_temp.SetDirectory(0)
-                hists[h].Add( h_temp )
-            except KeyError:
-                hists[h] = getattr(f,h)        # retrieve the histogram
-                hists[h].SetDirectory(0)
-
-    return {"hists":hists,"primaryDataset":pd,"name":name}
-
-
-x_labels      = hpl.variable_labels()
-sample_labels = hpl.sample_labels()
-extralabel    = {"ejets":sample_labels['ejets'].label,"mujets":sample_labels['mujets'].label,'afb':r'A$_\text{FB}$'}
-extralabel["cwola"] = "CWoLa"
-extralabel["cwola_ejets"]  = "CWoLa "+extralabel["ejets"]
-extralabel["cwola_mujets"] = "CWoLa "+extralabel["mujets"]
 
 contain = [
 'NONE',
@@ -71,6 +36,49 @@ contain = [
 'W',
 'FULL',
 ]
+metadata = hpt.getMetadata()  # use default metadatafile
+
+
+def getHistograms(files,histograms,sel):
+    """Aggregate histograms from many files"""
+    pd    = ''
+    name  = ''
+    hists = {}
+
+    for fi,file in enumerate(files):
+        f = ROOT.TFile.Open(file)
+
+        if not fi:
+            pd   = util.getPrimaryDataset(f)
+            name = metadata[pd].sampleType     # compare primary dataset with metadatafile
+
+        for h in histograms:
+            if name == 'ttbar' and any(ic in h for ic in ['ljet_BEST','ljet_pt','ljet_SDmass']):
+                for c in contain:
+                    hc = h.replace('_'+sel,'_'+c+'_'+sel)
+                    h_temp = getattr(f,hc)
+                    h_temp.SetDirectory(0)
+                    try:
+                        hists[hc].Add( h_temp )
+                    except KeyError:
+                        hists[hc] = h_temp
+            else:
+                h_temp = getattr(f,h)
+                h_temp.SetDirectory(0)
+                try:
+                    hists[h].Add( h_temp )
+                except KeyError:
+                    hists[h] = h_temp
+
+    return {"hists":hists,"primaryDataset":pd,"name":name}
+
+
+x_labels      = hpl.variable_labels()
+sample_labels = hpl.sample_labels()
+extralabel    = {"ejets":sample_labels['ejets'].label,"mujets":sample_labels['mujets'].label,'afb':r'A$_\text{FB}$'}
+extralabel["cwola"] = "CWoLa"
+extralabel["cwolaejets"]  = "CWoLa "+extralabel["ejets"]
+extralabel["cwolamujets"] = "CWoLa "+extralabel["mujets"]
 
 today  = strftime("%d%b%Y")
 parser = ArgumentParser(description="DataMC Plotter")
@@ -124,7 +132,7 @@ filelists['data'] = data_files
 h_hists_dict = {}
 for sample in samples:
     print " Load histograms from ",sample
-    h_hists_dict[sample] = getHistograms(filelists[sample],histograms)
+    h_hists_dict[sample] = getHistograms(filelists[sample],histograms,selection)
 
 
 ## Make the plots
@@ -133,8 +141,8 @@ for histogram in histograms:
     histogramName = histogram.replace("_"+selection,"")
     if histogramName.startswith("h_"): histogramName = histogramName[2:]
 
-    if histogram.startswith("h_mu_") and selection in ["ejets"]: continue
-    if histogram.startswith("h_el_") and selection in ["mujets","afb"]: continue
+    if histogram.startswith("h_mu_") and "ejets" in selection: continue
+    if histogram.startswith("h_el_") and ("mujets" in selection or selection=="afb"): continue
 
     print "  :: Plotting "+histogram
 
@@ -164,70 +172,54 @@ for histogram in histograms:
     hist.numLegendColumns = 1
     hist.CMSlabelStatus = 'Internal'  # ('Simulation')+'Internal' || 'Preliminary' 
     hist.format           = 'pdf'       # file format for saving image
-    hist.saveAs           = outpath+"/datamc_ttbarAC_{0}_{1}".format(selection,histogramName) # save figure with name
+    hist.saveAs           = outpath+"/datamc_ttbarAC_splitTtbar_{0}_{1}".format(selection,histogramName) # save figure with name
 
     hist.extra_text.Add(extralabel[selection],coords=[0.03,0.90])
 
     hist.initialize()
 
-    ## -- Add the data from each sample -- group some together
-    h_hist_diboson = None
-    h_hist_zjets   = None
-    h_hist_singletop = None
-    h_hist_wjets   = None
-    h_hist_ttbar   = None
-    h_hist_data    = None
+    ## -- Add the results from each sample -- group some together
+    # diboson
+    h_hist_diboson = h_hists_dict['diboson_ww']['hists'][histogram]
+    h_hist_diboson.Add( h_hists_dict['diboson_wz']['hists'][histogram] )
+    h_hist_diboson.Add( h_hists_dict['diboson_zz']['hists'][histogram] )
+    hist.Add(h_hist_diboson, name="diboson", sampleType="background", systematics=None)
 
-    for sample in samples:
+    # zjets
+    hist.Add(h_hists_dict['zjets']['hists'][histogram], name="zjets", sampleType="background", systematics=None)
 
-        # diboson
-        if h_hists_dict[sample]['name'] == 'diboson':
-            try:
-                h_hist_diboson.Add( h_hists_dict[sample]['hists'][histogram] )
-            except AttributeError:
-                h_hist_diboson = h_hists_dict[sample]['hists'][histogram]
+    # singletop
+    h_hist_singletop = h_hists_dict['singletop-s']['hists'][histogram]
+    h_hist_singletop.Add( h_hists_dict['singletop-t']['hists'][histogram] )
+    h_hist_singletop.Add( h_hists_dict['singletop-tW']['hists'][histogram] )
+    h_hist_singletop.Add( h_hists_dict['singletop-tbar']['hists'][histogram] )
+    h_hist_singletop.Add( h_hists_dict['singletop-tbarW']['hists'][histogram] )
+    hist.Add(h_hist_singletop, name="singletop", sampleType="background", systematics=None)
 
-        # zjets
-        if h_hists_dict[sample]['name'] == 'zjets':
-            try:
-                h_hist_zjets.Add( h_hists_dict[sample]['hists'][histogram] )
-            except AttributeError:
-                h_hist_zjets = h_hists_dict[sample]['hists'][histogram]
+    # w+jets
+    h_hist_wjets = h_hists_dict['wjets1']['hists'][histogram]
+    h_hist_wjets.Add( h_hists_dict['wjets2']['hists'][histogram] )
+    h_hist_wjets.Add( h_hists_dict['wjets3']['hists'][histogram] )
+    h_hist_wjets.Add( h_hists_dict['wjets4']['hists'][histogram] )
+    hist.Add(h_hist_wjets, name="wjets", sampleType="background", systematics=None)
 
-        # singletop
-        if h_hists_dict[sample]['name'] == 'singletop':
-            try:
-                h_hist_singletop.Add( h_hists_dict[sample]['hists'][histogram] )
-            except AttributeError:
-                h_hist_singletop = h_hists_dict[sample]['hists'][histogram]
+    # ttbar
+    if any(ic in histogram for ic in ['ljet_BEST','ljet_pt','ljet_SDmass']):
+        h_hist_ttbarFULL  = h_hists_dict['ttbar']['hists'][histogram.replace(selection,"FULL_"+selection)]
+        h_hist_ttbarQB    = h_hists_dict['ttbar']['hists'][histogram.replace(selection,"BQ_"+selection)]
+        h_hist_ttbarW     = h_hists_dict['ttbar']['hists'][histogram.replace(selection,"W_"+selection)]
+        h_hist_ttbarOTHER = h_hists_dict['ttbar']['hists'][histogram.replace(selection,"BONLY_"+selection)]
+        h_hist_ttbarOTHER.Add( h_hists_dict['ttbar']['hists'][histogram.replace(selection,"QONLY_"+selection)] )
+        h_hist_ttbarOTHER.Add( h_hists_dict['ttbar']['hists'][histogram.replace(selection,"NONE_"+selection)] )
+        hist.Add(h_hist_ttbarOTHER, name="ttbar_OTHER", sampleType="background", systematics=None)
+        hist.Add(h_hist_ttbarQB,    name="ttbar_BQ",    sampleType="background", systematics=None)
+        hist.Add(h_hist_ttbarW,     name="ttbar_W",     sampleType="background", systematics=None)
+        hist.Add(h_hist_ttbarFULL,  name="ttbar_FULL",  sampleType="background", systematics=None)
+    else:
+        hist.Add(h_hists_dict['ttbar']['hists'][histogram], name="ttbar", sampleType="background", systematics=None)
 
-        # w+jets
-        if h_hists_dict[sample]['name'] == 'wjets':
-            try:
-                h_hist_wjets.Add( h_hists_dict[sample]['hists'][histogram] )
-            except AttributeError:
-                h_hist_wjets = h_hists_dict[sample]['hists'][histogram]
-
-        # ttbar
-        if h_hists_dict[sample]['name'] == 'ttbar':
-            try:
-                h_hist_ttbar.Add( h_hists_dict[sample]['hists'][histogram] )
-            except AttributeError:
-                h_hist_ttbar = h_hists_dict[sample]['hists'][histogram]
-
-        # data
-        if h_hists_dict[sample]['name'] in ['data','ejets','mujets']:
-            try:
-                h_hist_data.Add( h_hists_dict[sample]['hists'][histogram] )
-            except AttributeError:
-                h_hist_data = h_hists_dict[sample]['hists'][histogram]
-
-    if h_hist_diboson is not None:   hist.Add(h_hist_diboson, name="diboson", sampleType="background", systematics=None)
-    if h_hist_zjets is not None:     hist.Add(h_hist_zjets,   name="zjets",   sampleType="background", systematics=None)
-    if h_hist_singletop is not None: hist.Add(h_hist_singletop, name="singletop", sampleType="background", systematics=None)
-    if h_hist_wjets is not None:     hist.Add(h_hist_wjets, name="wjets",     sampleType="background", systematics=None)
-    if h_hist_ttbar is not None:     hist.Add(h_hist_ttbar, name="ttbar",     sampleType="background", systematics=None)
-    if h_hist_data is not None:      hist.Add(h_hist_data,  name="data",      sampleType="data",       systematics=None)
+    # data
+    hist.Add(h_hists_dict['data']['hists'][histogram], name="data", sampleType="data", systematics=None)
 
     # make the plot
     plot = hist.execute()
@@ -235,20 +227,4 @@ for histogram in histograms:
     print "     ++ Saved plot to "+hist.saveAs+"\n"
 
 
-## THE END
-
-
-"""
-#    if 'ljet' in histo:
-#        h_hist_ttbarFULL  = h_hists_ttbar[histo.replace(selection,"FULL_{0}".format(selection))]
-#        h_hist_ttbarQB    = h_hists_ttbar[histo.replace(selection,"BQ_{0}".format(selection))]
-#        h_hist_ttbarW     = h_hists_ttbar[histo.replace(selection,"W_{0}".format(selection))]
-#        h_hist_ttbarOTHER = h_hists_ttbar[histo.replace(selection,"OTHER_{0}".format(selection))]
-#        hist.Add(h_hist_ttbarOTHER, name="ttbar_OTHER", sampleType="background", systematics=None)
-#        hist.Add(h_hist_ttbarQB,    name="ttbar_BQ",    sampleType="background", systematics=None)
-#        hist.Add(h_hist_ttbarW,     name="ttbar_W",     sampleType="background", systematics=None)
-#        hist.Add(h_hist_ttbarFULL,  name="ttbar_FULL",  sampleType="background", systematics=None)
-#    else:
-#        h_hist_ttbar = h_hists_ttbar[histo]
-#        hist.Add(h_hist_ttbar, name="ttbar",     sampleType="background", systematics=None)
-"""
+## THE END ##

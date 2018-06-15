@@ -356,16 +356,16 @@ void Event::execute(Long64_t entry){
         cma::DEBUG("EVENT : Setup small-R jets ");
     }
 
-    // Large-R Jets
-    if (m_useLargeRJets){
-        initialize_ljets();
-        cma::DEBUG("EVENT : Setup large-R jets ");
-    }
-
     // Leptons
     if (m_useLeptons){
         initialize_leptons();
         cma::DEBUG("EVENT : Setup leptons ");
+    }
+
+    // Large-R Jets
+    if (m_useLargeRJets){
+        initialize_ljets();
+        cma::DEBUG("EVENT : Setup large-R jets ");
     }
 
     // Get some kinematic variables (MET, HT, ST)
