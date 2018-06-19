@@ -19,7 +19,7 @@ cutsfile config/cuts_cwolamujets.txt
 #cutsfile config/cuts_none.txt
 treenames config/treenames.txt
 treename tree/eventVars
-inputfile config/cwola_samples/SingleMuonB.txt
+inputfile config/cwola_samples/SingleElectronB.txt
 useDNN true
 DNNinference false
 DNNtraining true

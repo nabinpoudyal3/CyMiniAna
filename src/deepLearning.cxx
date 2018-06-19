@@ -80,17 +80,21 @@ void deepLearning::loadFeatures(const Ljet& ljet){
     m_features["ljet_subjet0_mass"]   = ljet.subjet0_mass;
     m_features["ljet_subjet0_mrel"]   = ljet.subjet0_mass/ljet.p4.M();
     m_features["ljet_subjet0_ptrel"]  = ljet.subjet0_pt/ljet.p4.Pt();
-    m_features["ljet_subjet0_tau1"]   = ljet.tau1;
-    m_features["ljet_subjet0_tau2"]   = ljet.tau2;
-    m_features["ljet_subjet0_tau3"]   = ljet.tau3;
+    m_features["ljet_subjet0_tau1"]   = ljet.subjet0_tau1;
+    m_features["ljet_subjet0_tau2"]   = ljet.subjet0_tau2;
+    m_features["ljet_subjet0_tau3"]   = ljet.subjet0_tau3;
+    m_features["ljet_subjet0_tau21"]  = ljet.subjet0_tau2 / ljet.subjet0_tau1;
+    m_features["ljet_subjet0_tau32"]  = ljet.subjet0_tau3 / ljet.subjet0_tau2;
     m_features["ljet_subjet1_bdisc"]  = ljet.subjet1_bdisc;
     m_features["ljet_subjet1_charge"] = ljet.subjet1_charge;
     m_features["ljet_subjet1_mass"]   = ljet.subjet1_mass;
     m_features["ljet_subjet1_mrel"]   = ljet.subjet1_mass/ljet.p4.M();
     m_features["ljet_subjet1_ptrel"]  = ljet.subjet1_pt/ljet.p4.Pt();
-    m_features["ljet_subjet1_tau1"]   = ljet.tau1;
-    m_features["ljet_subjet1_tau2"]   = ljet.tau2;
-    m_features["ljet_subjet1_tau3"]   = ljet.tau3;
+    m_features["ljet_subjet1_tau1"]   = ljet.subjet1_tau1;
+    m_features["ljet_subjet1_tau2"]   = ljet.subjet1_tau2;
+    m_features["ljet_subjet1_tau3"]   = ljet.subjet1_tau3;
+    m_features["ljet_subjet1_tau21"]  = ljet.subjet1_tau2 / ljet.subjet1_tau1;
+    m_features["ljet_subjet1_tau32"]  = ljet.subjet1_tau3 / ljet.subjet1_tau2;
 
     m_features["ljet_charge"] = ljet.charge;
 

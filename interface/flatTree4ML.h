@@ -82,11 +82,21 @@ class flatTree4ML {
     float m_ljet_subjet0_mass;
     float m_ljet_subjet0_mrel;
     float m_ljet_subjet0_ptrel;
+    float m_ljet_subjet0_tau1;
+    float m_ljet_subjet0_tau2;
+    float m_ljet_subjet0_tau3;
+    float m_ljet_subjet0_tau21;
+    float m_ljet_subjet0_tau32;
     float m_ljet_subjet1_bdisc;
     float m_ljet_subjet1_charge;
     float m_ljet_subjet1_mass;
     float m_ljet_subjet1_mrel;
     float m_ljet_subjet1_ptrel;
+    float m_ljet_subjet1_tau1;
+    float m_ljet_subjet1_tau2;
+    float m_ljet_subjet1_tau3;
+    float m_ljet_subjet1_tau21;
+    float m_ljet_subjet1_tau32;
 
     /**** Metadata ****/
     // which sample has which target value
