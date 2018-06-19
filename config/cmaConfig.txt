@@ -5,7 +5,7 @@ useNeutrinos true
 neutrinoReco true
 kinematicReco false
 useTruth true
-jet_btag_wkpt M
+jet_btag_wkpt L
 makeTTree true
 makeHistograms true
 makeEfficiencies false

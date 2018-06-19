@@ -431,7 +431,7 @@ bool eventSelection::cwolaSelection(float& cutflow_bin){
 
     // cut1 :: BEST(top)>0.2
     Ljet hadtop_ak8 = m_ttbar1L.ljet;
-    if ( hadtop_ak8.BEST_t<0.2 )
+    if ( hadtop_ak8.BEST_t<0.1 )
         return false;
     else
         fillCutflows(cutflow_bin);
