@@ -86,7 +86,8 @@ class Event {
     virtual std::vector<int> btag_jets() const {return m_btag_jets_default;} // using configured b-tag WP
 
     // Get truth physics information 
-    void truth();
+    std::vector<TruthTop> truth() {return m_truth_tops;}
+    std::vector<Parton> truth_partons() {return m_truth_partons;}
     std::vector<Lepton> truth_leptons() const {return m_truth_leptons;}
     std::vector<Electron> truth_electrons() const {return m_truth_electrons;}
     std::vector<Muon> truth_muons() const {return m_truth_muons;}

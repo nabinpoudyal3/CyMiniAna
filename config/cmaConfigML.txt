@@ -4,7 +4,7 @@ useLeptons true
 useNeutrinos true
 neutrinoReco true
 useTruth true
-jet_btag_wkpt M
+jet_btag_wkpt L
 makeTTree true
 makeHistograms true
 makeEfficiencies false

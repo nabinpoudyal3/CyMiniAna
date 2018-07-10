@@ -1123,14 +1123,6 @@ std::vector<std::string> Event::listOfWeightSystematics(){
 
 
 
-/*** RETURN EVENT INFORMATION ***/
-void Event::truth(){
-    /* Do something with truth information (possibly change type and return information?) */
-    return;
-}
-
-
-
 /*** DELETE VARIABLES ***/
 void Event::finalize(){
     // delete variables

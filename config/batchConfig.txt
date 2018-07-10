@@ -1,12 +1,12 @@
 date today
 output_dir eos
-eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.5/koala/SingleMuonHv3
-subdir SingleMuonHv3
+eos_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.5/koala/singletop-tbar
+subdir singletop-tbar
 eos_tarball_path /store/group/lpctop/ttbarAC/flatNtuples/ttbarAC_skim-v0.5/koala/
-files config/cwola_samples/SingleMuonHv3.txt
+files config/cyminiana_samples/singletop-tbar.txt
 username demarley
-executable runML
+executable run
 test False
 submit True
 verbose True
-config config/cmaConfigML.txt
+config config/cmaConfig.txt

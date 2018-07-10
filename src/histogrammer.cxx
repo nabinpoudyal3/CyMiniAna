@@ -257,6 +257,12 @@ void histogrammer::bookHists( std::string name ){
         init_hist("deltaR_ak4_ak8_"+name, 50, 0.0, 5.0);
         init_hist("deltaR_pTrel_lep_ak4_"+name, 50,0.0,5.0, 100,0.0,500);
 
+        init_hist("hadtop_pt_"+name,     2000,  0.0, 2000.0);
+        init_hist("hadtop_eta_"+name,      50, -2.5,    2.5);
+        init_hist("hadtop_SDmass_"+name,  500,  0.0,  500.0);
+        init_hist("hadtop_tau21_"+name,   100,  0.0,    1.0);
+        init_hist("hadtop_tau32_"+name,   100,  0.0,    1.0);
+
         init_hist("deltay_"+name,  1000,-5.0,  5.0);
         init_hist("mttbar_"+name,  5000, 0.0, 5000);
         init_hist("pTttbar_"+name,  300, 0.0,  600);
@@ -267,6 +273,9 @@ void histogrammer::bookHists( std::string name ){
         init_hist("pTttbar_deltay_"+name,  300, 0.0,  600, 1000,-5.0,  5.0);
         init_hist("yttbar_deltay_"+name,   200,-10.,   10, 1000,-5.0,  5.0);
         init_hist("betattbar_deltay_"+name, 100, 0.0, 1.0, 1000,-5.0,  5.0);
+
+        if (m_config->isTtbar())
+            init_hist("resmat_"+name,  100,-5.0,5.0, 100,-5.0,5.0);
     }
 
     return;
@@ -544,24 +553,29 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
         Lepton tt_lep  = ttbarSL.lepton;
         Neutrino tt_nu = ttbarSL.neutrino;
 
-        float dr_lep_ak4 = tt_jet.p4.DeltaR( tt_lep.p4 );
+        TLorentzVector top_lep;
+        TLorentzVector top_had;
+        TLorentzVector ttbar;
+        top_lep = (tt_nu.p4 + tt_lep.p4 + tt_jet.p4);
+        top_had = tt_ljet.p4;
+        ttbar   = top_had+top_lep;
+
+        float dr_lep_ak4    = tt_jet.p4.DeltaR( tt_lep.p4 );
         float ptrel_lep_ak4 = cma::ptrel( tt_lep.p4, tt_jet.p4);
 
         fill("deltaR_lep_ak4_"+name, dr_lep_ak4,    event_weight);
         fill("pTrel_lep_ak4_"+name,  ptrel_lep_ak4, event_weight);
-        fill("deltaR_lep_ak8_"+name, tt_ljet.p4.DeltaR( tt_lep.p4 ), event_weight);
-        fill("deltaR_ak4_ak8_"+name, tt_ljet.p4.DeltaR( tt_jet.p4 ), event_weight);
+        fill("deltaR_lep_ak8_"+name, top_had.DeltaR( tt_lep.p4 ), event_weight);
+        fill("deltaR_ak4_ak8_"+name, top_had.DeltaR( tt_jet.p4 ), event_weight);
         fill("deltaR_pTrel_lep_ak4_"+name, dr_lep_ak4, ptrel_lep_ak4, event_weight);
 
+        fill("hadtop_pt_"+name,     top_had.Pt(), event_weight);
+        fill("hadtop_eta_"+name,    top_had.Eta(), event_weight);
+        fill("hadtop_SDmass_"+name, tt_ljet.softDropMass, event_weight);
+        fill("hadtop_tau21_"+name,  tt_ljet.tau21, event_weight);
+        fill("hadtop_tau32_"+name,  tt_ljet.tau32, event_weight);
+
         // asymmetry
-        TLorentzVector top_lep;
-        TLorentzVector top_had;
-        TLorentzVector ttbar;
-
-        top_lep = (tt_nu.p4 + tt_lep.p4 + tt_jet.p4);
-        top_had = tt_ljet.p4;
-        ttbar = top_had+top_lep;
-
         float dy = tt_lep.charge * ( std::abs(top_lep.Rapidity()) - std::abs(top_had.Rapidity()) );
         float betatt = std::abs(top_had.Pz() + top_lep.Pz()) / (top_had.E() + top_lep.E());
 
@@ -575,6 +589,22 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
         fill("pTttbar_deltay_"+name, ttbar.Pt(), dy, event_weight);
         fill("yttbar_deltay_"+name,  ttbar.Rapidity(), dy, event_weight);
         fill("betattbar_deltay_"+name, betatt, dy, event_weight);
+
+        if (m_config->isTtbar()){
+            float true_dy(0);
+            std::vector<TruthTop> truth_tops = event.truth();
+            std::vector<Parton> truth_partons = event.truth_partons();
+            if (truth_tops.size()==2){
+                TruthTop top0 = truth_tops.at(0);
+                TruthTop top1 = truth_tops.at(1);
+                Parton ptop0  = truth_partons.at( top0.Top );
+                Parton ptop1  = truth_partons.at( top1.Top );
+
+                true_dy = (top0.isTop && top1.isAntiTop) ? std::abs(ptop0.p4.Rapidity()) - std::abs(ptop1.p4.Rapidity()) : 
+                                                           std::abs(ptop1.p4.Rapidity()) - std::abs(ptop0.p4.Rapidity());
+                fill("resmat_"+name, dy, true_dy, event_weight);  // x=reco, y=truth
+            }
+        } // end response matrix creation
     }
 
     cma::DEBUG("HISTOGRAMMER : End histograms");
