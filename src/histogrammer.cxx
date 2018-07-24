@@ -214,7 +214,13 @@ void histogrammer::bookHists( std::string name ){
                 init_hist("ljet_BEST_h_"+cname,  100,  0.0,    1.0);
                 init_hist("ljet_BEST_j_"+cname,  100,  0.0,    1.0);
                 init_hist("ljet_BEST_t_j_"+cname,100,  0.0,    1.0);
-                init_hist("ljet_pt_SDmass_"+cname, 200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
+                init_hist("ljet_tau21_"+cname,   100,  0.0,    1.0);
+                init_hist("ljet_tau32_"+cname,   100,  0.0,    1.0);
+
+                init_hist("ljet_pt_SDmass_"+cname,    200,  0.0, 2000.0,  50,  0, 500);    // pt vs SDmass (pt=x-axis)
+                init_hist("ljet_SDmass_tau32_"+cname, 500,  0.0,  500.0, 100,  0,   1);    // SDmass  vs tau32  (SDmass=x-axis)
+                init_hist("ljet_BEST_t_SDmass_"+cname,100,  0.0,    1.0, 500,  0, 500);    // BEST(t) vs SDmass (BEST=x-axis)
+                init_hist("ljet_BEST_t_tau32_"+cname, 100,  0.0,    1.0, 100,  0,   1);    // BEST(t) vs tau32  (BEST=x-axis)
             } // end loop over containments
         } // end if isttbar
     }
@@ -266,16 +272,22 @@ void histogrammer::bookHists( std::string name ){
         init_hist("deltay_"+name,  1000,-5.0,  5.0);
         init_hist("mttbar_"+name,  5000, 0.0, 5000);
         init_hist("pTttbar_"+name,  300, 0.0,  600);
-        init_hist("yttbar_"+name,   200,-10.,   10);
+        init_hist("yttbar_"+name,   100,  0.,   10);
         init_hist("betattbar_"+name,100,  0.,    1);
 
-        init_hist("mttbar_deltay_"+name,  5000, 0.0, 5000, 1000,-5.0,  5.0);
+        init_hist("mttbar_deltay_"+name,  5000, 0.0, 5000, 1000,-5.0,  5.0);  // m_ttbar = x-axis; deltay = y-axis
         init_hist("pTttbar_deltay_"+name,  300, 0.0,  600, 1000,-5.0,  5.0);
-        init_hist("yttbar_deltay_"+name,   200,-10.,   10, 1000,-5.0,  5.0);
+        init_hist("yttbar_deltay_"+name,   100,  0.,   10, 1000,-5.0,  5.0);
         init_hist("betattbar_deltay_"+name, 100, 0.0, 1.0, 1000,-5.0,  5.0);
 
-        if (m_config->isTtbar())
-            init_hist("resmat_"+name,  100,-5.0,5.0, 100,-5.0,5.0);
+        if (m_config->isTtbar()){
+            init_hist("resmat_"+name,          100,-5.0,  5.0, 100,-5.0,  5.0);  // reco=x-axis; truth=y-axis
+            init_hist("deltay_dyres_"+name,   1000,-5.0,  5.0, 200,-10,10);
+            init_hist("mttbar_dyres_"+name,   5000, 0.0, 5000, 200,-10,10);
+            init_hist("pTttbar_dyres_"+name,   300, 0.0,  600, 200,-10,10);
+            init_hist("betattbar_dyres_"+name, 100,  0.,    1, 200,-10,10);
+            init_hist("yttbar_dyres_"+name,    100,  0.,   10, 200,-10,10);
+        }
     }
 
     return;
@@ -491,7 +503,14 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                 fill("ljet_BEST_h_"+cname,  ljet.BEST_h,       event_weight);
                 fill("ljet_BEST_j_"+cname,  ljet.BEST_j,       event_weight);
                 fill("ljet_BEST_t_j_"+cname,ljet.BEST_t / (ljet.BEST_t+ljet.BEST_j), event_weight);
+                fill("ljet_tau21_"+cname, ljet.tau21, event_weight);
+                fill("ljet_tau32_"+cname, ljet.tau32, event_weight);
+
                 fill("ljet_pt_SDmass_"+cname, ljet.p4.Pt(),ljet.softDropMass,event_weight);
+
+                fill("ljet_SDmass_tau32_"+cname, ljet.softDropMass, ljet.tau32,  event_weight);    // SDmass  vs tau32  (SDmass=x-axis)
+                fill("ljet_BEST_t_SDmass_"+cname,ljet.BEST_t, ljet.softDropMass, event_weight);    // BEST(t) vs SDmass (BEST=x-axis)
+                fill("ljet_BEST_t_tau32_"+cname, ljet.BEST_t, ljet.tau32,        event_weight);    // BEST(t) vs tau32  (BEST=x-axis)
             } // end if isttbar
         } // end loop over ljets
     } // end if use ljets
@@ -576,18 +595,21 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
         fill("hadtop_tau32_"+name,  tt_ljet.tau32, event_weight);
 
         // asymmetry
-        float dy = tt_lep.charge * ( std::abs(top_lep.Rapidity()) - std::abs(top_had.Rapidity()) );
+        float dy     = tt_lep.charge * ( std::abs(top_lep.Rapidity()) - std::abs(top_had.Rapidity()) );
+        float mtt    = ttbar.M();
+        float pttt   = ttbar.Pt();
+        float ytt    = std::abs(ttbar.Rapidity());
         float betatt = std::abs(top_had.Pz() + top_lep.Pz()) / (top_had.E() + top_lep.E());
 
-        fill("deltay_"+name,  dy,  event_weight);
-        fill("mttbar_"+name,  ttbar.M(),  event_weight);
-        fill("pTttbar_"+name, ttbar.Pt(), event_weight);
-        fill("yttbar_"+name,  ttbar.Rapidity(), event_weight);
+        fill("deltay_"+name,  dy,   event_weight);
+        fill("mttbar_"+name,  mtt,  event_weight);
+        fill("pTttbar_"+name, pttt, event_weight);
+        fill("yttbar_"+name,  ytt,  event_weight);
         fill("betattbar_"+name, betatt, event_weight);
 
-        fill("mttbar_deltay_"+name,  ttbar.M(),  dy, event_weight);
-        fill("pTttbar_deltay_"+name, ttbar.Pt(), dy, event_weight);
-        fill("yttbar_deltay_"+name,  ttbar.Rapidity(), dy, event_weight);
+        fill("mttbar_deltay_"+name,  mtt,  dy, event_weight);
+        fill("pTttbar_deltay_"+name, pttt, dy, event_weight);
+        fill("yttbar_deltay_"+name,  ytt,  dy, event_weight);
         fill("betattbar_deltay_"+name, betatt, dy, event_weight);
 
         if (m_config->isTtbar()){
@@ -603,6 +625,13 @@ void histogrammer::fill( const std::string& name, Event& event, double event_wei
                 true_dy = (top0.isTop && top1.isAntiTop) ? std::abs(ptop0.p4.Rapidity()) - std::abs(ptop1.p4.Rapidity()) : 
                                                            std::abs(ptop1.p4.Rapidity()) - std::abs(ptop0.p4.Rapidity());
                 fill("resmat_"+name, dy, true_dy, event_weight);  // x=reco, y=truth
+
+                float dyres = true_dy - dy;
+                fill("deltay_dyres_"+name,   dy,    dyres, event_weight);
+                fill("mttbar_dyres_"+name,   mtt,   dyres, event_weight);
+                fill("pTttbar_dyres_"+name,  pttt,  dyres, event_weight);
+                fill("betattbar_dyres_"+name,betatt,dyres, event_weight);
+                fill("yttbar_dyres_"+name,   ytt,   dyres, event_weight);
             }
         } // end response matrix creation
     }
